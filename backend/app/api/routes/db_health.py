@@ -1,18 +1,22 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 from sqlalchemy import text
-from sqlalchemy.orm import Session
 
-from app.db.database import get_db
+from app.db.database import SessionLocal
 
 router = APIRouter()
 
 
 @router.get("/db-health")
-def database_health(db: Session = Depends(get_db)):
-    result = db.execute(text("SELECT 1"))
-    value = result.scalar()
+def db_health():
 
-    return {
-        "database": "connected",
-        "result": value,
-    }
+    db = SessionLocal()
+
+    try:
+        db.execute(text("SELECT 1"))
+
+        return {
+            "status": "Database connected"
+        }
+
+    finally:
+        db.close()
