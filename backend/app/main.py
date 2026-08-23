@@ -1,6 +1,4 @@
 from fastapi import FastAPI
-from app.db.database import Base, engine
-from app.db import models
 from app.api.routes.health import router as health_router
 from app.api.routes.db_health import router as db_health_router
 from app.api.routes.students import router as student_router
@@ -9,8 +7,6 @@ app = FastAPI(
     title="Jarvis",
     version="0.1.0",
 )
-
-Base.metadata.create_all(bind=engine)
 
 app.include_router(
     health_router,
@@ -32,4 +28,3 @@ def root():
     return {
         "message": "Jarvis API running"
     }
-

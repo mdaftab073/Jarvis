@@ -6,6 +6,11 @@ class StudentCreate(BaseModel):
     email: EmailStr
 
 
+class StudentUpdate(BaseModel):
+    name: str
+    email: EmailStr
+
+
 class StudentResponse(BaseModel):
     id: int
     name: str
