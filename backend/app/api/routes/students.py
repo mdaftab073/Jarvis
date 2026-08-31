@@ -5,16 +5,17 @@ from sqlalchemy.exc import IntegrityError
 from app.db.database import get_db
 from app.db.models import Student
 
-from app.schemas.student import (
-    StudentCreate,
-    StudentUpdate,
-    StudentResponse,
-)
-
 from app.services.student_service import (
     create_student,
     update_student,
     delete_student,
+)
+
+from app.schemas.student import (
+    StudentCreate,
+    StudentUpdate,
+    StudentResponse,
+    StudentWithCourses,
 )
 
 router = APIRouter()
@@ -128,3 +129,25 @@ def delete_student_endpoint(
     return {
         "message": "Student deleted successfully"
     }
+    
+@router.get(
+    "/students/{student_id}/courses",
+    response_model=StudentWithCourses,
+)
+def get_student_courses(
+    student_id: int,
+    db: Session = Depends(get_db),
+):
+    student = (
+        db.query(Student)
+        .filter(Student.id == student_id)
+        .first()
+    )
+
+    if student is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Student not found",
+        )
+
+    return student
