@@ -1,8 +1,13 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
-from sqlalchemy.orm import relationship
-
+from sqlalchemy import (
+    Column,
+    Integer,
+    String,
+    ForeignKey,
+    DateTime,
+)
 from app.db.database import Base
-
+from datetime import datetime
+from sqlalchemy.orm import relationship
 
 class Student(Base):
     __tablename__ = "students"
@@ -73,4 +78,45 @@ class Subject(Base):
     course = relationship(
         "Course",
         back_populates="subjects",
+    )
+    
+    materials = relationship(
+        "StudyMaterial",
+        back_populates="subject",
+        cascade="all, delete",
+    )
+    
+class StudyMaterial(Base):
+    __tablename__ = "study_materials"
+
+    id = Column(
+        Integer,
+        primary_key=True,
+        index=True,
+    )
+
+    title = Column(
+        String,
+        nullable=False,
+    )
+
+    file_path = Column(
+        String,
+        nullable=False,
+    )
+
+    uploaded_at = Column(
+        DateTime,
+        default=datetime.utcnow,
+    )
+
+    subject_id = Column(
+        Integer,
+        ForeignKey("subjects.id"),
+        nullable=False,
+    )
+
+    subject = relationship(
+        "Subject",
+        back_populates="materials",
     )

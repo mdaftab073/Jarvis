@@ -4,7 +4,9 @@ from app.api.routes.db_health import router as db_health_router
 from app.api.routes.students import router as student_router
 from app.api.routes.courses import router as course_router
 from app.api.routes.subjects import router as subject_router
-
+from app.api.routes.study_materials import (
+    router as study_material_router,
+)
 
 app = FastAPI(
     title="Jarvis",
@@ -33,6 +35,11 @@ app.include_router(
 
 app.include_router(
     subject_router,
+    prefix="/api",
+)
+
+app.include_router(
+    study_material_router,
     prefix="/api",
 )
 
