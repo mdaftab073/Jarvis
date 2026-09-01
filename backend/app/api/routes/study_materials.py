@@ -3,7 +3,9 @@ from sqlalchemy.orm import Session
 from fastapi import UploadFile, File, Form
 from app.services.file_service import save_uploaded_file
 from app.db.database import get_db
-
+from app.services.pdf_service import (
+    extract_text_from_pdf,
+)
 from app.schemas.study_material import (
     StudyMaterialCreate,
     StudyMaterialResponse,
@@ -14,6 +16,10 @@ from app.services.study_material_service import (
     get_material,
     get_materials,
     get_subject_materials,
+)
+
+from app.services.chunking_service import (
+    chunk_text,
 )
 
 router = APIRouter()
@@ -104,3 +110,66 @@ def upload_material(
 
     return material
 
+@router.get(
+    "/materials/{material_id}/extract-text"
+)
+def extract_material_text(
+    material_id: int,
+    db: Session = Depends(get_db),
+):
+    material = get_material(
+        db=db,
+        material_id=material_id,
+    )
+
+    if material is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Material not found",
+        )
+
+    text = extract_text_from_pdf(
+        material.file_path
+    )
+
+    return {
+        "title": material.title,
+        "text": text[:5000],
+    }
+    
+@router.get(
+    "/materials/{material_id}/chunks"
+)
+def get_material_chunks(
+    material_id: int,
+    db: Session = Depends(get_db),
+):
+    material = get_material(
+        db=db,
+        material_id=material_id,
+    )
+
+    if material is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Material not found",
+        )
+
+    from app.services.pdf_service import (
+        extract_text_from_pdf,
+    )
+
+    text = extract_text_from_pdf(
+        material.file_path
+    )
+
+    chunks = chunk_text(text)
+
+    return {
+        "total_chunks": len(chunks),
+        "first_chunk": (
+            chunks[0]
+            if chunks
+            else ""
+        ),
+    }

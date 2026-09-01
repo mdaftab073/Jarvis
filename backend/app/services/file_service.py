@@ -26,4 +26,4 @@ def save_uploaded_file(
             file.file.read()
         )
 
-    return str(file_path)
+    return file_path.as_posix()
