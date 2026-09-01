@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-
+from fastapi import UploadFile, File, Form
+from app.services.file_service import save_uploaded_file
 from app.db.database import get_db
 
 from app.schemas.study_material import (
@@ -78,3 +79,28 @@ def get_subject_materials_endpoint(
         db=db,
         subject_id=subject_id,
     )
+    
+@router.post(
+    "/materials/upload",
+    response_model=StudyMaterialResponse,
+)
+def upload_material(
+    title: str = Form(...),
+    subject_id: int = Form(...),
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+):
+    file_path = save_uploaded_file(
+        file=file,
+        subject_id=subject_id,
+    )
+
+    material = create_material(
+        db=db,
+        title=title,
+        file_path=file_path,
+        subject_id=subject_id,
+    )
+
+    return material
+
