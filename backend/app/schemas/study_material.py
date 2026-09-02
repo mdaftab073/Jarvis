@@ -18,3 +18,9 @@ class StudyMaterialResponse(BaseModel):
 
     class Config:
         from_attributes = True
+    
+class StudyMaterialEmbedResponse(
+    BaseModel
+):
+    material_id: int
+    chunks_stored: int

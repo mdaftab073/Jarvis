@@ -110,6 +110,12 @@ class StudyMaterial(Base):
         default=datetime.utcnow,
     )
 
+    embedding_status = Column(
+        String,
+        nullable=False,
+        default="pending",
+    )
+
     subject_id = Column(
         Integer,
         ForeignKey("subjects.id"),
