@@ -8,6 +8,7 @@ class AskRequest(BaseModel):
 class SourceItem(BaseModel):
     material_id: int
     title: str
+    chunk_index: int
 
 
 class AskResponse(BaseModel):

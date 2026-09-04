@@ -45,6 +45,36 @@ def get_collection():
     )
 
 
+# NEW FUNCTION
+def delete_material_chunks(
+    material_id: int,
+):
+    collection = get_collection()
+
+    results = collection.get()
+
+    ids_to_delete = []
+
+    for idx, metadata in enumerate(
+        results["metadatas"]
+    ):
+        if (
+            metadata
+            and metadata.get("material_id")
+            == material_id
+        ):
+            ids_to_delete.append(
+                results["ids"][idx]
+            )
+
+    if ids_to_delete:
+        collection.delete(
+            ids=ids_to_delete
+        )
+
+    return len(ids_to_delete)
+
+
 def generate_embedding(text: str):
     model = get_embedding_model()
 

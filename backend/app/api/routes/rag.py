@@ -39,6 +39,7 @@ def ask(
                 SourceItem(
                     material_id=material_id,
                     title=metadata["title"],
+                    chunk_index=metadata["chunk_index"],
                 )
             )
 

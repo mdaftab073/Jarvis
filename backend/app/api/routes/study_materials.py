@@ -229,6 +229,12 @@ def embed_material(
             )
 
         # Step 4: Generate embeddings and store in ChromaDB
+        # Remove old embeddings first
+        vector_service.delete_material_chunks(
+            material_id
+        )
+
+        # Create fresh embeddings
         chunks_stored = vector_service.add_chunks_to_vector_db(
             material_id=material_id,
             chunks=chunks,
