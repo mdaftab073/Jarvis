@@ -7,6 +7,7 @@ from app.api.routes.subjects import router as subject_router
 from app.api.routes.study_materials import (
     router as study_material_router,
 )
+from app.api.routes import rag
 
 app = FastAPI(
     title="Jarvis",
@@ -48,3 +49,9 @@ def root():
     return {
         "message": "Jarvis API running"
     }
+
+app.include_router(
+    rag.router,
+    prefix="/api",
+    tags=["RAG"],
+)
