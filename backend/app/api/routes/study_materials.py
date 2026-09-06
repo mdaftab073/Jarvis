@@ -239,6 +239,8 @@ def embed_material(
             material_id=material_id,
             chunks=chunks,
             title=material.title,
+            subject_id=material.subject.id,
+            subject_name=material.subject.name,
         )
 
         # Step 5: Update material's embedding_status
@@ -262,3 +264,35 @@ def embed_material(
             status_code=500,
             detail=f"Failed to embed material: {str(e)}",
         )
+        
+@router.get("/debug/chroma")
+def debug_chroma():
+    from app.services.vector_service import get_collection
+
+    collection = get_collection()
+
+    results = collection.get()
+
+    return {
+        "total_chunks": len(results["ids"]),
+        "sample_metadata": (
+            results["metadatas"][:5]
+            if results["metadatas"]
+            else []
+        ),
+    }
+    
+@router.get("/debug/search")
+def debug_search(
+    query: str,
+    subject_id: int,
+):
+    from app.services.vector_service import (
+        search_similar_chunks,
+    )
+
+    return search_similar_chunks(
+        query=query,
+        subject_id=subject_id,
+        n_results=5,
+    )

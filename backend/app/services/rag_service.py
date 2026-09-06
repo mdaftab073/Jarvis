@@ -10,10 +10,12 @@ from app.services.llm_service import (
 def build_context(
     question: str,
     top_k: int = 5,
+    subject_id: int | None = None,
 ):
     results = search_similar_chunks(
         query=question,
         n_results=top_k,
+        subject_id=subject_id,
     )
 
     context = "\n\n".join(
@@ -26,9 +28,11 @@ def build_context(
 
 def ask_question(
     question: str,
+    subject_id: int | None = None,
 ):
     context, results = build_context(
-        question=question
+        question=question,
+        subject_id=subject_id,
     )
     
     print("\n========== CONTEXT ==========")

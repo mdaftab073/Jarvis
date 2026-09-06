@@ -87,6 +87,8 @@ def add_chunks_to_vector_db(
     material_id: int,
     chunks: list[str],
     title: str,
+    subject_id: int,
+    subject_name: str,
 ):
     collection = get_collection()
 
@@ -107,6 +109,8 @@ def add_chunks_to_vector_db(
         metadatas.append(
             {
                 "material_id": material_id,
+                "subject_id": subject_id,
+                "subject_name": subject_name,
                 "chunk_index": index,
                 "title": title,
             }
@@ -125,6 +129,7 @@ def add_chunks_to_vector_db(
 def search_similar_chunks(
     query: str,
     n_results: int = 5,
+    subject_id: int | None = None,
 ):
     collection = get_collection()
 
@@ -132,9 +137,18 @@ def search_similar_chunks(
         query
     )
 
+    query_params = {
+        "query_embeddings": [query_embedding],
+        "n_results": n_results,
+    }
+
+    if subject_id:
+        query_params["where"] = {
+            "subject_id": subject_id
+        }
+
     results = collection.query(
-        query_embeddings=[query_embedding],
-        n_results=n_results,
+        **query_params
     )
 
     parsed_results = []
