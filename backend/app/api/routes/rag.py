@@ -21,7 +21,8 @@ def ask(
     request: AskRequest,
 ):
     result = ask_question(
-        request.question
+        question=request.question,
+        subject_id=request.subject_id,
     )
 
     sources = []
