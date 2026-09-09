@@ -37,3 +37,30 @@ def get_subjects(
     db: Session,
 ):
     return db.query(Subject).all()
+
+
+def detect_subject_from_query(
+    db: Session,
+    query: str,
+):
+    """
+    Detect subject mentioned in the user's question.
+
+    Example:
+        Question: "Explain normalization in DBMS"
+
+        Returns:
+            Subject(id=1, name="DBMS")
+
+    If no subject is found, returns None.
+    """
+
+    query_lower = query.lower()
+
+    subjects = get_subjects(db)
+
+    for subject in subjects:
+        if subject.name.lower() in query_lower:
+            return subject
+
+    return None
