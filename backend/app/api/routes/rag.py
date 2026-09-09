@@ -1,4 +1,7 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
+
+from app.db.database import get_db
 
 from app.schemas.rag import (
     AskRequest,
@@ -8,6 +11,9 @@ from app.schemas.rag import (
 
 from app.services.rag_service import (
     ask_question,
+)
+from app.services.subject_service import (
+    detect_subject_from_query,
 )
 
 router = APIRouter()
@@ -19,10 +25,32 @@ router = APIRouter()
 )
 def ask(
     request: AskRequest,
+    db: Session = Depends(get_db),
 ):
+    detected_subject = detect_subject_from_query(
+        db=db,
+        query=request.question,
+    )
+
+    # An explicitly supplied subject takes priority over automatic detection.
+    subject_id = (
+        request.subject_id
+        if request.subject_id is not None
+        else (
+            detected_subject.id
+            if detected_subject
+            else None
+        )
+    )
+
+    print(
+        f"Detected subject: "
+        f"{detected_subject.name if detected_subject else 'None'}"
+    )
+
     result = ask_question(
         question=request.question,
-        subject_id=request.subject_id,
+        subject_id=subject_id,
     )
 
     sources = []
