@@ -7,34 +7,37 @@ from app.core.rag_config import (
     DEFAULT_TOP_K,
     ENABLE_CONTEXT_TRUNCATION,
     MAX_CONTEXT_CHARS,
-    SOURCE_DIVERSITY_SCORE_MARGIN,
+)
+from app.core.hybrid_config import (
+    FINAL_TOP_K,
+    HYBRID_SOURCE_DIVERSITY_SCORE_MARGIN,
+)
+from app.services.hybrid_retrieval_service import (
+    hybrid_search,
+    hybrid_search_with_diagnostics,
 )
 from app.services.llm_service import generate_answer
 from app.services.subject_service import (
     detect_subject_from_query,
     get_subject,
 )
-from app.services.vector_service import (
-    search_similar_chunks_with_stats,
-)
-
 logger = logging.getLogger(__name__)
 
 
 def enforce_source_diversity(
     results: list[dict],
-    limit: int = DEFAULT_TOP_K,
-    score_margin: float = SOURCE_DIVERSITY_SCORE_MARGIN,
+    limit: int = FINAL_TOP_K,
+    score_margin: float = HYBRID_SOURCE_DIVERSITY_SCORE_MARGIN,
 ):
     distinct_sources = []
     repeated_sources = []
     seen_materials = set()
-    best_similarity = results[0].get("similarity", 0) if results else 0
+    best_score = results[0].get("score", 0) if results else 0
 
     for result in results:
         material_id = result["metadata"].get("material_id")
         is_close_in_score = (
-            best_similarity - result.get("similarity", 0) <= score_margin
+            best_score - result.get("score", 0) <= score_margin
         )
         if material_id not in seen_materials and is_close_in_score:
             seen_materials.add(material_id)
@@ -155,17 +158,16 @@ def _retrieve(
     subject_id: int | None,
     top_k: int = DEFAULT_TOP_K,
 ):
-    retrieved_results, filtered_results = search_similar_chunks_with_stats(
+    hybrid_results = hybrid_search(
         query=question,
-        n_results=max(top_k * 3, top_k),
         subject_id=subject_id,
+        final_top_k=max(top_k * 3, top_k),
     )
-
     selected_results = enforce_source_diversity(
-        filtered_results,
+        hybrid_results,
         limit=top_k,
     )
-    return retrieved_results, filtered_results, selected_results
+    return hybrid_results, selected_results
 
 
 def _resolve_subject(db: Session, question: str, subject_id: int | None):
@@ -190,7 +192,7 @@ def build_context(
     top_k: int = DEFAULT_TOP_K,
     subject_id: int | None = None,
 ):
-    _, _, results = _retrieve(
+    _, results = _retrieve(
         question=question,
         subject_id=subject_id,
         top_k=top_k,
@@ -219,27 +221,26 @@ def ask_question(
         question=question,
         subject_id=subject_id,
     )
-    retrieved_results, filtered_results, results = _retrieve(
+    hybrid_results, selected_results = _retrieve(
         question=question,
         subject_id=effective_subject_id,
     )
     logger.info(
-        "RAG retrieval counts: retrieved=%d filtered=%d selected=%d",
-        len(retrieved_results),
-        len(filtered_results),
-        len(results),
+        "RAG hybrid retrieval counts: fused=%d selected=%d",
+        len(hybrid_results),
+        len(selected_results),
     )
-    context = _context_for_results(results)
+    context = _context_for_results(selected_results)
     answer = generate_answer(question=question, context=context)
     stats = build_retrieval_stats(
-        retrieved_results=retrieved_results,
-        filtered_results=filtered_results,
-        selected_results=results,
+        retrieved_results=hybrid_results,
+        filtered_results=hybrid_results,
+        selected_results=selected_results,
         subject_detected=subject_name,
     )
     return {
         "answer": answer,
-        "results": results,
+        "results": selected_results,
         "stats": stats,
         "chunks_used": len(re.findall(r"(?m)^\[Chunk \d+\]$", context)),
     }
@@ -255,20 +256,22 @@ def debug_search(
         question=question,
         subject_id=subject_id,
     )
-    retrieved_results, filtered_results, results = _retrieve(
-        question=question,
+    diagnostics = hybrid_search_with_diagnostics(
+        query=question,
         subject_id=effective_subject_id,
+        final_top_k=FINAL_TOP_K * 3,
     )
+    results = enforce_source_diversity(diagnostics["hybrid_results"])
     stats = build_retrieval_stats(
-        retrieved_results=retrieved_results,
-        filtered_results=filtered_results,
+        retrieved_results=diagnostics["vector_results"],
+        filtered_results=diagnostics["hybrid_results"],
         selected_results=results,
         subject_detected=subject_name,
     )
     logger.info(
-        "RAG debug retrieval counts: retrieved=%d filtered=%d selected=%d",
-        len(retrieved_results),
-        len(filtered_results),
+        "RAG debug retrieval counts: vector=%d keyword=%d hybrid=%d",
+        len(diagnostics["vector_results"]),
+        len(diagnostics["keyword_results"]),
         len(results),
     )
     _context_for_results(results)
@@ -277,4 +280,8 @@ def debug_search(
         "subject_id": effective_subject_id,
         "retrieved_chunks": results,
         "stats": stats,
+        "vector_results": diagnostics["vector_results"],
+        "keyword_results": diagnostics["keyword_results"],
+        "hybrid_results": results,
+        "fusion_stats": diagnostics["fusion_stats"],
     }

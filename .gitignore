@@ -3,3 +3,4 @@ venv/
 .venv/
 __pycache__/
 *.pyc
+backend/chroma_db/keyword_index.sqlite3

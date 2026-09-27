@@ -24,6 +24,10 @@ from app.services.chunking_service import (
 )
 
 from app.services import vector_service
+from app.services.keyword_search_service import (
+    delete_material_chunks as delete_keyword_chunks,
+    replace_material_chunks,
+)
 
 router = APIRouter()
 
@@ -233,9 +237,18 @@ def embed_material(
         vector_service.delete_material_chunks(
             material_id
         )
+        delete_keyword_chunks(material_id)
 
         # Create fresh embeddings
         chunks_stored = vector_service.add_chunks_to_vector_db(
+            material_id=material_id,
+            chunks=chunks,
+            title=material.title,
+            subject_id=material.subject.id,
+            subject_name=material.subject.name,
+        )
+
+        replace_material_chunks(
             material_id=material_id,
             chunks=chunks,
             title=material.title,

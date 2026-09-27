@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import FastAPI
 from app.api.routes.health import router as health_router
 from app.api.routes.db_health import router as db_health_router
@@ -8,11 +10,22 @@ from app.api.routes.study_materials import (
     router as study_material_router,
 )
 from app.api.routes import rag
+from app.services.keyword_search_service import sync_keyword_index_from_chroma
+
+logger = logging.getLogger(__name__)
 
 app = FastAPI(
     title="Jarvis",
     version="0.1.0",
 )
+
+
+@app.on_event("startup")
+def sync_keyword_index():
+    try:
+        sync_keyword_index_from_chroma()
+    except Exception:
+        logger.exception("Failed to synchronize BM25 index from Chroma")
 
 app.include_router(
     course_router,
