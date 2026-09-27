@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from fastapi import UploadFile, File, Form
 from app.services.file_service import save_uploaded_file
+from app.core.material_types import MaterialType
 from app.db.database import get_db
 from app.services.pdf_service import (
     extract_text_from_pdf,
@@ -28,6 +29,7 @@ from app.services.keyword_search_service import (
     delete_material_chunks as delete_keyword_chunks,
     replace_material_chunks,
 )
+from app.services.pyq_service import analyze_pyq_material
 
 router = APIRouter()
 
@@ -45,6 +47,7 @@ def create_material_endpoint(
         title=material.title,
         file_path=material.file_path,
         subject_id=material.subject_id,
+        material_type=material.material_type,
     )
 
 
@@ -100,6 +103,7 @@ def get_subject_materials_endpoint(
 def upload_material(
     title: str = Form(...),
     subject_id: int = Form(...),
+    material_type: MaterialType = Form(MaterialType.NOTES),
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
 ):
@@ -113,6 +117,7 @@ def upload_material(
         title=title,
         file_path=file_path,
         subject_id=subject_id,
+        material_type=material_type,
     )
 
     return material
@@ -256,6 +261,14 @@ def embed_material(
             subject_name=material.subject.name,
         )
 
+        pyq_questions = []
+        if material.material_type == MaterialType.PYQ.value:
+            pyq_questions = analyze_pyq_material(
+                db=db,
+                material=material,
+                text=text,
+            )
+
         # Step 5: Update material's embedding_status
         material.embedding_status = "embedded"
         db.commit()
@@ -264,6 +277,7 @@ def embed_material(
         return StudyMaterialEmbedResponse(
             material_id=material_id,
             chunks_stored=chunks_stored,
+            questions_extracted=len(pyq_questions),
         )
 
     except HTTPException:

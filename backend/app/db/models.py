@@ -8,6 +8,7 @@ from sqlalchemy import (
 from app.db.database import Base
 from datetime import datetime
 from sqlalchemy.orm import relationship
+from sqlalchemy import CheckConstraint, Float
 
 class Student(Base):
     __tablename__ = "students"
@@ -85,9 +86,21 @@ class Subject(Base):
         back_populates="subject",
         cascade="all, delete",
     )
+
+    exam_questions = relationship(
+        "ExamQuestion",
+        back_populates="subject",
+        cascade="all, delete-orphan",
+    )
     
 class StudyMaterial(Base):
     __tablename__ = "study_materials"
+    __table_args__ = (
+        CheckConstraint(
+            "material_type IN ('NOTES', 'PYQ', 'SYLLABUS', 'REFERENCE')",
+            name="ck_study_materials_material_type",
+        ),
+    )
 
     id = Column(
         Integer,
@@ -116,6 +129,13 @@ class StudyMaterial(Base):
         default="pending",
     )
 
+    material_type = Column(
+        String,
+        nullable=False,
+        default="NOTES",
+        server_default="NOTES",
+    )
+
     subject_id = Column(
         Integer,
         ForeignKey("subjects.id"),
@@ -125,4 +145,39 @@ class StudyMaterial(Base):
     subject = relationship(
         "Subject",
         back_populates="materials",
+    )
+
+    exam_questions = relationship(
+        "ExamQuestion",
+        back_populates="study_material",
+        cascade="all, delete-orphan",
+    )
+
+
+class ExamQuestion(Base):
+    __tablename__ = "exam_questions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    subject_id = Column(
+        Integer,
+        ForeignKey("subjects.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    study_material_id = Column(
+        Integer,
+        ForeignKey("study_materials.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    question_text = Column(String, nullable=False)
+    year = Column(Integer, nullable=True, index=True)
+    unit = Column(String, nullable=True)
+    topic = Column(String, nullable=True, index=True)
+    marks = Column(Float, nullable=True)
+
+    subject = relationship("Subject", back_populates="exam_questions")
+    study_material = relationship(
+        "StudyMaterial",
+        back_populates="exam_questions",
     )

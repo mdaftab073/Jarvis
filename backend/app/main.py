@@ -10,6 +10,7 @@ from app.api.routes.study_materials import (
     router as study_material_router,
 )
 from app.api.routes import rag
+from app.api.routes import pyq
 from app.services.keyword_search_service import sync_keyword_index_from_chroma
 
 logger = logging.getLogger(__name__)
@@ -67,4 +68,10 @@ app.include_router(
     rag.router,
     prefix="/api",
     tags=["RAG"],
+)
+
+app.include_router(
+    pyq.router,
+    prefix="/api",
+    tags=["PYQ Intelligence"],
 )

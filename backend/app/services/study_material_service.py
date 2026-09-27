@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 
+from app.core.material_types import MaterialType
 from app.db.models import StudyMaterial
 
 
@@ -8,11 +9,13 @@ def create_material(
     title: str,
     file_path: str,
     subject_id: int,
+    material_type: MaterialType = MaterialType.NOTES,
 ):
     material = StudyMaterial(
         title=title,
         file_path=file_path,
         subject_id=subject_id,
+        material_type=material_type.value,
     )
 
     db.add(material)
