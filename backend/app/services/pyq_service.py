@@ -430,7 +430,9 @@ def generate_practice_questions(
     prompt = (
         "Create new exam practice questions using only the supplied study context. "
         "Do not copy past questions verbatim. Return only a JSON array with "
-        "question, difficulty (Easy, Medium, or Hard), topic, and marks. "
+        "question, expected_answer, difficulty (Easy, Medium, or Hard), topic, "
+        "and marks. The expected_answer is an answer key for grading and must "
+        "not be included verbatim in the question. "
         f"Generate exactly {count} questions for {subject.name}, with a mix "
         "of difficulty levels.\nContext:\n"
         f"{context[:12000]}"
@@ -458,6 +460,7 @@ def generate_practice_questions(
                 "difficulty": difficulty,
                 "topic": str(item.get("topic") or "General review"),
                 "marks": _valid_marks(item.get("marks")),
+                "expected_answer": str(item.get("expected_answer") or "").strip(),
             }
         )
         if len(valid_questions) == count:

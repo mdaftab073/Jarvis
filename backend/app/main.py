@@ -11,6 +11,8 @@ from app.api.routes.study_materials import (
 )
 from app.api.routes import rag
 from app.api.routes import pyq
+from app.api.routes import study_plans
+from app.api.routes import analytics
 from app.services.keyword_search_service import sync_keyword_index_from_chroma
 
 logger = logging.getLogger(__name__)
@@ -74,4 +76,16 @@ app.include_router(
     pyq.router,
     prefix="/api",
     tags=["PYQ Intelligence"],
+)
+
+app.include_router(
+    study_plans.router,
+    prefix="/api",
+    tags=["Study Plans"],
+)
+
+app.include_router(
+    analytics.router,
+    prefix="/api",
+    tags=["Learning Analytics"],
 )

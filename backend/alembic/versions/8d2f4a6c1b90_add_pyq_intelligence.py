@@ -27,11 +27,11 @@ def upgrade() -> None:
             server_default="NOTES",
         ),
     )
-    op.create_check_constraint(
-        "ck_study_materials_material_type",
-        "study_materials",
-        "material_type IN ('NOTES', 'PYQ', 'SYLLABUS', 'REFERENCE')",
-    )
+    with op.batch_alter_table("study_materials") as batch_op:
+        batch_op.create_check_constraint(
+            "ck_study_materials_material_type",
+            "material_type IN ('NOTES', 'PYQ', 'SYLLABUS', 'REFERENCE')",
+        )
     op.create_table(
         "exam_questions",
         sa.Column("id", sa.Integer(), nullable=False),
@@ -91,9 +91,9 @@ def downgrade() -> None:
     op.drop_index("ix_exam_questions_subject_id", table_name="exam_questions")
     op.drop_index("ix_exam_questions_id", table_name="exam_questions")
     op.drop_table("exam_questions")
-    op.drop_constraint(
-        "ck_study_materials_material_type",
-        "study_materials",
-        type_="check",
-    )
-    op.drop_column("study_materials", "material_type")
+    with op.batch_alter_table("study_materials") as batch_op:
+        batch_op.drop_constraint(
+            "ck_study_materials_material_type",
+            type_="check",
+        )
+        batch_op.drop_column("material_type")
