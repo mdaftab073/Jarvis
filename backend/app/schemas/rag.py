@@ -13,6 +13,12 @@ class SourceItem(BaseModel):
     chunk_index: int
 
 
+class RetrievalDebug(BaseModel):
+    chunks_used: int
+    subject_detected: str | None = None
+
+
 class AskResponse(BaseModel):
     answer: str
     sources: list[SourceItem]
+    debug: RetrievalDebug | None = None

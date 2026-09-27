@@ -4,6 +4,12 @@ from typing import Optional
 import chromadb
 from sentence_transformers import SentenceTransformer
 
+from app.core.rag_config import (
+    DEFAULT_TOP_K,
+    ENABLE_SCORE_FILTERING,
+    SIMILARITY_THRESHOLD,
+)
+
 
 _embedding_model: Optional[SentenceTransformer] = None
 _chroma_client = None
@@ -126,9 +132,23 @@ def add_chunks_to_vector_db(
     return len(ids)
 
 
-def search_similar_chunks(
+def filter_results_by_score(
+    results: list[dict],
+    threshold: float = SIMILARITY_THRESHOLD,
+):
+    return [
+        {
+            **result,
+            "similarity": 1 - result["distance"],
+        }
+        for result in results
+        if 1 - result["distance"] >= threshold
+    ]
+
+
+def _query_similar_chunks(
     query: str,
-    n_results: int = 5,
+    n_results: int,
     subject_id: int | None = None,
 ):
     collection = get_collection()
@@ -142,7 +162,7 @@ def search_similar_chunks(
         "n_results": n_results,
     }
 
-    if subject_id:
+    if subject_id is not None:
         query_params["where"] = {
             "subject_id": subject_id
         }
@@ -163,7 +183,43 @@ def search_similar_chunks(
                     "document": results["documents"][0][i],
                     "metadata": results["metadatas"][0][i],
                     "distance": results["distances"][0][i],
+                    "similarity": 1 - results["distances"][0][i],
                 }
             )
 
     return parsed_results
+
+
+def search_similar_chunks(
+    query: str,
+    n_results: int = DEFAULT_TOP_K,
+    subject_id: int | None = None,
+):
+    retrieved_results = _query_similar_chunks(
+        query=query,
+        n_results=n_results,
+        subject_id=subject_id,
+    )
+
+    if not ENABLE_SCORE_FILTERING:
+        return retrieved_results
+
+    return filter_results_by_score(retrieved_results)
+
+
+def search_similar_chunks_with_stats(
+    query: str,
+    n_results: int = DEFAULT_TOP_K,
+    subject_id: int | None = None,
+):
+    retrieved_results = _query_similar_chunks(
+        query=query,
+        n_results=n_results,
+        subject_id=subject_id,
+    )
+    filtered_results = (
+        filter_results_by_score(retrieved_results)
+        if ENABLE_SCORE_FILTERING
+        else retrieved_results
+    )
+    return retrieved_results, filtered_results

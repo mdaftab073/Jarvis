@@ -6,14 +6,13 @@ from app.db.database import get_db
 from app.schemas.rag import (
     AskRequest,
     AskResponse,
+    RetrievalDebug,
     SourceItem,
 )
 
 from app.services.rag_service import (
     ask_question,
-)
-from app.services.subject_service import (
-    detect_subject_from_query,
+    debug_search,
 )
 
 router = APIRouter()
@@ -27,30 +26,10 @@ def ask(
     request: AskRequest,
     db: Session = Depends(get_db),
 ):
-    detected_subject = detect_subject_from_query(
-        db=db,
-        query=request.question,
-    )
-
-    # An explicitly supplied subject takes priority over automatic detection.
-    subject_id = (
-        request.subject_id
-        if request.subject_id is not None
-        else (
-            detected_subject.id
-            if detected_subject
-            else None
-        )
-    )
-
-    print(
-        f"Detected subject: "
-        f"{detected_subject.name if detected_subject else 'None'}"
-    )
-
     result = ask_question(
         question=request.question,
-        subject_id=subject_id,
+        db=db,
+        subject_id=request.subject_id,
     )
 
     sources = []
@@ -75,4 +54,21 @@ def ask(
     return AskResponse(
         answer=result["answer"],
         sources=sources,
+        debug=RetrievalDebug(
+            chunks_used=result["chunks_used"],
+            subject_detected=result["stats"]["subject_detected"],
+        ),
+    )
+
+
+@router.get("/rag/debug-search")
+def rag_debug_search(
+    query: str,
+    subject_id: int | None = None,
+    db: Session = Depends(get_db),
+):
+    return debug_search(
+        question=query,
+        db=db,
+        subject_id=subject_id,
     )

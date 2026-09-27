@@ -1,6 +1,10 @@
+import logging
+
 from groq import Groq
 
 from app.core.config import settings
+
+logger = logging.getLogger(__name__)
 
 
 client = Groq(
@@ -38,7 +42,9 @@ Question:
         ],
         temperature=0,
     )
-    print(f"Question: {question}")
-    print(f"Context length: {len(context)}")
+    logger.info(
+        "Generated answer for question; context size=%d characters",
+        len(context),
+    )
     
     return response.choices[0].message.content
