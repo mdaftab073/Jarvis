@@ -61,6 +61,11 @@ class Student(Base):
         back_populates="student",
         cascade="all, delete-orphan",
     )
+    semesters = relationship(
+        "Semester",
+        back_populates="student",
+        cascade="all, delete-orphan",
+    )
 
 class Course(Base):
     __tablename__ = "courses"
@@ -148,6 +153,11 @@ class Subject(Base):
     )
     readiness_snapshots = relationship(
         "ReadinessSnapshot",
+        back_populates="subject",
+        cascade="all, delete-orphan",
+    )
+    semester_links = relationship(
+        "SemesterSubject",
         back_populates="subject",
         cascade="all, delete-orphan",
     )
@@ -527,3 +537,116 @@ class ReadinessSnapshot(Base):
 
     student = relationship("Student", back_populates="readiness_snapshots")
     subject = relationship("Subject", back_populates="readiness_snapshots")
+
+
+class Semester(Base):
+    __tablename__ = "semesters"
+    __table_args__ = (
+        UniqueConstraint(
+            "student_id",
+            "semester_number",
+            name="uq_semesters_student_number",
+        ),
+        CheckConstraint("semester_number > 0", name="ck_semesters_number_positive"),
+        CheckConstraint("end_date >= start_date", name="ck_semesters_date_range"),
+        CheckConstraint(
+            "target_cgpa IS NULL OR target_cgpa > 0",
+            name="ck_semesters_target_cgpa_positive",
+        ),
+        CheckConstraint(
+            "status IN ('ACTIVE', 'COMPLETED', 'ARCHIVED')",
+            name="ck_semesters_status",
+        ),
+    )
+
+    id = Column(Integer, primary_key=True, index=True)
+    student_id = Column(
+        Integer,
+        ForeignKey("students.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    semester_number = Column(Integer, nullable=False)
+    start_date = Column(Date, nullable=False)
+    end_date = Column(Date, nullable=False)
+    target_cgpa = Column(Float, nullable=True)
+    status = Column(String, nullable=False, default="ACTIVE", server_default="ACTIVE")
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+    student = relationship("Student", back_populates="semesters")
+    subjects = relationship(
+        "SemesterSubject",
+        back_populates="semester",
+        cascade="all, delete-orphan",
+        order_by="SemesterSubject.id",
+    )
+    milestones = relationship(
+        "SemesterMilestone",
+        back_populates="semester",
+        cascade="all, delete-orphan",
+        order_by="SemesterMilestone.due_date, SemesterMilestone.id",
+    )
+
+
+class SemesterSubject(Base):
+    __tablename__ = "semester_subjects"
+    __table_args__ = (
+        UniqueConstraint(
+            "semester_id",
+            "subject_id",
+            name="uq_semester_subjects_semester_subject",
+        ),
+        CheckConstraint(
+            "target_score IS NULL OR (target_score >= 0 AND target_score <= 100)",
+            name="ck_semester_subjects_target_score",
+        ),
+        CheckConstraint(
+            "current_readiness >= 0 AND current_readiness <= 100",
+            name="ck_semester_subjects_current_readiness",
+        ),
+    )
+
+    id = Column(Integer, primary_key=True, index=True)
+    semester_id = Column(
+        Integer,
+        ForeignKey("semesters.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    subject_id = Column(
+        Integer,
+        ForeignKey("subjects.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    target_score = Column(Float, nullable=True)
+    current_readiness = Column(Integer, nullable=False, default=0, server_default="0")
+
+    semester = relationship("Semester", back_populates="subjects")
+    subject = relationship("Subject", back_populates="semester_links")
+
+
+class SemesterMilestone(Base):
+    __tablename__ = "semester_milestones"
+    __table_args__ = (
+        CheckConstraint(
+            "completed IN (true, false)",
+            name="ck_semester_milestones_completed",
+        ),
+    )
+
+    id = Column(Integer, primary_key=True, index=True)
+    semester_id = Column(
+        Integer,
+        ForeignKey("semesters.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    title = Column(String, nullable=False)
+    description = Column(Text, nullable=True)
+    due_date = Column(Date, nullable=False, index=True)
+    completed = Column(Boolean, nullable=False, default=False, server_default="0")
+    completed_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+    semester = relationship("Semester", back_populates="milestones")

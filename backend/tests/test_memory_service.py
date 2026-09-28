@@ -103,6 +103,18 @@ class StudentMemoryTests(unittest.TestCase):
         self.assertIn("Strong in Normalization", summary["summary"])
         self.assertIn("Needs improvement in Transactions", summary["summary"])
 
+    def test_repeated_same_day_readiness_does_not_duplicate_history(self):
+        for _ in range(2):
+            memory_service.record_readiness_snapshot(
+                self.student.id,
+                self.subject.id,
+                70,
+                db=self.db,
+            )
+
+        trend = memory_service.get_readiness_trend(self.student.id, db=self.db)
+        self.assertEqual(trend["history"], [70])
+
     def test_performance_reads_automatically_capture_topics_and_readiness(self):
         self.db.add_all(
             [

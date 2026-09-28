@@ -169,6 +169,35 @@ class AcademicAgentTests(unittest.TestCase):
         self.assertEqual(captured_context["readiness_trend"]["history"], [68])
         self.assertTrue(captured_context["student_memories"])
 
+    def test_agent_includes_active_semester_guidance(self):
+        captured_context = {}
+
+        def capture_response(goal, context):
+            captured_context.update(context)
+            return {
+                "summary": "Semester-aware strategy",
+                "priority_actions": [],
+                "recommended_topics": [],
+                "next_steps": [],
+            }
+
+        with (
+            patch.object(agent, "execute_action", return_value=[]),
+            patch.object(
+                agent,
+                "get_active_semester_guidance",
+                return_value=[{"semester_health": 72, "risks": []}],
+            ),
+            patch.object(agent, "generate_agent_response", side_effect=capture_response),
+        ):
+            agent.run_academic_agent(
+                self.student.id,
+                "How ready am I for DBMS?",
+                db=self.db,
+            )
+
+        self.assertEqual(captured_context["semester_guidance"][0]["semester_health"], 72)
+
 
 if __name__ == "__main__":
     unittest.main()

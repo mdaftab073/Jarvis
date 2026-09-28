@@ -15,6 +15,7 @@ from app.api.routes import study_plans
 from app.api.routes import analytics
 from app.api.routes import academic_agent
 from app.api.routes import profile
+from app.api.routes import semester
 from app.services.keyword_search_service import sync_keyword_index_from_chroma
 
 logger = logging.getLogger(__name__)
@@ -102,4 +103,10 @@ app.include_router(
     profile.router,
     prefix="/api",
     tags=["Student Profile"],
+)
+
+app.include_router(
+    semester.router,
+    prefix="/api",
+    tags=["Semester Copilot"],
 )

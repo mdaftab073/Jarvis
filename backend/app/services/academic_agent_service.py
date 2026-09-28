@@ -28,6 +28,7 @@ from app.services.memory_service import (
     store_memory,
     update_student_profile,
 )
+from app.services.copilot_service import get_active_semester_guidance
 
 logger = logging.getLogger(__name__)
 
@@ -391,6 +392,7 @@ def run_academic_agent(
         context["student_profile"] = student_profile
         context["student_memories"] = student_memories
         context["readiness_trend"] = readiness_trend
+        context["semester_guidance"] = get_active_semester_guidance(db, student_id)
         result = generate_agent_response(goal, context)
         for recommendation in result["priority_actions"]:
             store_memory(

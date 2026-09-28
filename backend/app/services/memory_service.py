@@ -238,6 +238,34 @@ def record_readiness_snapshot(
         _require_student(session, student_id)
         if session.query(Subject.id).filter(Subject.id == subject_id).first() is None:
             raise ValueError("Subject not found")
+        latest = (
+            session.query(ReadinessSnapshot)
+            .filter(
+                ReadinessSnapshot.student_id == student_id,
+                ReadinessSnapshot.subject_id == subject_id,
+            )
+            .order_by(ReadinessSnapshot.captured_at.desc(), ReadinessSnapshot.id.desc())
+            .first()
+        )
+        if (
+            latest is not None
+            and latest.readiness_score == readiness_score
+            and latest.captured_at.date() == datetime.utcnow().date()
+        ):
+            store_memory(
+                student_id,
+                "READINESS",
+                f"subject:{subject_id}",
+                {"subject_id": subject_id, "score": readiness_score},
+                db=session,
+            )
+            return {
+                "id": latest.id,
+                "student_id": latest.student_id,
+                "subject_id": latest.subject_id,
+                "readiness_score": latest.readiness_score,
+                "captured_at": latest.captured_at,
+            }
         snapshot = ReadinessSnapshot(
             student_id=student_id,
             subject_id=subject_id,
