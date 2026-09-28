@@ -90,3 +90,7 @@ class AnalyticsDashboard(BaseModel):
     recommendations: list[str]
     subjects: list[dict]
     practice_score_trend: list[dict]
+
+
+class AnalyticsResponse(AnalyticsDashboard):
+    pass

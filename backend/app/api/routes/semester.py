@@ -6,6 +6,7 @@ from app.schemas.semester import (
     SemesterCreateRequest,
     SemesterMilestoneCreateRequest,
     SemesterMilestoneUpdateRequest,
+    SemesterResponse,
     SemesterStatusUpdateRequest,
 )
 from app.services.copilot_service import generate_copilot_guidance
@@ -30,7 +31,7 @@ def _raise_semester_error(error: ValueError):
     raise HTTPException(status_code=status_code, detail=str(error)) from error
 
 
-@router.post("/semester", status_code=201)
+@router.post("/semester", status_code=201, response_model=SemesterResponse)
 def post_semester(
     request: SemesterCreateRequest,
     db: Session = Depends(get_db),
@@ -49,7 +50,7 @@ def post_semester(
         _raise_semester_error(error)
 
 
-@router.get("/semester/{semester_id}")
+@router.get("/semester/{semester_id}", response_model=SemesterResponse)
 def semester_detail(semester_id: int, db: Session = Depends(get_db)):
     try:
         return {
@@ -132,7 +133,7 @@ def semester_copilot(semester_id: int, db: Session = Depends(get_db)):
         _raise_semester_error(error)
 
 
-@router.patch("/semester/{semester_id}/status")
+@router.patch("/semester/{semester_id}/status", response_model=SemesterResponse)
 def patch_semester_status(
     semester_id: int,
     request: SemesterStatusUpdateRequest,

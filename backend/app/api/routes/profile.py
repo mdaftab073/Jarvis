@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
+from app.schemas.profile import ProfileResponse, ProfileSummaryResponse
 from app.services.memory_service import (
     build_student_profile,
     generate_profile_summary,
@@ -17,7 +18,7 @@ def _handle_profile_error(error: ValueError):
     raise HTTPException(status_code=status_code, detail=str(error)) from error
 
 
-@router.get("/profile/{student_id}")
+@router.get("/profile/{student_id}", response_model=ProfileResponse)
 def student_profile(student_id: int, db: Session = Depends(get_db)):
     try:
         return build_student_profile(student_id, db=db)
@@ -25,7 +26,7 @@ def student_profile(student_id: int, db: Session = Depends(get_db)):
         _handle_profile_error(error)
 
 
-@router.get("/profile/{student_id}/summary")
+@router.get("/profile/{student_id}/summary", response_model=ProfileSummaryResponse)
 def student_profile_summary(student_id: int, db: Session = Depends(get_db)):
     try:
         return generate_profile_summary(student_id, db=db)

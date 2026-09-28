@@ -1,0 +1,1 @@
+"""Endpoint load tests with external services mocked."""

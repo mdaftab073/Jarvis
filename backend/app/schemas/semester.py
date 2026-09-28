@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 
 from pydantic import BaseModel, Field, model_validator
 
@@ -36,3 +36,36 @@ class SemesterMilestoneUpdateRequest(BaseModel):
 
 class SemesterStatusUpdateRequest(BaseModel):
     status: str
+
+
+class SemesterSubjectResponse(BaseModel):
+    id: int
+    subject_id: int
+    subject_name: str
+    target_score: float | None
+    current_readiness: int
+
+
+class SemesterMilestoneResponse(BaseModel):
+    id: int
+    semester_id: int
+    title: str
+    description: str | None
+    due_date: date
+    completed: bool
+    completed_at: datetime | None
+    created_at: datetime
+
+
+class SemesterResponse(BaseModel):
+    id: int
+    student_id: int
+    semester_number: int
+    start_date: date
+    end_date: date
+    target_cgpa: float | None
+    status: str
+    created_at: datetime
+    subjects: list[SemesterSubjectResponse]
+    milestones: list[SemesterMilestoneResponse]
+    progress: dict | None = None

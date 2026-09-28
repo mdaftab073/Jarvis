@@ -1,0 +1,1 @@
+"""End-to-end academic workflow tests with external services mocked."""
