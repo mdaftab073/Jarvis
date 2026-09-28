@@ -37,7 +37,23 @@ class SystemHealthTests(unittest.TestCase):
     def test_preproduction_validation_passes_when_all_checks_are_satisfied(self):
         class Inspector:
             def get_table_names(self):
-                return list(system_health_service.Base.metadata.tables)
+                return list(system_health_service.models.Base.metadata.tables)
+
+            def get_indexes(self, table_name):
+                return [
+                    {"name": index.name}
+                    for index in system_health_service.models.Base.metadata.tables[table_name].indexes
+                ]
+
+            def get_foreign_keys(self, table_name):
+                return [
+                    {
+                        "constrained_columns": [foreign_key.parent.name],
+                        "referred_table": foreign_key.column.table.name,
+                        "referred_columns": [foreign_key.column.name],
+                    }
+                    for foreign_key in system_health_service.models.Base.metadata.tables[table_name].foreign_keys
+                ]
 
         with (
             patch.object(system_health_service.engine, "connect") as connect,
@@ -49,18 +65,41 @@ class SystemHealthTests(unittest.TestCase):
                     list_collections=lambda: [SimpleNamespace(name="study_materials")]
                 ),
             ),
+            patch.object(
+                system_health_service,
+                "get_collection",
+                return_value=SimpleNamespace(count=lambda: 12),
+            ),
             patch.object(system_health_service, "_migration_state", return_value="up_to_date"),
+            patch.object(
+                system_health_service,
+                "_migration_details",
+                return_value={
+                    "current_revisions": ["head"],
+                    "latest_heads": ["head"],
+                    "status": "up_to_date",
+                },
+            ),
         ):
-            connect.return_value.__enter__.return_value.execute.return_value = None
+            connect.return_value.__enter__.return_value.execute.return_value.scalar_one.return_value = 0
             result = system_health_service.validate_system()
 
         self.assertTrue(result["success"])
         self.assertTrue(result["agent_registry"])
         self.assertTrue(result["api_routes"])
+        self.assertTrue(result["index_integrity"])
+        self.assertTrue(result["foreign_key_integrity"])
+        self.assertEqual(result["chroma_items"], 12)
 
     def test_preproduction_validation_fails_for_missing_schema(self):
         class Inspector:
             def get_table_names(self):
+                return []
+
+            def get_indexes(self, _table_name):
+                return []
+
+            def get_foreign_keys(self, _table_name):
                 return []
 
         with (
@@ -74,13 +113,24 @@ class SystemHealthTests(unittest.TestCase):
                 ),
             ),
             patch.object(system_health_service, "_migration_state", return_value="pending"),
+            patch.object(
+                system_health_service,
+                "_migration_details",
+                return_value={
+                    "current_revisions": ["old"],
+                    "latest_heads": ["head"],
+                    "status": "pending",
+                },
+            ),
         ):
-            connect.return_value.__enter__.return_value.execute.return_value = None
+            connect.return_value.__enter__.return_value.execute.return_value.scalar_one.return_value = 0
             result = system_health_service.validate_system()
 
         self.assertFalse(result["success"])
         self.assertFalse(result["required_tables"])
         self.assertFalse(result["alembic_head"])
+        self.assertFalse(result["index_integrity"])
+        self.assertFalse(result["foreign_key_integrity"])
 
 
 if __name__ == "__main__":

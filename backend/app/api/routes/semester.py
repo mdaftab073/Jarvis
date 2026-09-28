@@ -15,7 +15,6 @@ from app.services.semester_service import (
     calculate_semester_health,
     calculate_semester_progress,
     create_semester,
-    create_semester_goal,
     detect_academic_risks,
     generate_weekly_review,
     get_semester,

@@ -5,9 +5,38 @@ from unittest.mock import patch
 
 from app.services import hybrid_retrieval_service
 from app.services import keyword_search_service
+from app.services import vector_service
 
 
 class HybridRetrievalTests(unittest.TestCase):
+    def test_chroma_client_uses_configured_http_service(self):
+        original_client = vector_service._chroma_client
+        original_host = vector_service.CHROMA_HOST
+        original_port = vector_service.CHROMA_PORT
+        original_ssl = vector_service.CHROMA_SSL
+        expected_client = object()
+        try:
+            vector_service._chroma_client = None
+            vector_service.CHROMA_HOST = "chroma-service"
+            vector_service.CHROMA_PORT = 8123
+            vector_service.CHROMA_SSL = True
+            with patch.object(
+                vector_service.chromadb,
+                "HttpClient",
+                return_value=expected_client,
+            ) as http_client:
+                self.assertIs(vector_service.get_chroma_client(), expected_client)
+            http_client.assert_called_once_with(
+                host="chroma-service",
+                port=8123,
+                ssl=True,
+            )
+        finally:
+            vector_service._chroma_client = original_client
+            vector_service.CHROMA_HOST = original_host
+            vector_service.CHROMA_PORT = original_port
+            vector_service.CHROMA_SSL = original_ssl
+
     def setUp(self):
         self.temp_dir = tempfile.TemporaryDirectory()
         self.index_path_patcher = patch.object(

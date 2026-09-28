@@ -1,0 +1,75 @@
+name: Jarvis CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: jarvis
+          POSTGRES_USER: jarvis
+          POSTGRES_PASSWORD: jarvis_ci_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U jarvis -d jarvis"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 20
+      chroma:
+        image: chromadb/chroma:1.5.9
+        ports:
+          - 8000:8000
+        env:
+          IS_PERSISTENT: "TRUE"
+          PERSIST_DIRECTORY: /chroma/chroma
+          ANONYMIZED_TELEMETRY: "FALSE"
+        options: >-
+          --health-cmd "bash -c 'exec 3<>/dev/tcp/127.0.0.1/8000'"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 30
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      DATABASE_URL: postgresql+psycopg2://jarvis:jarvis_ci_password@localhost:5432/jarvis
+      GROQ_API_KEY: ci-test-key-not-used-by-mocked-tests
+      CHROMA_HOST: localhost
+      CHROMA_PORT: "8000"
+      CHROMA_SSL: "false"
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements-dev.txt
+      - name: Install dependencies
+        run: python -m pip install -r requirements-dev.txt
+      - name: Lint
+        run: ruff check app scripts tests
+      - name: Apply migrations
+        run: alembic upgrade head
+      - name: Initialize Chroma collection
+        run: python -c "from app.services.vector_service import get_collection; get_collection()"
+      - name: Run tests and measure agent coverage
+        run: |
+          coverage run --source=app/agents -m unittest discover -s tests
+          coverage report --fail-under=90
+      - name: Validate deployment dependencies
+        run: python scripts/validate_system.py
+      - name: Run offline suite in the container test stage
+        working-directory: .
+        run: docker build --target test -t jarvis-tests:${{ github.sha }} -f backend/Dockerfile backend
+      - name: Build API runtime image
+        working-directory: .
+        run: docker build --target runtime -t jarvis-api:${{ github.sha }} -f backend/Dockerfile backend

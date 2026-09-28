@@ -1,0 +1,11 @@
+.env
+.venv
+__pycache__
+*.py[cod]
+*.sqlite3
+.coverage
+chroma_db
+uploads
+scripts
+test_groq.py
+test_models.py

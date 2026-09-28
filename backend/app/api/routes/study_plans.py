@@ -9,7 +9,6 @@ from app.schemas.study_plan import (
     StudyPlanResponse,
 )
 from app.services.study_plan_service import (
-    calculate_plan_progress,
     complete_study_task,
     generate_study_plan,
     get_study_plan,

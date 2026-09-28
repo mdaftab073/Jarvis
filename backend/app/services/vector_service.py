@@ -1,4 +1,4 @@
-from pathlib import Path
+import os
 from typing import Optional
 
 import chromadb
@@ -16,6 +16,9 @@ _chroma_client = None
 
 CHROMA_DB_PATH = "chroma_db"
 COLLECTION_NAME = "study_materials"
+CHROMA_HOST = os.getenv("CHROMA_HOST")
+CHROMA_PORT = int(os.getenv("CHROMA_PORT", "8000"))
+CHROMA_SSL = os.getenv("CHROMA_SSL", "false").casefold() == "true"
 
 
 def get_embedding_model():
@@ -33,9 +36,14 @@ def get_chroma_client():
     global _chroma_client
 
     if _chroma_client is None:
-        _chroma_client = chromadb.PersistentClient(
-            path=CHROMA_DB_PATH
-        )
+        if CHROMA_HOST:
+            _chroma_client = chromadb.HttpClient(
+                host=CHROMA_HOST,
+                port=CHROMA_PORT,
+                ssl=CHROMA_SSL,
+            )
+        else:
+            _chroma_client = chromadb.PersistentClient(path=CHROMA_DB_PATH)
 
     return _chroma_client
 

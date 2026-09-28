@@ -10,7 +10,6 @@ from app.schemas.analytics import (
     PracticeSubmitRequest,
     PracticeSubmitResponse,
     ReadinessResponse,
-    TopicMastery,
 )
 from app.services.analytics_service import get_student_dashboard
 from app.services.performance_service import (

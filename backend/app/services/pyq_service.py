@@ -2,7 +2,7 @@ import json
 import logging
 import re
 import time
-from collections import Counter, defaultdict
+from collections import defaultdict
 
 from sqlalchemy import func
 from sqlalchemy.orm import Session

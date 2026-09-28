@@ -8,10 +8,9 @@ BACKEND_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(BACKEND_ROOT))
 os.chdir(BACKEND_ROOT)
 
-from app.services.system_health_service import validate_system
-
-
 def main() -> int:
+    from app.services.system_health_service import validate_system
+
     checks = validate_system()
     print(json.dumps(checks, indent=2, sort_keys=True))
     return 0 if checks["success"] else 1

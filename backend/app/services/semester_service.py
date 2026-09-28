@@ -9,7 +9,6 @@ from app.db.models import (
     SemesterMilestone,
     SemesterSubject,
     StudyPlan,
-    StudyTask,
     Subject,
     Student,
 )

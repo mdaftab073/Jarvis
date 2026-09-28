@@ -242,7 +242,7 @@ def generate_study_plan(
     if not 1 <= subject_difficulty <= 5:
         raise ValueError("subject_difficulty must be between 1 and 5")
 
-    subject = _get_subject_for_student(db, student_id, subject_id)
+    _get_subject_for_student(db, student_id, subject_id)
     plan = StudyPlan(
         student_id=student_id,
         subject_id=subject_id,

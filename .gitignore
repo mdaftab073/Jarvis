@@ -1,6 +1,10 @@
 .env
 venv/
 .venv/
+*.py[cod]
+.coverage
+.ruff_cache/
+.pytest_cache/
 __pycache__/
 *.pyc
 backend/chroma_db/keyword_index.sqlite3
