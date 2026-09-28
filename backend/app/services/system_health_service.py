@@ -1,4 +1,5 @@
 import logging
+import time
 from pathlib import Path
 
 from alembic.config import Config
@@ -34,12 +35,18 @@ def _migration_state() -> str:
     return _migration_details()["status"]
 
 
+SYSTEM_START_TIME = time.time()
+
+
 def get_system_health() -> dict:
     statuses = {
         "database": "unhealthy",
         "chroma": "unhealthy",
         "groq": "configured" if settings.GROQ_API_KEY.strip() else "missing",
         "migrations": "unknown",
+        "agents": "healthy",
+        "version": settings.VERSION,
+        "uptime_seconds": round(time.time() - SYSTEM_START_TIME, 2),
     }
     try:
         with engine.connect() as connection:
@@ -56,15 +63,46 @@ def get_system_health() -> dict:
         statuses["migrations"] = _migration_state()
     except Exception:
         logger.exception("System health migration check failed")
+    try:
+        from app.agents.agent_registry import create_default_registry
+        reg = create_default_registry()
+        expected = {"analytics", "study", "pyq", "retrieval", "memory", "semester"}
+        statuses["agents"] = "healthy" if expected.issubset(set(reg.names())) else "unhealthy"
+    except Exception:
+        logger.exception("System health agent check failed")
+        statuses["agents"] = "unhealthy"
+
     statuses["overall"] = (
         "healthy"
         if statuses["database"] == "healthy"
         and statuses["chroma"] == "healthy"
         and statuses["groq"] == "configured"
         and statuses["migrations"] == "up_to_date"
+        and statuses["agents"] == "healthy"
         else "degraded"
     )
     return statuses
+
+
+def get_system_readiness() -> dict:
+    health = get_system_health()
+    is_ready = (
+        health["database"] == "healthy"
+        and health["chroma"] == "healthy"
+        and health["migrations"] == "up_to_date"
+        and health.get("agents") == "healthy"
+    )
+    return {
+        "status": "ready" if is_ready else "not_ready",
+        "ready": is_ready,
+        "version": health["version"],
+        "uptime_seconds": health["uptime_seconds"],
+        "database_connected": health["database"] == "healthy",
+        "chroma_connected": health["chroma"] == "healthy",
+        "migrations_up_to_date": health["migrations"] == "up_to_date",
+        "agents_registered": health["agents"] == "healthy",
+    }
+
 
 
 def validate_system() -> dict:

@@ -2,6 +2,7 @@ import logging
 
 from fastapi import FastAPI
 from app.api.routes.health import router as health_router
+from app.api.routes.metrics import router as metrics_router
 from app.api.routes.db_health import router as db_health_router
 from app.api.routes.students import router as student_router
 from app.api.routes.courses import router as course_router
@@ -122,4 +123,11 @@ app.include_router(
 app.include_router(
     system.router,
     tags=["System Health"],
+)
+
+# Metrics endpoint
+app.include_router(
+    metrics_router,
+    prefix="/api",
+    tags=["Metrics"],
 )
