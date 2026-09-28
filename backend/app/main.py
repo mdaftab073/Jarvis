@@ -14,6 +14,7 @@ from app.api.routes import pyq
 from app.api.routes import study_plans
 from app.api.routes import analytics
 from app.api.routes import academic_agent
+from app.api.routes import profile
 from app.services.keyword_search_service import sync_keyword_index_from_chroma
 
 logger = logging.getLogger(__name__)
@@ -95,4 +96,10 @@ app.include_router(
     academic_agent.router,
     prefix="/api",
     tags=["Academic Agent"],
+)
+
+app.include_router(
+    profile.router,
+    prefix="/api",
+    tags=["Student Profile"],
 )

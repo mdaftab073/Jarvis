@@ -21,6 +21,13 @@ from app.services.pyq_service import (
     generate_practice_questions,
 )
 from app.services.study_plan_service import generate_study_plan, get_study_plan
+from app.services.memory_service import (
+    build_student_profile,
+    get_memories,
+    get_readiness_trend,
+    store_memory,
+    update_student_profile,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -336,10 +343,30 @@ def run_academic_agent(
         db = SessionLocal()
     started_at = time.perf_counter()
     try:
+        student_profile = build_student_profile(student_id, db=db)
+        student_memories = get_memories(student_id, db=db)
+        readiness_trend = get_readiness_trend(student_id, db=db)
         plan = plan_goal_execution(goal)
         subjects = _resolve_subjects(db, student_id, goal)
         matching = [subject for subject in subjects if subject.name.casefold() in goal.casefold()]
         target_subject_id = matching[0].id if matching else None
+        update_student_profile(
+            student_id,
+            db=db,
+            current_goal=goal,
+            preferred_subjects=(
+                [subject.name for subject in matching]
+                if matching
+                else student_profile["preferred_subjects"]
+            ),
+        )
+        store_memory(
+            student_id,
+            "GOAL",
+            goal,
+            {"status": "ACTIVE"},
+            db=db,
+        )
         action_results = {}
         executed_actions = []
         for action in plan["actions"]:
@@ -361,7 +388,18 @@ def run_academic_agent(
                 action_results[action] = []
 
         context = build_agent_context(action_results)
+        context["student_profile"] = student_profile
+        context["student_memories"] = student_memories
+        context["readiness_trend"] = readiness_trend
         result = generate_agent_response(goal, context)
+        for recommendation in result["priority_actions"]:
+            store_memory(
+                student_id,
+                "RECOMMENDATION",
+                recommendation,
+                {"goal": goal, "status": "OPEN"},
+                db=db,
+            )
         if include_debug:
             result.update(
                 {

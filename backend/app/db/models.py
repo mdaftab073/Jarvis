@@ -4,6 +4,8 @@ from sqlalchemy import (
     String,
     ForeignKey,
     DateTime,
+    JSON,
+    Text,
 )
 from app.db.database import Base
 from datetime import datetime
@@ -40,6 +42,22 @@ class Student(Base):
     )
     practice_sessions = relationship(
         "PracticeSession",
+        back_populates="student",
+        cascade="all, delete-orphan",
+    )
+    profile = relationship(
+        "StudentProfile",
+        back_populates="student",
+        cascade="all, delete-orphan",
+        uselist=False,
+    )
+    memories = relationship(
+        "StudentMemory",
+        back_populates="student",
+        cascade="all, delete-orphan",
+    )
+    readiness_snapshots = relationship(
+        "ReadinessSnapshot",
         back_populates="student",
         cascade="all, delete-orphan",
     )
@@ -125,6 +143,11 @@ class Subject(Base):
     )
     practice_sessions = relationship(
         "PracticeSession",
+        back_populates="subject",
+        cascade="all, delete-orphan",
+    )
+    readiness_snapshots = relationship(
+        "ReadinessSnapshot",
         back_populates="subject",
         cascade="all, delete-orphan",
     )
@@ -414,3 +437,93 @@ class PracticeQuestionAttempt(Base):
     confidence_score = Column(Float, nullable=False, default=50, server_default="50")
 
     practice_session = relationship("PracticeSession", back_populates="attempts")
+
+
+class StudentProfile(Base):
+    __tablename__ = "student_profiles"
+    __table_args__ = (
+        UniqueConstraint("student_id", name="uq_student_profiles_student"),
+        CheckConstraint(
+            "preferred_study_hours IS NULL OR preferred_study_hours > 0",
+            name="ck_student_profiles_preferred_study_hours",
+        ),
+    )
+
+    id = Column(Integer, primary_key=True, index=True)
+    student_id = Column(
+        Integer,
+        ForeignKey("students.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    preferred_study_hours = Column(Float, nullable=True)
+    preferred_subjects = Column(JSON, nullable=False, default=list)
+    current_goal = Column(String, nullable=True)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    updated_at = Column(
+        DateTime,
+        nullable=False,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+    )
+
+    student = relationship("Student", back_populates="profile")
+
+
+class StudentMemory(Base):
+    __tablename__ = "student_memories"
+    __table_args__ = (
+        UniqueConstraint(
+            "student_id",
+            "memory_type",
+            "memory_key",
+            name="uq_student_memories_student_type_key",
+        ),
+        CheckConstraint(
+            "memory_type IN ('STRENGTH', 'WEAKNESS', 'GOAL', 'HABIT', 'RECOMMENDATION', 'READINESS')",
+            name="ck_student_memories_memory_type",
+        ),
+    )
+
+    id = Column(Integer, primary_key=True, index=True)
+    student_id = Column(
+        Integer,
+        ForeignKey("students.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    memory_type = Column(String, nullable=False)
+    memory_key = Column(String, nullable=False)
+    memory_value = Column(Text, nullable=False)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    updated_at = Column(
+        DateTime,
+        nullable=False,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+    )
+
+    student = relationship("Student", back_populates="memories")
+
+
+class ReadinessSnapshot(Base):
+    __tablename__ = "readiness_snapshots"
+
+    id = Column(Integer, primary_key=True, index=True)
+    student_id = Column(
+        Integer,
+        ForeignKey("students.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    subject_id = Column(
+        Integer,
+        ForeignKey("subjects.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    readiness_score = Column(Integer, nullable=False)
+    captured_at = Column(DateTime, nullable=False, default=datetime.utcnow, index=True)
+
+    student = relationship("Student", back_populates="readiness_snapshots")
+    subject = relationship("Subject", back_populates="readiness_snapshots")

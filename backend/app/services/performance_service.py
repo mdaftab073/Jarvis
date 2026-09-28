@@ -365,7 +365,7 @@ def get_weak_topics(db: Session, student_id: int, subject_id: int):
     _validate_student_subject(db, student_id, subject_id)
     performances = _topic_performances(db, student_id, subject_id)
     frequencies = get_topic_frequency(db, subject_id)
-    return [
+    result = [
         {
             "topic": item.topic,
             "mastery": round(item.mastery_score),
@@ -377,12 +377,16 @@ def get_weak_topics(db: Session, student_id: int, subject_id: int):
             key=lambda entry: (entry.mastery_score, entry.topic),
         )
     ]
+    from app.services.memory_service import sync_topic_memories
+
+    sync_topic_memories(student_id, subject_id, result, [], db=db)
+    return result
 
 
 def get_strong_topics(db: Session, student_id: int, subject_id: int):
     _validate_student_subject(db, student_id, subject_id)
     performances = _topic_performances(db, student_id, subject_id)
-    return [
+    result = [
         {
             "topic": item.topic,
             "mastery": round(item.mastery_score),
@@ -394,6 +398,10 @@ def get_strong_topics(db: Session, student_id: int, subject_id: int):
             key=lambda entry: (-entry.mastery_score, entry.topic),
         )
     ]
+    from app.services.memory_service import sync_topic_memories
+
+    sync_topic_memories(student_id, subject_id, [], result, db=db)
+    return result
 
 
 def _latest_plan_completion(db: Session, student_id: int, subject_id: int):
@@ -487,6 +495,14 @@ def calculate_exam_readiness(db: Session, student_id: int, subject_id: int):
         mastery_component,
         plan_completion,
         pyq_coverage,
+    )
+    from app.services.memory_service import record_readiness_snapshot
+
+    record_readiness_snapshot(
+        student_id,
+        subject_id,
+        readiness,
+        db=db,
     )
     return result
 

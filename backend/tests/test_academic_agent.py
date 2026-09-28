@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from app.db.database import Base
 from app.db.models import Course, Student, Subject
 from app.services import academic_agent_service as agent
+from app.services.memory_service import record_readiness_snapshot, store_memory
 
 
 class AcademicAgentTests(unittest.TestCase):
@@ -120,6 +121,53 @@ class AcademicAgentTests(unittest.TestCase):
         self.assertEqual(execute.call_count, 5)
         self.assertEqual(result["goal_type"], "exam_preparation")
         self.assertEqual(result["executed_actions"], result["planned_actions"])
+
+    def test_agent_includes_persistent_profile_and_memory_in_strategy_context(self):
+        store_memory(
+            self.student.id,
+            "STRENGTH",
+            "Normalization",
+            {"subject_id": self.subject.id},
+            db=self.db,
+        )
+        store_memory(
+            self.student.id,
+            "WEAKNESS",
+            "Transactions",
+            {"subject_id": self.subject.id},
+            db=self.db,
+        )
+        record_readiness_snapshot(
+            self.student.id,
+            self.subject.id,
+            68,
+            db=self.db,
+        )
+        captured_context = {}
+
+        def capture_response(goal, context):
+            captured_context.update(context)
+            return {
+                "summary": "Personalized strategy",
+                "priority_actions": ["Review Transactions"],
+                "recommended_topics": ["Transactions"],
+                "next_steps": ["Take a practice test"],
+            }
+
+        with (
+            patch.object(agent, "execute_action", return_value=[]),
+            patch.object(agent, "generate_agent_response", side_effect=capture_response),
+        ):
+            agent.run_academic_agent(
+                self.student.id,
+                "How ready am I for DBMS?",
+                db=self.db,
+            )
+
+        self.assertEqual(captured_context["student_profile"]["strengths"], ["Normalization"])
+        self.assertEqual(captured_context["student_profile"]["weaknesses"], ["Transactions"])
+        self.assertEqual(captured_context["readiness_trend"]["history"], [68])
+        self.assertTrue(captured_context["student_memories"])
 
 
 if __name__ == "__main__":

@@ -284,6 +284,20 @@ def generate_study_plan(
         days_until_exam,
         len(plan.tasks),
     )
+    from app.services.memory_service import store_memory, update_student_profile
+
+    store_memory(
+        student_id,
+        "HABIT",
+        "planned_study_hours_per_day",
+        {"hours_per_day": hours_per_day, "subject_id": subject_id},
+        db=db,
+    )
+    update_student_profile(
+        student_id,
+        db=db,
+        preferred_study_hours=hours_per_day,
+    )
     return plan
 
 
@@ -372,7 +386,23 @@ def complete_study_task(db: Session, task_id: int):
     ) and today < plan.exam_date:
         recalculate_plan(db, plan_id, today=today)
 
-    return get_study_plan(db, plan_id)
+    result = get_study_plan(db, plan_id)
+    if result and result["progress"]["tasks_remaining"] == 0:
+        from app.services.memory_service import store_memory
+
+        store_memory(
+            result["student_id"],
+            "HABIT",
+            f"completed_study_plan:{result['id']}",
+            {
+                "subject_id": result["subject_id"],
+                "subject_name": result["subject_name"],
+                "hours_per_day": result["hours_per_day"],
+                "completed": True,
+            },
+            db=db,
+        )
+    return result
 
 
 def recalculate_plan(
