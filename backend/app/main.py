@@ -19,7 +19,13 @@ from app.api.routes import profile
 from app.api.routes import semester
 from app.api.routes import director
 from app.api.routes import system
+from app.api.routes import topics
+from app.api.routes import flashcards
+from app.api.routes import quizzes
+from app.api.routes import mastery
+from app.api.routes import learning
 from app.services.keyword_search_service import sync_keyword_index_from_chroma
+
 
 logger = logging.getLogger(__name__)
 
@@ -130,4 +136,30 @@ app.include_router(
     metrics_router,
     prefix="/api",
     tags=["Metrics"],
+)
+
+# ── Phase 14: Personalized Learning Intelligence ─────────────────────────────
+app.include_router(
+    topics.router,
+    prefix="/api",
+)
+
+app.include_router(
+    flashcards.router,
+    prefix="/api",
+)
+
+app.include_router(
+    quizzes.router,
+    prefix="/api",
+)
+
+app.include_router(
+    mastery.router,
+    prefix="/api",
+)
+
+app.include_router(
+    learning.router,
+    prefix="/api",
 )

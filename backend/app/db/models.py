@@ -66,6 +66,21 @@ class Student(Base):
         back_populates="student",
         cascade="all, delete-orphan",
     )
+    quiz_sessions = relationship(
+        "QuizSession",
+        back_populates="student",
+        cascade="all, delete-orphan",
+    )
+    topic_masteries = relationship(
+        "TopicMastery",
+        back_populates="student",
+        cascade="all, delete-orphan",
+    )
+    learning_sessions = relationship(
+        "LearningSession",
+        back_populates="student",
+        cascade="all, delete-orphan",
+    )
 
 class Course(Base):
     __tablename__ = "courses"
@@ -158,6 +173,26 @@ class Subject(Base):
     )
     semester_links = relationship(
         "SemesterSubject",
+        back_populates="subject",
+        cascade="all, delete-orphan",
+    )
+    topics = relationship(
+        "Topic",
+        back_populates="subject",
+        cascade="all, delete-orphan",
+    )
+    flashcard_decks = relationship(
+        "FlashcardDeck",
+        back_populates="subject",
+        cascade="all, delete-orphan",
+    )
+    quiz_sessions = relationship(
+        "QuizSession",
+        back_populates="subject",
+        cascade="all, delete-orphan",
+    )
+    learning_sessions = relationship(
+        "LearningSession",
         back_populates="subject",
         cascade="all, delete-orphan",
     )

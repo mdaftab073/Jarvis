@@ -4,6 +4,7 @@ from app.agents.pyq_agent import PYQAgent
 from app.agents.retrieval_agent import RetrievalAgent
 from app.agents.semester_agent import SemesterAgent
 from app.agents.study_agent import StudyAgent
+from app.agents.learning_agent import LearningAgent
 
 
 class AgentRegistry:
@@ -37,5 +38,6 @@ def create_default_registry() -> AgentRegistry:
             RetrievalAgent(),
             MemoryAgent(),
             SemesterAgent(),
+            LearningAgent(),
         ]
-    )
+    )

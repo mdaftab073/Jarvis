@@ -6,8 +6,10 @@ from sqlalchemy import pool
 from alembic import context
 
 from app.core.config import settings
-from app.db import models
+from app.db import models  # noqa: F401  – registers legacy models on Base
+import app.models  # noqa: F401  – registers Phase-14 models on the same Base
 from app.db.database import Base
+
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
