@@ -685,3 +685,16 @@ class SemesterMilestone(Base):
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
 
     semester = relationship("Semester", back_populates="milestones")
+
+
+# Phase 14 models import to resolve mapper relationship names
+from app.models import (  # noqa: E402, F401
+    Topic,
+    FlashcardDeck,
+    Flashcard,
+    QuizSession,
+    QuizQuestion,
+    QuizAnswer,
+    TopicMastery,
+    LearningSession,
+)

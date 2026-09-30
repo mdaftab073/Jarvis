@@ -73,6 +73,7 @@ class QuizSessionWithQuestions(BaseModel):
     questions: List[QuizQuestion]
 
     class Config:
+        from_attributes = True
         orm_mode = True
 
 

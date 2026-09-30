@@ -1,6 +1,4 @@
-"""Pydantic schemas for Flashcard and Deck.
-"""
-
+from datetime import datetime
 from typing import Optional
 
 from pydantic import BaseModel, Field
@@ -14,9 +12,10 @@ class FlashcardDeckCreate(FlashcardDeckBase):
 class FlashcardDeck(FlashcardDeckBase):
     id: int
     subject_id: int
-    created_at: Optional[str] = None
+    created_at: Optional[datetime] = None
 
     class Config:
+        from_attributes = True
         orm_mode = True
 
 class FlashcardBase(BaseModel):
@@ -31,7 +30,9 @@ class FlashcardCreate(FlashcardBase):
 class Flashcard(FlashcardBase):
     id: int
     deck_id: int
-    created_at: Optional[str] = None
+    created_at: Optional[datetime] = None
 
     class Config:
+        from_attributes = True
         orm_mode = True
+

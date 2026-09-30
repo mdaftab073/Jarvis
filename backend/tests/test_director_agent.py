@@ -16,6 +16,7 @@ from app.agents.pyq_agent import PYQAgent
 from app.agents.retrieval_agent import RetrievalAgent
 from app.agents.semester_agent import SemesterAgent
 from app.agents.study_agent import StudyAgent
+from app.agents.learning_agent import LearningAgent
 from app.db.database import Base
 from app.db.models import Course, Student, Subject
 
@@ -82,9 +83,10 @@ class DirectorAgentTests(unittest.TestCase):
 
         self.assertEqual(
             registry.names(),
-            ["analytics", "study", "pyq", "retrieval", "memory", "semester"],
+            ["analytics", "study", "pyq", "retrieval", "memory", "semester", "learning"],
         )
         self.assertIsInstance(registry.get("analytics"), AnalyticsAgent)
+        self.assertIsInstance(registry.get("learning"), LearningAgent)
         with self.assertRaisesRegex(KeyError, "not registered"):
             registry.get("unknown")
 

@@ -57,7 +57,7 @@ class QuizService:
 
     # QuizAnswer operations
     def submit_answer(self, question_id: int, obj_in: QuizAnswerCreate) -> QuizAnswer:
-        answer = QuizAnswer(question_id=question_id, **obj_in.dict())
+        answer = QuizAnswer(question_id=question_id, **obj_in.dict(exclude={"question_id"}))
         self.db.add(answer)
         self.db.commit()
         self.db.refresh(answer)

@@ -18,13 +18,18 @@ class PhaseRegressionTests(unittest.TestCase):
             "/api/profile/{student_id}",
             "/api/semester/{semester_id}/copilot",
             "/api/director/academic",
+            "/api/topics",
+            "/api/flashcards/generate",
+            "/api/quizzes/generate",
+            "/api/mastery/student/{student_id}",
+            "/api/learning/session",
         }
         self.assertTrue(expected <= paths)
 
     def test_director_default_registry_covers_all_specialist_domains(self):
         self.assertEqual(
             set(create_default_registry().names()),
-            {"analytics", "study", "pyq", "retrieval", "memory", "semester"},
+            {"analytics", "study", "pyq", "retrieval", "memory", "semester", "learning"},
         )
 
     def test_exam_goal_delegation_order_is_stable(self):

@@ -13,4 +13,4 @@ class Topic(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     subject = relationship("Subject", back_populates="topics")
-    # relationships to other entities can be added later (e.g., flashcards, mastery)
+    masteries = relationship("TopicMastery", back_populates="topic", cascade="all, delete-orphan")

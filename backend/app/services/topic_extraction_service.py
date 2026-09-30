@@ -61,7 +61,21 @@ class TopicExtractionService:
         material = self.material_service.get_material(material_id)
         if not material:
             raise ValueError(f"Material {material_id} not found")
-        content = material.content  # assumed field
+        content = getattr(material, "content", None)
+        if not content:
+            file_path = getattr(material, "file_path", None)
+            if file_path:
+                import os
+                if os.path.exists(file_path):
+                    from app.services.pdf_service import extract_text_from_pdf
+                    try:
+                        content = extract_text_from_pdf(file_path)
+                    except Exception:
+                        content = getattr(material, "title", "")
+                else:
+                    content = getattr(material, "title", "")
+            else:
+                content = getattr(material, "title", "")
         raw_topics = self._call_groq(content)
         seen = set()
         unique_topics = []

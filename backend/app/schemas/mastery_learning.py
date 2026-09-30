@@ -1,6 +1,3 @@
-"""Pydantic schemas for Mastery and Learning Session.
-"""
-
 from typing import Optional
 from pydantic import BaseModel, Field
 
@@ -17,6 +14,7 @@ class Mastery(MasteryBase):
     id: int
 
     class Config:
+        from_attributes = True
         orm_mode = True
 
 class LearningSessionBase(BaseModel):
@@ -33,4 +31,6 @@ class LearningSession(LearningSessionBase):
     id: int
 
     class Config:
+        from_attributes = True
         orm_mode = True
+

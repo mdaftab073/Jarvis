@@ -19,6 +19,7 @@ def create_execution_plan(goal: str) -> dict:
     revision_requested = bool(re.search(r"\b(revis(e|ion)|review|study plan)\b", text))
     semester_requested = bool(re.search(r"\b(semester|milestone|cgpa|risk)\b", text))
     memory_requested = bool(re.search(r"\b(profile|remember|history|past performance)\b", text))
+    learning_requested = bool(re.search(r"\b(mastery|flashcard|insight|progress|learning)\b", text))
 
     agents = []
     if retrieval_requested:
@@ -33,11 +34,14 @@ def create_execution_plan(goal: str) -> dict:
         agents.append("pyq")
     if memory_requested:
         agents.append("memory")
+    if learning_requested:
+        agents.append("learning")
     if not agents:
         agents = ["analytics", "memory"]
     return {
         "goal_type": (
             "exam_preparation" if exam_requested else
+            "personalized_learning" if learning_requested else
             "practice_preparation" if practice_requested else
             "revision_planning" if revision_requested else
             "semester_guidance" if semester_requested else
@@ -107,6 +111,34 @@ def aggregate_agent_outputs(agent_outputs: list[dict]) -> dict:
         for semester in data.get("semesters", []):
             aggregate["risks"].extend(semester.get("risks", []))
             aggregate["recommendations"].extend(semester.get("next_actions", []))
+        if output.get("agent_name") == "learning" or "average_mastery" in data:
+            aggregate["weak_topics"].extend(
+                {
+                    "subject_id": None,
+                    "subject_name": "Personalized Learning",
+                    "topic": topic.get("topic_name", topic.get("topic")),
+                    **topic,
+                }
+                for topic in data.get("weak_topics", [])
+            )
+            aggregate["strong_topics"].extend(
+                {
+                    "subject_id": None,
+                    "subject_name": "Personalized Learning",
+                    "topic": topic.get("topic_name", topic.get("topic")),
+                    **topic,
+                }
+                for topic in data.get("strong_topics", [])
+            )
+            if data.get("overall_readiness"):
+                aggregate["readiness"].append(
+                    {
+                        "subject_id": None,
+                        "subject_name": "Learning Mastery",
+                        "readiness_score": int(data.get("average_mastery", 0)),
+                        "status": data.get("overall_readiness"),
+                    }
+                )
     aggregate["recommendations"] = list(dict.fromkeys(aggregate["recommendations"]))
     aggregate["revision_priorities"] = list(dict.fromkeys(aggregate["revision_priorities"]))
     return aggregate

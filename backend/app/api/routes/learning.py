@@ -44,9 +44,10 @@ class LearningSessionResponse(BaseModel):
     activity_type: str
     duration_minutes: Optional[float]
     score: Optional[float]
-    created_at: Optional[str]
+    created_at: Optional[datetime] = None
 
     class Config:
+        from_attributes = True
         orm_mode = True
 
 

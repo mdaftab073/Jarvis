@@ -11,8 +11,8 @@ from alembic import op
 import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
-revision = "20230928_14_add_learning_intelligence_tables"
-down_revision = "d43f9b1c6e20"
+revision = "a14b8c9d2e10"
+down_revision = "f2c8a4d1b709"
 branch_labels = None
 depends_on = None
 

@@ -32,6 +32,7 @@ class MasteryWithTopic(BaseModel):
     attempt_count: int
 
     class Config:
+        from_attributes = True
         orm_mode = True
 
 

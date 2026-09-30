@@ -22,6 +22,7 @@ class TopicInDBBase(TopicBase):
     subject_id: int
 
     class Config:
+        from_attributes = True
         orm_mode = True
 
 class Topic(TopicInDBBase):

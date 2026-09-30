@@ -1,6 +1,4 @@
-"""Pydantic schemas for Quiz sessions, questions, and answers.
-"""
-
+from datetime import datetime
 from typing import List, Optional
 
 from pydantic import BaseModel, Field
@@ -16,10 +14,11 @@ class QuizSessionCreate(QuizSessionBase):
 
 class QuizSession(QuizSessionBase):
     id: int
-    started_at: Optional[str] = None
-    completed_at: Optional[str] = None
+    started_at: Optional[datetime] = None
+    completed_at: Optional[datetime] = None
 
     class Config:
+        from_attributes = True
         orm_mode = True
 
 class QuizQuestionBase(BaseModel):
@@ -36,6 +35,7 @@ class QuizQuestion(QuizQuestionBase):
     session_id: int
 
     class Config:
+        from_attributes = True
         orm_mode = True
 
 class QuizAnswerBase(BaseModel):
@@ -48,7 +48,9 @@ class QuizAnswerCreate(QuizAnswerBase):
 
 class QuizAnswer(QuizAnswerBase):
     id: int
-    answered_at: Optional[str] = None
+    answered_at: Optional[datetime] = None
 
     class Config:
+        from_attributes = True
         orm_mode = True
+
