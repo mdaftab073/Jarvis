@@ -43,6 +43,8 @@ Run from `backend/`:
 
 The validator checks historical migration backfills, schema contracts, grade behavior, deadline naming, reminder operations, dashboard presence, scheduler-related tests, agent registry, director routing, and runs the full unittest suite.
 
+Final local evidence: one Alembic head (`d14e6f2a9b31`), 97 registered `/api` paths, and 126 backend tests passing. The migration lifecycle was verified against seeded historical rows in a disposable SQLite database; the configured developer database was not migrated.
+
 ## Unresolved Technical Debt
 
 - Existing non-Phase-A APIs still expose unscoped resource IDs and collection reads; use the authorization inventory above before enabling authenticated multi-tenant access.
