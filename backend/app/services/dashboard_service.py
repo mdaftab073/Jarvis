@@ -1,9 +1,12 @@
-from app.db.models import DigitalTwinSnapshot, GradeRecord, StudentAcademicProfile, StudentNotification, TopicMastery
+from app.db.models import DigitalTwinSnapshot, GradeRecord, StudentAcademicProfile, StudentNotification, StudentGoal, TopicMastery
 from app.services.attendance_service import attendance_summary
-from app.services.calendar_service import get_events
+from app.services.calendar_service import get_events, get_agenda, get_week_agenda
 from app.services.deadline_service import serialize_deadline, upcoming_deadlines
 from app.services.ownership_service import student_owned_query
 from app.services.grade_service import grade_analytics
+from app.services.goals_service import list_goals
+from app.services.productivity_service import analyze_productivity
+from app.services.time_service import utc_now_naive
 
 
 def get_dashboard(db, student_id: int) -> dict:
@@ -38,6 +41,8 @@ def get_dashboard(db, student_id: int) -> dict:
     if mastery_scores:
         readiness_scores.append(sum(mastery_scores) / len(mastery_scores))
     deadlines = upcoming_deadlines(db, student_id)
+    goals = list_goals(db, student_id)
+    productivity = analyze_productivity(db, student_id)
     return {
         "student_id": student_id,
         "profile": profile_data,
@@ -49,6 +54,19 @@ def get_dashboard(db, student_id: int) -> dict:
         "deadlines": [serialize_deadline(item) for item in deadlines],
         "notifications": db.query(StudentNotification).filter_by(student_id=student_id, read=False).order_by(StudentNotification.created_at.desc()).all(),
         "calendar": get_events(db, student_id),
+        "agenda_today": get_agenda(db, student_id, utc_now_naive().date()),
+        "agenda_week": get_week_agenda(db, student_id),
+        "goals": goals,
+        "goal_progress": [
+            {"goal_id": goal["id"], "title": goal["title"], "progress_percent": goal["progress_percent"], "completed": goal["completed"]}
+            for goal in goals
+        ],
+        "productivity": productivity,
+        "productivity_score": productivity["productivity_score"],
+        "consistency_score": productivity["consistency_score"],
+        "study_hours_7d": productivity["study_hours_7d"],
+        "completion_rate": productivity["completion_rate"],
+        "habit_streaks": productivity["habit_streaks"],
         "readiness_snapshot": {
             "score": snapshot.overall_readiness,
             "captured_at": snapshot.captured_at,

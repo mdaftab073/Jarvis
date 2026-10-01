@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 
 from app.db.models import AttendanceRecord, DeadlineItem, GradeRecord, Student, StudentAcademicProfile
+from app.services.grade_service import grade_analytics
 
 
 def get_profile(db: Session, student_id: int) -> StudentAcademicProfile | None:
@@ -30,5 +31,6 @@ def academic_summary(db: Session, student_id: int) -> dict:
         "profile": profile,
         "attendance_count": db.query(AttendanceRecord).filter_by(academic_profile_id=profile.id).count(),
         "grade_count": db.query(GradeRecord).filter_by(academic_profile_id=profile.id).count(),
+        "grade_analytics": grade_analytics(db, student_id),
         "pending_deadline_count": db.query(DeadlineItem).filter_by(academic_profile_id=profile.id, is_completed=False).count(),
     }

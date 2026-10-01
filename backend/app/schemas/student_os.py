@@ -69,6 +69,8 @@ class CalendarEventInput(BaseModel):
 
 class StudyBlockInput(BaseModel):
     subject_id: int | None = None
+    title: str | None = Field(None, max_length=255)
+    block_type: Literal["STUDY", "REVISION", "ATTENDANCE_RECOVERY", "DEADLINE_PREP", "GOAL"] = "STUDY"
     start_time: datetime
     end_time: datetime
     planned_duration: int | None = Field(None, ge=0)
@@ -79,6 +81,13 @@ class ScheduleInput(BaseModel):
     start_time: datetime
     session_length: int = Field(default=50, gt=0)
     break_minutes: int = Field(default=10, ge=0)
+
+
+class IntelligentScheduleInput(BaseModel):
+    start_time: datetime
+    available_hours: float = Field(gt=0, le=16)
+    horizon_days: int = Field(default=7, ge=1, le=14)
+    session_minutes: int = Field(default=45, ge=15, le=180)
 
 
 class PreferenceInput(BaseModel):
@@ -94,3 +103,51 @@ class ReminderInput(BaseModel):
 
 class DeadlineCompletionInput(BaseModel):
     completed: bool
+
+
+class GoalCreateInput(BaseModel):
+    title: str = Field(min_length=1, max_length=255)
+    goal_type: Literal["SEMESTER", "CPI", "ATTENDANCE", "PLACEMENT", "STUDY_HOURS"]
+    target_value: float | None = Field(None, ge=0)
+    target_unit: str | None = Field(None, max_length=30)
+    target_date: date | None = None
+
+
+class GoalUpdateInput(BaseModel):
+    title: str | None = Field(None, min_length=1, max_length=255)
+    goal_type: Literal["SEMESTER", "CPI", "ATTENDANCE", "PLACEMENT", "STUDY_HOURS"] | None = None
+    target_value: float | None = Field(None, ge=0)
+    target_unit: str | None = Field(None, max_length=30)
+    target_date: date | None = None
+    completed: bool | None = None
+
+
+class MilestoneInput(BaseModel):
+    title: str = Field(min_length=1, max_length=255)
+    target_value: float | None = Field(None, ge=0)
+    target_date: date | None = None
+
+
+class ProgressInput(BaseModel):
+    progress_value: float = Field(ge=0)
+    notes: str | None = None
+
+
+class HabitCreateInput(BaseModel):
+    habit_name: str = Field(min_length=1, max_length=120)
+    category: Literal["DAILY_STUDY", "REVISION", "PYQ_PRACTICE", "ATTENDANCE_CHECK", "ASSIGNMENT_COMPLETION"]
+    target_per_week: int = Field(default=7, ge=1, le=7)
+
+
+class HabitUpdateInput(BaseModel):
+    habit_name: str | None = Field(None, min_length=1, max_length=120)
+    category: Literal["DAILY_STUDY", "REVISION", "PYQ_PRACTICE", "ATTENDANCE_CHECK", "ASSIGNMENT_COMPLETION"] | None = None
+    target_per_week: int | None = Field(None, ge=1, le=7)
+    active: bool | None = None
+
+
+class HabitLogInput(BaseModel):
+    log_date: date | None = None
+    completed: bool = True
+    duration_minutes: int | None = Field(None, ge=0)
+    notes: str | None = None

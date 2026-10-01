@@ -33,6 +33,8 @@ class PhaseRegressionTests(unittest.TestCase):
                 "analytics", "study", "pyq", "retrieval", "memory", "semester", "learning",
                 "academic_profile", "attendance", "deadline", "notification", "calendar",
                 "scheduler", "reminder",
+                "productivity",
+                "semester_copilot",
             },
         )
 

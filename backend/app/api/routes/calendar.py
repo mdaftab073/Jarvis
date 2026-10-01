@@ -1,3 +1,5 @@
+from datetime import date, timedelta
+
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 
@@ -5,9 +7,25 @@ from app.db.database import get_db
 from app.api.student_scope import require_record_owner, require_student_scope
 from app.db.models import CalendarEvent
 from app.schemas.student_os import CalendarEventInput
-from app.services.calendar_service import create_event, delete_event, get_events, update_event
+from app.services.calendar_service import create_event, delete_event, get_agenda, get_events, get_week_agenda, update_event
+from app.services.time_service import utc_now_naive
 
 router = APIRouter()
+
+
+@router.get("/calendar/{student_id}/today")
+def today_agenda(student_id: int, db: Session = Depends(get_db), _scope: int = Depends(require_student_scope)):
+    return get_agenda(db, student_id, utc_now_naive().date())
+
+
+@router.get("/calendar/{student_id}/tomorrow")
+def tomorrow_agenda(student_id: int, db: Session = Depends(get_db), _scope: int = Depends(require_student_scope)):
+    return get_agenda(db, student_id, utc_now_naive().date() + timedelta(days=1))
+
+
+@router.get("/calendar/{student_id}/week")
+def week_agenda(student_id: int, start_date: date | None = None, db: Session = Depends(get_db), _scope: int = Depends(require_student_scope)):
+    return get_week_agenda(db, student_id, start_date)
 
 
 @router.get("/calendar/{student_id}")

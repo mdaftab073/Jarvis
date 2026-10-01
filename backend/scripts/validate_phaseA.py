@@ -25,7 +25,7 @@ def validate_migrations() -> None:
     alembic_config = Config(str(BACKEND / "alembic.ini"))
     script = ScriptDirectory.from_config(alembic_config)
     heads = script.get_heads()
-    if heads != ["d14e6f2a9b31"]:
+    if heads != ["e6b2d8a4c913"]:
         raise RuntimeError(f"Expected one Phase A head, found {heads}")
 
     with tempfile.TemporaryDirectory(prefix="jarvis-phase-a-") as directory:

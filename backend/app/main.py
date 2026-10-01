@@ -26,6 +26,8 @@ from app.api.routes import mastery
 from app.api.routes import learning
 from app.api.routes import academic_profile, attendance, grades, deadlines, notifications, calendar, schedule, dashboard
 from app.api.routes import reminders
+from app.api.routes import goals, habits
+from app.api.routes import connectors
 from app.services.keyword_search_service import sync_keyword_index_from_chroma
 
 
@@ -177,5 +179,8 @@ for router, tag in (
     (schedule.router, "Schedule"),
     (dashboard.router, "Dashboard"),
     (reminders.router, "Reminders"),
+    (goals.router, "Goals"),
+    (habits.router, "Habits"),
+    (connectors.router, "MIS Connectors"),
 ):
     app.include_router(router, prefix="/api", tags=[tag])

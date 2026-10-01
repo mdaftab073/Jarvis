@@ -83,7 +83,7 @@ class DirectorAgentTests(unittest.TestCase):
 
         self.assertEqual(
             registry.names(),
-            ["analytics", "study", "pyq", "retrieval", "memory", "semester", "learning", "academic_profile", "attendance", "deadline", "notification", "calendar", "scheduler", "reminder"],
+            ["analytics", "study", "pyq", "retrieval", "memory", "semester", "learning", "academic_profile", "attendance", "deadline", "notification", "calendar", "scheduler", "reminder", "productivity", "semester_copilot"],
         )
         self.assertIsInstance(registry.get("analytics"), AnalyticsAgent)
         self.assertIsInstance(registry.get("learning"), LearningAgent)

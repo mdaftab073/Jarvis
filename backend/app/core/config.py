@@ -11,6 +11,9 @@ class Settings(BaseSettings):
     ALLOWED_UPLOAD_MIME_TYPES: list[str] = ["application/pdf"]
     VERSION: str = "1.0.0"
     CHROMA_PERSISTENT_DIRECTORY: str = "chroma_db"
+    CONNECTOR_ENCRYPTION_KEY: str | None = None
+    CONNECTOR_ENDPOINTS_JSON: str = "{}"
+    CONNECTOR_HTTP_TIMEOUT_SECONDS: int = 15
 
     class Config:
         env_file = ".env"

@@ -25,9 +25,11 @@ def create_execution_plan(goal: str) -> dict:
         ("deadline", r"\b(deadlines?|due dates?|overdue)\b"),
         ("calendar", r"\bcalendar\b"),
         ("scheduler", r"\b(schedule|scheduling|study blocks?)\b"),
-        ("academic_profile", r"\b(profile|enrollment|cpi|spi|credits)\b"),
+        ("academic_profile", r"\b(profile|enrollment|cpi|spi|credits|grades?)\b"),
         ("notification", r"\bnotifications?\b"),
         ("reminder", r"\breminders?\b"),
+        ("productivity", r"\b(goals?|habits?|productivity|consistency|focus|routine)\b"),
+        ("semester_copilot", r"\b(semester copilot|exam command center|readiness forecast|exam countdown)\b"),
     ]
 
     agents = []

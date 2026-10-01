@@ -96,6 +96,14 @@ class Student(Base):
     goals = relationship("StudentGoal", back_populates="student", cascade="all, delete-orphan")
     preferences = relationship("StudentPreference", back_populates="student", cascade="all, delete-orphan", uselist=False)
     habits = relationship("StudentHabit", back_populates="student", cascade="all, delete-orphan")
+    goal_milestones = relationship("GoalMilestone", back_populates="student", cascade="all, delete-orphan")
+    goal_progress = relationship("GoalProgress", back_populates="student", cascade="all, delete-orphan")
+    habit_records = relationship("Habit", back_populates="student", cascade="all, delete-orphan")
+    habit_logs = relationship("HabitLog", back_populates="student", cascade="all, delete-orphan")
+    habit_streaks = relationship("HabitStreak", back_populates="student", cascade="all, delete-orphan")
+    connectors = relationship("StudentConnector", back_populates="student", cascade="all, delete-orphan")
+    sync_jobs = relationship("SyncJob", back_populates="student", cascade="all, delete-orphan")
+    sync_history = relationship("SyncHistory", back_populates="student", cascade="all, delete-orphan")
 
 class Course(Base):
     __tablename__ = "courses"
@@ -915,7 +923,11 @@ class CalendarEvent(Base):
 
 class StudyBlock(Base):
     __tablename__ = "study_blocks"
-    __table_args__ = (CheckConstraint("end_time > start_time", name="ck_study_blocks_time_order"), CheckConstraint("planned_duration >= 0", name="ck_study_blocks_duration_nonneg"))
+    __table_args__ = (
+        CheckConstraint("end_time > start_time", name="ck_study_blocks_time_order"),
+        CheckConstraint("planned_duration >= 0", name="ck_study_blocks_duration_nonneg"),
+        CheckConstraint("block_type IN ('STUDY', 'REVISION', 'ATTENDANCE_RECOVERY', 'DEADLINE_PREP', 'GOAL')", name="ck_study_blocks_type"),
+    )
 
     id = Column(Integer, primary_key=True, index=True)
     student_id = Column(Integer, ForeignKey("students.id", ondelete="CASCADE"), nullable=False, index=True)
@@ -923,6 +935,8 @@ class StudyBlock(Base):
     start_time = Column(DateTime, nullable=False, index=True)
     end_time = Column(DateTime, nullable=False)
     planned_duration = Column(Integer, nullable=False)
+    title = Column(String(255), nullable=True)
+    block_type = Column(String(30), nullable=False, default="STUDY", server_default="STUDY")
     completed = Column(Boolean, nullable=False, default=False, server_default="0")
     student = relationship("Student", back_populates="study_blocks")
     subject = relationship("Subject")
@@ -941,13 +955,53 @@ class Reminder(Base):
 
 class StudentGoal(Base):
     __tablename__ = "student_goals"
+    __table_args__ = (
+        CheckConstraint("goal_type IN ('SEMESTER', 'CPI', 'ATTENDANCE', 'PLACEMENT', 'STUDY_HOURS')", name="ck_student_goals_type"),
+        CheckConstraint("target_value IS NULL OR target_value >= 0", name="ck_student_goals_target_nonneg"),
+    )
 
     id = Column(Integer, primary_key=True, index=True)
     student_id = Column(Integer, ForeignKey("students.id", ondelete="CASCADE"), nullable=False, index=True)
     title = Column(String(255), nullable=False)
+    goal_type = Column(String(20), nullable=False, default="STUDY_HOURS", server_default="STUDY_HOURS")
+    target_value = Column(Float, nullable=True)
+    target_unit = Column(String(30), nullable=True)
     target_date = Column(Date, nullable=True)
     completed = Column(Boolean, nullable=False, default=False, server_default="0")
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
     student = relationship("Student", back_populates="goals")
+    milestones = relationship("GoalMilestone", back_populates="goal", cascade="all, delete-orphan")
+    progress_entries = relationship("GoalProgress", back_populates="goal", cascade="all, delete-orphan", order_by="GoalProgress.recorded_at")
+
+
+class GoalMilestone(Base):
+    __tablename__ = "goal_milestones"
+    __table_args__ = (CheckConstraint("target_value IS NULL OR target_value >= 0", name="ck_goal_milestones_target_nonneg"),)
+
+    id = Column(Integer, primary_key=True, index=True)
+    student_id = Column(Integer, ForeignKey("students.id", ondelete="CASCADE"), nullable=False, index=True)
+    goal_id = Column(Integer, ForeignKey("student_goals.id", ondelete="CASCADE"), nullable=False, index=True)
+    title = Column(String(255), nullable=False)
+    target_value = Column(Float, nullable=True)
+    target_date = Column(Date, nullable=True)
+    completed = Column(Boolean, nullable=False, default=False, server_default="0")
+    completed_at = Column(DateTime, nullable=True)
+    student = relationship("Student", back_populates="goal_milestones")
+    goal = relationship("StudentGoal", back_populates="milestones")
+
+
+class GoalProgress(Base):
+    __tablename__ = "goal_progress"
+    __table_args__ = (CheckConstraint("progress_value >= 0", name="ck_goal_progress_nonneg"),)
+
+    id = Column(Integer, primary_key=True, index=True)
+    student_id = Column(Integer, ForeignKey("students.id", ondelete="CASCADE"), nullable=False, index=True)
+    goal_id = Column(Integer, ForeignKey("student_goals.id", ondelete="CASCADE"), nullable=False, index=True)
+    progress_value = Column(Float, nullable=False)
+    recorded_at = Column(DateTime, nullable=False, default=datetime.utcnow, index=True)
+    notes = Column(Text, nullable=True)
+    student = relationship("Student", back_populates="goal_progress")
+    goal = relationship("StudentGoal", back_populates="progress_entries")
 
 
 class StudentPreference(Base):
@@ -972,6 +1026,126 @@ class StudentHabit(Base):
     streak = Column(Integer, nullable=False, default=0, server_default="0")
     completion_rate = Column(Float, nullable=False, default=0, server_default="0")
     student = relationship("Student", back_populates="habits")
+
+
+class Habit(Base):
+    __tablename__ = "habits"
+    __table_args__ = (
+        UniqueConstraint("student_id", "habit_name", "category", name="uq_habits_student_name_category"),
+        CheckConstraint("category IN ('DAILY_STUDY', 'REVISION', 'PYQ_PRACTICE', 'ATTENDANCE_CHECK', 'ASSIGNMENT_COMPLETION', 'OTHER')", name="ck_habits_category"),
+        CheckConstraint("target_per_week > 0 AND target_per_week <= 7", name="ck_habits_target_per_week"),
+    )
+
+    id = Column(Integer, primary_key=True, index=True)
+    student_id = Column(Integer, ForeignKey("students.id", ondelete="CASCADE"), nullable=False, index=True)
+    habit_name = Column(String(120), nullable=False)
+    category = Column(String(30), nullable=False)
+    target_per_week = Column(Integer, nullable=False, default=7, server_default="7")
+    active = Column(Boolean, nullable=False, default=True, server_default="1")
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    student = relationship("Student", back_populates="habit_records")
+    logs = relationship("HabitLog", back_populates="habit", cascade="all, delete-orphan")
+    streak = relationship("HabitStreak", back_populates="habit", cascade="all, delete-orphan", uselist=False)
+
+
+class HabitLog(Base):
+    __tablename__ = "habit_logs"
+    __table_args__ = (
+        UniqueConstraint("habit_id", "log_date", name="uq_habit_logs_habit_day"),
+        CheckConstraint("duration_minutes IS NULL OR duration_minutes >= 0", name="ck_habit_logs_duration_nonneg"),
+    )
+
+    id = Column(Integer, primary_key=True, index=True)
+    student_id = Column(Integer, ForeignKey("students.id", ondelete="CASCADE"), nullable=False, index=True)
+    habit_id = Column(Integer, ForeignKey("habits.id", ondelete="CASCADE"), nullable=False, index=True)
+    log_date = Column(Date, nullable=False, index=True)
+    completed = Column(Boolean, nullable=False, default=True, server_default="1")
+    duration_minutes = Column(Integer, nullable=True)
+    notes = Column(Text, nullable=True)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    student = relationship("Student", back_populates="habit_logs")
+    habit = relationship("Habit", back_populates="logs")
+
+
+class HabitStreak(Base):
+    __tablename__ = "habit_streaks"
+    __table_args__ = (
+        UniqueConstraint("habit_id", name="uq_habit_streaks_habit"),
+        CheckConstraint("current_streak >= 0 AND longest_streak >= 0", name="ck_habit_streaks_nonneg"),
+        CheckConstraint("completion_rate >= 0 AND completion_rate <= 100", name="ck_habit_streaks_completion_rate"),
+        CheckConstraint("consistency_score >= 0 AND consistency_score <= 100", name="ck_habit_streaks_consistency_score"),
+    )
+
+    id = Column(Integer, primary_key=True, index=True)
+    student_id = Column(Integer, ForeignKey("students.id", ondelete="CASCADE"), nullable=False, index=True)
+    habit_id = Column(Integer, ForeignKey("habits.id", ondelete="CASCADE"), nullable=False, index=True)
+    current_streak = Column(Integer, nullable=False, default=0, server_default="0")
+    longest_streak = Column(Integer, nullable=False, default=0, server_default="0")
+    completion_rate = Column(Float, nullable=False, default=0, server_default="0")
+    consistency_score = Column(Float, nullable=False, default=0, server_default="0")
+    last_completed_date = Column(Date, nullable=True)
+    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+    student = relationship("Student", back_populates="habit_streaks")
+    habit = relationship("Habit", back_populates="streak")
+
+
+class StudentConnector(Base):
+    __tablename__ = "student_connectors"
+    __table_args__ = (
+        UniqueConstraint("student_id", "connector_type", name="uq_student_connectors_type"),
+        CheckConstraint("status IN ('READY', 'SYNCING', 'ERROR', 'DISABLED')", name="ck_student_connectors_status"),
+    )
+
+    id = Column(Integer, primary_key=True, index=True)
+    student_id = Column(Integer, ForeignKey("students.id", ondelete="CASCADE"), nullable=False, index=True)
+    connector_type = Column(String(60), nullable=False)
+    endpoint_url = Column(String(500), nullable=False)
+    encrypted_credentials = Column(Text, nullable=False)
+    configuration = Column(JSON, nullable=True)
+    enabled = Column(Boolean, nullable=False, default=True, server_default="1")
+    sync_interval_minutes = Column(Integer, nullable=True)
+    status = Column(String(20), nullable=False, default="READY", server_default="READY")
+    last_sync_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+    student = relationship("Student", back_populates="connectors")
+    jobs = relationship("SyncJob", back_populates="connector", cascade="all, delete-orphan")
+    history = relationship("SyncHistory", back_populates="connector", cascade="all, delete-orphan")
+
+
+class SyncJob(Base):
+    __tablename__ = "sync_jobs"
+    __table_args__ = (CheckConstraint("status IN ('QUEUED', 'RUNNING', 'SUCCEEDED', 'FAILED')", name="ck_sync_jobs_status"),)
+
+    id = Column(Integer, primary_key=True, index=True)
+    student_id = Column(Integer, ForeignKey("students.id", ondelete="CASCADE"), nullable=False, index=True)
+    connector_id = Column(Integer, ForeignKey("student_connectors.id", ondelete="CASCADE"), nullable=False, index=True)
+    status = Column(String(20), nullable=False, default="QUEUED", server_default="QUEUED")
+    scheduled_at = Column(DateTime, nullable=False, default=datetime.utcnow, index=True)
+    started_at = Column(DateTime, nullable=True)
+    finished_at = Column(DateTime, nullable=True)
+    duration_seconds = Column(Float, nullable=True)
+    error = Column(Text, nullable=True)
+    student = relationship("Student", back_populates="sync_jobs")
+    connector = relationship("StudentConnector", back_populates="jobs")
+
+
+class SyncHistory(Base):
+    __tablename__ = "sync_history"
+    __table_args__ = (CheckConstraint("status IN ('SUCCEEDED', 'FAILED')", name="ck_sync_history_status"),)
+
+    id = Column(Integer, primary_key=True, index=True)
+    student_id = Column(Integer, ForeignKey("students.id", ondelete="CASCADE"), nullable=False, index=True)
+    connector_id = Column(Integer, ForeignKey("student_connectors.id", ondelete="CASCADE"), nullable=False, index=True)
+    status = Column(String(20), nullable=False)
+    started_at = Column(DateTime, nullable=False)
+    finished_at = Column(DateTime, nullable=False)
+    duration_seconds = Column(Float, nullable=False)
+    records_processed = Column(Integer, nullable=False, default=0, server_default="0")
+    summary = Column(JSON, nullable=True)
+    error = Column(Text, nullable=True)
+    student = relationship("Student", back_populates="sync_history")
+    connector = relationship("StudentConnector", back_populates="history")
 
 
 # Backward-compatible class name for Phase 15 callers.

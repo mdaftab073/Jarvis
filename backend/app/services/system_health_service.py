@@ -70,6 +70,8 @@ def get_system_health() -> dict:
             "analytics", "study", "pyq", "retrieval", "memory", "semester", "learning",
             "academic_profile", "attendance", "deadline", "notification", "calendar",
             "scheduler", "reminder",
+            "productivity",
+            "semester_copilot",
         }
         statuses["agents"] = "healthy" if expected.issubset(set(reg.names())) else "unhealthy"
     except Exception:
@@ -278,6 +280,8 @@ def validate_system() -> dict:
             "calendar",
             "scheduler",
             "reminder",
+            "productivity",
+            "semester_copilot",
         }
     except Exception as error:
         checks["agent_registry"] = False

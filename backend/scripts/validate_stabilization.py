@@ -22,7 +22,7 @@ from app.db.models import AcademicDeadline, DeadlineItem, GradeRecord
 from app.main import app
 from app.services.grade_service import calculate_cpi, calculate_spi
 
-HEAD = "d14e6f2a9b31"
+HEAD = "e6b2d8a4c913"
 PRE_STABILIZATION_HEAD = "c82d4e6f1a30"
 
 
@@ -89,6 +89,10 @@ def validate_migration_history() -> None:
                 text("INSERT INTO digital_twin_snapshots (academic_profile_id, risk_level) VALUES (:profile_id, 'LOW')"),
                 {"profile_id": profile_id},
             )
+            connection.execute(
+                text("INSERT INTO student_habits (student_id, habit_name, streak, completion_rate) VALUES (:student_id, 'Daily review', 5, 70)"),
+                {"student_id": student_id},
+            )
         engine.dispose()
 
         _alembic(env, "upgrade", "head")
@@ -105,6 +109,14 @@ def validate_migration_history() -> None:
                 raise RuntimeError(f"Historical grade conversion failed: {classifications}")
             if "grade" in {column["name"] for column in inspect(connection).get_columns("grade_records")}:
                 raise RuntimeError("Duplicate grade storage column remains")
+            habit_backfill = connection.execute(
+                text("SELECT habits.category, habit_streaks.current_streak, habit_streaks.completion_rate "
+                     "FROM habits JOIN habit_streaks ON habit_streaks.habit_id = habits.id "
+                     "WHERE habits.student_id = :student_id AND habits.habit_name = 'Daily review'"),
+                {"student_id": student_id},
+            ).one_or_none()
+            if habit_backfill != ("OTHER", 5, 70.0):
+                raise RuntimeError(f"Historical habit summary was not preserved: {habit_backfill}")
         engine.dispose()
 
         _alembic(env, "downgrade", PRE_STABILIZATION_HEAD)
@@ -122,6 +134,8 @@ def validate_contracts() -> None:
         "study_activity_logs", "digital_twin_snapshots", "student_notifications",
         "calendar_events", "study_blocks", "reminders", "student_goals",
         "student_preferences", "student_habits",
+        "goal_milestones", "goal_progress", "habits", "habit_logs", "habit_streaks",
+        "student_connectors", "sync_jobs", "sync_history",
     }
     for table_name in required_owned:
         table = Base.metadata.tables[table_name]
@@ -143,6 +157,8 @@ def validate_contracts() -> None:
     expected_agents = {
         "analytics", "study", "pyq", "retrieval", "memory", "semester", "learning",
         "academic_profile", "attendance", "deadline", "notification", "calendar", "scheduler", "reminder",
+        "productivity",
+        "semester_copilot",
     }
     actual_agents = set(create_default_registry().names())
     if actual_agents != expected_agents:

@@ -1,9 +1,10 @@
-from datetime import datetime
+from datetime import date, datetime, timedelta
 
 from sqlalchemy.orm import Session
 
-from app.db.models import CalendarEvent
+from app.db.models import CalendarEvent, DeadlineItem, Reminder, StudyBlock
 from app.services.time_service import normalize_utc_naive
+from app.services.time_service import utc_now_naive
 
 
 def create_event(db: Session, student_id: int, fields: dict) -> CalendarEvent:
@@ -52,3 +53,46 @@ def delete_event(db: Session, event_id: int) -> bool:
     db.delete(event)
     db.commit()
     return True
+
+
+def get_agenda(db: Session, student_id: int, agenda_date: date) -> dict:
+    start = datetime.combine(agenda_date, datetime.min.time())
+    end = start + timedelta(days=1)
+    items = []
+    for event in db.query(CalendarEvent).filter(
+        CalendarEvent.student_id == student_id,
+        CalendarEvent.start_time < end,
+        CalendarEvent.end_time > start,
+    ).all():
+        items.append({"kind": "CALENDAR", "title": event.title, "start_time": event.start_time, "end_time": event.end_time, "event_type": event.event_type, "id": event.id})
+    for block in db.query(StudyBlock).filter(
+        StudyBlock.student_id == student_id,
+        StudyBlock.start_time < end,
+        StudyBlock.end_time > start,
+    ).all():
+        items.append({"kind": "STUDY_BLOCK", "title": block.title or "Study block", "start_time": block.start_time, "end_time": block.end_time, "event_type": block.block_type, "subject_id": block.subject_id, "completed": block.completed, "id": block.id})
+    for deadline in db.query(DeadlineItem).filter(
+        DeadlineItem.student_id == student_id,
+        DeadlineItem.completed.is_(False),
+        DeadlineItem.due_date >= start,
+        DeadlineItem.due_date < end,
+    ).all():
+        items.append({"kind": "DEADLINE", "title": deadline.title, "start_time": deadline.due_date, "end_time": None, "event_type": deadline.type, "priority": deadline.priority, "id": deadline.id})
+    for reminder in db.query(Reminder).filter(
+        Reminder.student_id == student_id,
+        Reminder.completed.is_(False),
+        Reminder.trigger_time >= start,
+        Reminder.trigger_time < end,
+    ).all():
+        items.append({"kind": "REMINDER", "title": reminder.title, "start_time": reminder.trigger_time, "end_time": None, "event_type": "REMINDER", "id": reminder.id})
+    items.sort(key=lambda item: item["start_time"])
+    return {"student_id": student_id, "date": agenda_date, "items": items}
+
+
+def get_week_agenda(db: Session, student_id: int, week_start: date | None = None) -> dict:
+    week_start = week_start or utc_now_naive().date()
+    return {
+        "student_id": student_id,
+        "start_date": week_start,
+        "days": [get_agenda(db, student_id, week_start + timedelta(days=offset)) for offset in range(7)],
+    }

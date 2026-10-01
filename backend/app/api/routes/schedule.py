@@ -4,8 +4,8 @@ from sqlalchemy.orm import Session
 from app.api.student_scope import require_student_scope
 from app.db.database import get_db
 from app.db.models import StudyBlock
-from app.schemas.student_os import ScheduleInput, StudyBlockInput
-from app.services.scheduler_service import create_study_block, generate_study_schedule
+from app.schemas.student_os import IntelligentScheduleInput, ScheduleInput, StudyBlockInput
+from app.services.scheduler_service import create_study_block, generate_intelligent_schedule, generate_study_schedule
 
 router = APIRouter()
 
@@ -30,3 +30,23 @@ def generate_schedule(student_id: int, payload: ScheduleInput, db: Session = Dep
     except ValueError as error:
         raise HTTPException(status_code=409, detail=str(error)) from error
     return blocks
+
+
+@router.post("/schedule/{student_id}/intelligent")
+def generate_intelligent_student_schedule(
+    student_id: int,
+    payload: IntelligentScheduleInput,
+    db: Session = Depends(get_db),
+    _scope: int = Depends(require_student_scope),
+):
+    try:
+        return generate_intelligent_schedule(
+            db,
+            student_id,
+            payload.start_time,
+            payload.available_hours,
+            payload.horizon_days,
+            payload.session_minutes,
+        )
+    except ValueError as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error

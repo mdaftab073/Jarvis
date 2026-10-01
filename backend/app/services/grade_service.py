@@ -98,6 +98,23 @@ def list_grades(db: Session, student_id: int) -> list[GradeRecord]:
     ).all()
 
 
+def upsert_final_grade(db: Session, student_id: int, fields: dict) -> GradeRecord:
+    require_subject_owner(db, student_id, fields.get("subject_id"))
+    if fields.get("semester") is None or fields.get("credits") is None or fields["credits"] <= 0:
+        raise ValueError("Final grade sync requires semester and positive credits")
+    if fields.get("grade_points") is None or not 0 <= fields["grade_points"] <= 10:
+        raise ValueError("Final grade sync requires grade_points from 0 to 10")
+    record = db.query(GradeRecord).filter_by(
+        student_id=student_id,
+        subject_id=fields["subject_id"],
+        semester=fields["semester"],
+        grade_type="FINAL",
+    ).first()
+    if record is None:
+        return add_grade(db, student_id, {**fields, "grade_type": "FINAL"})
+    return update_grade(db, record.id, {**fields, "grade_type": "FINAL"})
+
+
 def update_grade(db: Session, record_id: int, fields: dict) -> GradeRecord | None:
     record = db.query(GradeRecord).filter_by(id=record_id).first()
     if record is None:
