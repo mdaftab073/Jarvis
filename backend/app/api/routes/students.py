@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
+from app.api.student_scope import require_student_scope
 from app.db.database import get_db
 from app.db.models import Student
 
@@ -60,6 +61,7 @@ def get_students(
 def get_student(
     student_id: int,
     db: Session = Depends(get_db),
+    _scope: int = Depends(require_student_scope),
 ):
     student = (
         db.query(Student)
@@ -84,6 +86,7 @@ def update_student_endpoint(
     student_id: int,
     student: StudentUpdate,
     db: Session = Depends(get_db),
+    _scope: int = Depends(require_student_scope),
 ):
     try:
         updated_student = update_student(
@@ -114,6 +117,7 @@ def update_student_endpoint(
 def delete_student_endpoint(
     student_id: int,
     db: Session = Depends(get_db),
+    _scope: int = Depends(require_student_scope),
 ):
     deleted = delete_student(
         db=db,
@@ -137,6 +141,7 @@ def delete_student_endpoint(
 def get_student_courses(
     student_id: int,
     db: Session = Depends(get_db),
+    _scope: int = Depends(require_student_scope),
 ):
     student = (
         db.query(Student)

@@ -5,6 +5,15 @@ from app.agents.retrieval_agent import RetrievalAgent
 from app.agents.semester_agent import SemesterAgent
 from app.agents.study_agent import StudyAgent
 from app.agents.learning_agent import LearningAgent
+from app.agents.student_os_agents import (
+    AcademicProfileAgent,
+    AttendanceAgent,
+    CalendarAgent,
+    DeadlineAgent,
+    NotificationAgent,
+    ReminderAgent,
+    SchedulerAgent,
+)
 
 
 class AgentRegistry:
@@ -39,5 +48,12 @@ def create_default_registry() -> AgentRegistry:
             MemoryAgent(),
             SemesterAgent(),
             LearningAgent(),
+            AcademicProfileAgent(),
+            AttendanceAgent(),
+            DeadlineAgent(),
+            NotificationAgent(),
+            CalendarAgent(),
+            SchedulerAgent(),
+            ReminderAgent(),
         ]
-    )
+    )

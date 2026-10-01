@@ -20,7 +20,7 @@ class QuizService:
 
     # QuizSession operations
     def create_session(self, obj_in: QuizSessionCreate) -> QuizSession:
-        session = QuizSession(**obj_in.dict())
+        session = QuizSession(**obj_in.model_dump())
         self.db.add(session)
         self.db.commit()
         self.db.refresh(session)
@@ -40,7 +40,7 @@ class QuizService:
 
     # QuizQuestion operations
     def add_question(self, session_id: int, obj_in: QuizQuestionCreate) -> QuizQuestion:
-        question = QuizQuestion(session_id=session_id, **obj_in.dict(exclude={"session_id"}))
+        question = QuizQuestion(session_id=session_id, **obj_in.model_dump(exclude={"session_id"}))
         self.db.add(question)
         self.db.commit()
         self.db.refresh(question)
@@ -57,7 +57,7 @@ class QuizService:
 
     # QuizAnswer operations
     def submit_answer(self, question_id: int, obj_in: QuizAnswerCreate) -> QuizAnswer:
-        answer = QuizAnswer(question_id=question_id, **obj_in.dict(exclude={"question_id"}))
+        answer = QuizAnswer(question_id=question_id, **obj_in.model_dump(exclude={"question_id"}))
         self.db.add(answer)
         self.db.commit()
         self.db.refresh(answer)

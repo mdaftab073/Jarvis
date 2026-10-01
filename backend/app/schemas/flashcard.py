@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 class FlashcardDeckBase(BaseModel):
     name: str = Field(..., max_length=255)
@@ -14,9 +14,7 @@ class FlashcardDeck(FlashcardDeckBase):
     subject_id: int
     created_at: Optional[datetime] = None
 
-    class Config:
-        from_attributes = True
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 class FlashcardBase(BaseModel):
     question: str
@@ -32,7 +30,5 @@ class Flashcard(FlashcardBase):
     deck_id: int
     created_at: Optional[datetime] = None
 
-    class Config:
-        from_attributes = True
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 

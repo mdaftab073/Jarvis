@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
+from app.api.student_scope import require_student_scope
 from app.db.database import get_db
 from app.schemas.profile import ProfileResponse, ProfileSummaryResponse
 from app.services.memory_service import (
@@ -19,7 +20,7 @@ def _handle_profile_error(error: ValueError):
 
 
 @router.get("/profile/{student_id}", response_model=ProfileResponse)
-def student_profile(student_id: int, db: Session = Depends(get_db)):
+def student_profile(student_id: int, db: Session = Depends(get_db), _scope: int = Depends(require_student_scope)):
     try:
         return build_student_profile(student_id, db=db)
     except ValueError as error:
@@ -27,7 +28,7 @@ def student_profile(student_id: int, db: Session = Depends(get_db)):
 
 
 @router.get("/profile/{student_id}/summary", response_model=ProfileSummaryResponse)
-def student_profile_summary(student_id: int, db: Session = Depends(get_db)):
+def student_profile_summary(student_id: int, db: Session = Depends(get_db), _scope: int = Depends(require_student_scope)):
     try:
         return generate_profile_summary(student_id, db=db)
     except ValueError as error:
@@ -35,7 +36,7 @@ def student_profile_summary(student_id: int, db: Session = Depends(get_db)):
 
 
 @router.get("/profile/{student_id}/readiness-history")
-def student_readiness_history(student_id: int, db: Session = Depends(get_db)):
+def student_readiness_history(student_id: int, db: Session = Depends(get_db), _scope: int = Depends(require_student_scope)):
     try:
         return get_readiness_snapshots(student_id, db=db)
     except ValueError as error:
@@ -43,7 +44,7 @@ def student_readiness_history(student_id: int, db: Session = Depends(get_db)):
 
 
 @router.get("/profile/{student_id}/memories")
-def student_memories(student_id: int, db: Session = Depends(get_db)):
+def student_memories(student_id: int, db: Session = Depends(get_db), _scope: int = Depends(require_student_scope)):
     try:
         return get_memories(student_id, db=db)
     except ValueError as error:
@@ -51,7 +52,7 @@ def student_memories(student_id: int, db: Session = Depends(get_db)):
 
 
 @router.get("/profile/debug/{student_id}")
-def debug_student_profile(student_id: int, db: Session = Depends(get_db)):
+def debug_student_profile(student_id: int, db: Session = Depends(get_db), _scope: int = Depends(require_student_scope)):
     try:
         return {
             "stored_memories": get_memories(student_id, db=db),

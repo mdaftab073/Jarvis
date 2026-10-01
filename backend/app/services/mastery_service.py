@@ -25,7 +25,7 @@ class MasteryService:
             mastery.mastery_score = obj_in.mastery_score
             mastery.attempt_count = (mastery.attempt_count or 0) + 1
         else:
-            data = obj_in.dict()
+            data = obj_in.model_dump()
             data.pop("last_reviewed_at", None)
             mastery = TopicMastery(**data, attempt_count=1)
             self.db.add(mastery)

@@ -9,10 +9,12 @@ from sqlalchemy import (
 )
 from app.db.database import Base
 from datetime import datetime
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, synonym
 from sqlalchemy import CheckConstraint, Float
 from sqlalchemy import Date
 from sqlalchemy import Boolean, UniqueConstraint
+from sqlalchemy import event
+from sqlalchemy.orm import Session as OrmSession
 
 class Student(Base):
     __tablename__ = "students"
@@ -81,6 +83,19 @@ class Student(Base):
         back_populates="student",
         cascade="all, delete-orphan",
     )
+    academic_profile = relationship(
+        "StudentAcademicProfile",
+        back_populates="student",
+        cascade="all, delete-orphan",
+        uselist=False,
+    )
+    notifications = relationship("StudentNotification", back_populates="student", cascade="all, delete-orphan")
+    calendar_events = relationship("CalendarEvent", back_populates="student", cascade="all, delete-orphan")
+    study_blocks = relationship("StudyBlock", back_populates="student", cascade="all, delete-orphan")
+    reminders = relationship("Reminder", back_populates="student", cascade="all, delete-orphan")
+    goals = relationship("StudentGoal", back_populates="student", cascade="all, delete-orphan")
+    preferences = relationship("StudentPreference", back_populates="student", cascade="all, delete-orphan", uselist=False)
+    habits = relationship("StudentHabit", back_populates="student", cascade="all, delete-orphan")
 
 class Course(Base):
     __tablename__ = "courses"
@@ -687,6 +702,350 @@ class SemesterMilestone(Base):
     semester = relationship("Semester", back_populates="milestones")
 
 
+# ── Phase 15: Student Digital Twin & Academic Operating System ────────────────
+
+class StudentAcademicProfile(Base):
+    """Core academic identity record for each student."""
+    __tablename__ = "student_academic_profiles"
+    __table_args__ = (
+        UniqueConstraint("student_id", name="uq_student_academic_profiles_student"),
+        CheckConstraint(
+            "academic_status IN ('ACTIVE', 'PROBATION', 'GRADUATED', 'SUSPENDED', 'DROPOUT')",
+            name="ck_academic_profiles_status",
+        ),
+        CheckConstraint(
+            "current_cpi IS NULL OR (current_cpi >= 0 AND current_cpi <= 10)",
+            name="ck_academic_profiles_cpi",
+        ),
+        CheckConstraint(
+            "current_spi IS NULL OR (current_spi >= 0 AND current_spi <= 10)",
+            name="ck_academic_profiles_spi",
+        ),
+    )
+
+    id = Column(Integer, primary_key=True, index=True)
+    student_id = Column(
+        Integer, ForeignKey("students.id", ondelete="CASCADE"),
+        nullable=False, unique=True, index=True,
+    )
+    enrollment_number = Column(String(50), nullable=True, index=True)
+    branch = Column(String(100), nullable=True)
+    department = Column(String(100), nullable=True)
+    semester = Column(Integer, nullable=True)
+    section = Column(String(20), nullable=True)
+    batch_year = Column(Integer, nullable=True)
+    current_cpi = Column(Float, nullable=True)
+    current_spi = Column(Float, nullable=True)
+    total_credits = Column(Integer, nullable=True, default=0)
+    earned_credits = Column(Integer, nullable=True, default=0)
+    academic_status = Column(String(20), nullable=False, default="ACTIVE", server_default="ACTIVE")
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    student = relationship("Student", back_populates="academic_profile")
+    attendance_records = relationship(
+        "AttendanceRecord", back_populates="academic_profile", cascade="all, delete-orphan",
+    )
+    grade_records = relationship(
+        "GradeRecord", back_populates="academic_profile", cascade="all, delete-orphan",
+    )
+    deadline_items = relationship(
+        "AcademicDeadline", back_populates="academic_profile", cascade="all, delete-orphan",
+    )
+    study_activity_logs = relationship(
+        "StudyActivityLog", back_populates="academic_profile", cascade="all, delete-orphan",
+    )
+    digital_twin_snapshots = relationship(
+        "DigitalTwinSnapshot", back_populates="academic_profile", cascade="all, delete-orphan",
+        order_by="DigitalTwinSnapshot.captured_at",
+    )
+
+
+class AttendanceRecord(Base):
+    """Per-subject attendance tracking for the digital twin."""
+    __tablename__ = "attendance_records"
+    __table_args__ = (
+        UniqueConstraint(
+            "academic_profile_id", "subject_id",
+            name="uq_attendance_records_profile_subject",
+        ),
+        CheckConstraint("attended_classes >= 0", name="ck_attendance_attended_nonneg"),
+        CheckConstraint("total_classes >= 0", name="ck_attendance_total_nonneg"),
+        CheckConstraint(
+            "attendance_percentage IS NULL OR (attendance_percentage >= 0 AND attendance_percentage <= 100)",
+            name="ck_attendance_percentage",
+        ),
+    )
+
+    id = Column(Integer, primary_key=True, index=True)
+    student_id = Column(Integer, ForeignKey("students.id", ondelete="CASCADE"), nullable=False, index=True)
+    academic_profile_id = Column(
+        Integer, ForeignKey("student_academic_profiles.id", ondelete="CASCADE"),
+        nullable=False, index=True,
+    )
+    subject_id = Column(
+        Integer, ForeignKey("subjects.id", ondelete="CASCADE"),
+        nullable=False, index=True,
+    )
+    attended_classes = Column(Integer, nullable=False, default=0, server_default="0")
+    total_classes = Column(Integer, nullable=False, default=0, server_default="0")
+    attendance_percentage = Column(Float, nullable=True)
+    last_updated = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    academic_profile = relationship("StudentAcademicProfile", back_populates="attendance_records")
+    student = relationship("Student")
+    subject = relationship("Subject")
+
+
+class GradeRecord(Base):
+    """Component marks and classified final course grades."""
+    __tablename__ = "grade_records"
+    __table_args__ = (
+        CheckConstraint(
+            "component_type IN ('CT1', 'CT2', 'CT3', 'ASSIGNMENT', 'LAB', 'END_SEM', 'MID_SEM', 'VIVA', 'PROJECT', 'OTHER')",
+            name="ck_grade_records_component_type",
+        ),
+        CheckConstraint(
+            "obtained_marks IS NULL OR obtained_marks >= 0",
+            name="ck_grade_records_obtained_marks_nonneg",
+        ),
+        CheckConstraint(
+            "max_marks > 0",
+            name="ck_grade_records_max_marks_pos",
+        ),
+        CheckConstraint("grade_type IN ('COMPONENT', 'FINAL')", name="ck_grade_records_grade_type"),
+        CheckConstraint("credits IS NULL OR credits >= 0", name="ck_grade_records_credits_nonneg"),
+        CheckConstraint("semester IS NULL OR semester >= 1", name="ck_grade_records_semester_positive"),
+        CheckConstraint("grade_points IS NULL OR (grade_points >= 0 AND grade_points <= 10)", name="ck_grade_records_grade_points_range"),
+    )
+
+    id = Column(Integer, primary_key=True, index=True)
+    student_id = Column(Integer, ForeignKey("students.id", ondelete="CASCADE"), nullable=False, index=True)
+    academic_profile_id = Column(
+        Integer, ForeignKey("student_academic_profiles.id", ondelete="CASCADE"),
+        nullable=False, index=True,
+    )
+    subject_id = Column(
+        Integer, ForeignKey("subjects.id", ondelete="CASCADE"),
+        nullable=False, index=True,
+    )
+    component_type = Column(String(20), nullable=False, default="OTHER", server_default="OTHER")
+    obtained_marks = Column(Float, nullable=True)
+    max_marks = Column(Float, nullable=False, default=100)
+    grade = Column("grade_letter", String(5), nullable=True)
+    grade_type = Column(String(10), nullable=False, default="COMPONENT", server_default="COMPONENT")
+    semester = Column(Integer, nullable=True)
+    credits = Column(Float, nullable=True)
+    grade_points = Column(Float, nullable=True)
+    recorded_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+    academic_profile = relationship("StudentAcademicProfile", back_populates="grade_records")
+    student = relationship("Student")
+    subject = relationship("Subject")
+    grade_letter = synonym("grade")
+
+
+class AcademicDeadline(Base):
+    """Upcoming deadlines, exams, submissions tracked per student."""
+    __tablename__ = "deadline_items"
+    __table_args__ = (
+        CheckConstraint(
+            "item_type IN ('EXAM', 'ASSIGNMENT', 'PROJECT', 'LAB_SUBMISSION', 'QUIZ', 'PRESENTATION', 'OTHER')",
+            name="ck_deadline_items_type",
+        ),
+        CheckConstraint(
+            "priority IN ('LOW', 'MEDIUM', 'HIGH', 'CRITICAL')",
+            name="ck_deadline_items_priority",
+        ),
+    )
+
+    id = Column(Integer, primary_key=True, index=True)
+    student_id = Column(Integer, ForeignKey("students.id", ondelete="CASCADE"), nullable=False, index=True)
+    academic_profile_id = Column(
+        Integer, ForeignKey("student_academic_profiles.id", ondelete="CASCADE"),
+        nullable=False, index=True,
+    )
+    subject_id = Column(
+        Integer, ForeignKey("subjects.id", ondelete="CASCADE"),
+        nullable=True, index=True,
+    )
+    title = Column(String(255), nullable=False)
+    description = Column(Text, nullable=True)
+    type = Column("item_type", String(30), nullable=False, default="OTHER")
+    due_date = Column(DateTime, nullable=False, index=True)
+    priority = Column(String(10), nullable=False, default="MEDIUM")
+    completed = Column("is_completed", Boolean, nullable=False, default=False, server_default="0")
+    completed_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+    academic_profile = relationship("StudentAcademicProfile", back_populates="deadline_items")
+    student = relationship("Student")
+    subject = relationship("Subject")
+    item_type = synonym("type")
+    is_completed = synonym("completed")
+
+
+class StudentNotification(Base):
+    __tablename__ = "student_notifications"
+    __table_args__ = (CheckConstraint("notification_type IN ('INFO', 'SUCCESS', 'WARNING', 'CRITICAL', 'REMINDER')", name="ck_student_notifications_type"),)
+
+    id = Column(Integer, primary_key=True, index=True)
+    student_id = Column(Integer, ForeignKey("students.id", ondelete="CASCADE"), nullable=False, index=True)
+    title = Column(String(255), nullable=False)
+    message = Column(Text, nullable=False)
+    notification_type = Column(String(20), nullable=False, default="INFO", server_default="INFO")
+    read = Column(Boolean, nullable=False, default=False, server_default="0")
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    student = relationship("Student", back_populates="notifications")
+
+
+class CalendarEvent(Base):
+    __tablename__ = "calendar_events"
+    __table_args__ = (CheckConstraint("end_time > start_time", name="ck_calendar_events_time_order"),)
+
+    id = Column(Integer, primary_key=True, index=True)
+    student_id = Column(Integer, ForeignKey("students.id", ondelete="CASCADE"), nullable=False, index=True)
+    title = Column(String(255), nullable=False)
+    description = Column(Text, nullable=True)
+    start_time = Column(DateTime, nullable=False, index=True)
+    end_time = Column(DateTime, nullable=False)
+    event_type = Column(String(30), nullable=False, default="OTHER", server_default="OTHER")
+    student = relationship("Student", back_populates="calendar_events")
+
+
+class StudyBlock(Base):
+    __tablename__ = "study_blocks"
+    __table_args__ = (CheckConstraint("end_time > start_time", name="ck_study_blocks_time_order"), CheckConstraint("planned_duration >= 0", name="ck_study_blocks_duration_nonneg"))
+
+    id = Column(Integer, primary_key=True, index=True)
+    student_id = Column(Integer, ForeignKey("students.id", ondelete="CASCADE"), nullable=False, index=True)
+    subject_id = Column(Integer, ForeignKey("subjects.id", ondelete="CASCADE"), nullable=True, index=True)
+    start_time = Column(DateTime, nullable=False, index=True)
+    end_time = Column(DateTime, nullable=False)
+    planned_duration = Column(Integer, nullable=False)
+    completed = Column(Boolean, nullable=False, default=False, server_default="0")
+    student = relationship("Student", back_populates="study_blocks")
+    subject = relationship("Subject")
+
+
+class Reminder(Base):
+    __tablename__ = "reminders"
+
+    id = Column(Integer, primary_key=True, index=True)
+    student_id = Column(Integer, ForeignKey("students.id", ondelete="CASCADE"), nullable=False, index=True)
+    title = Column(String(255), nullable=False)
+    trigger_time = Column(DateTime, nullable=False, index=True)
+    completed = Column(Boolean, nullable=False, default=False, server_default="0")
+    student = relationship("Student", back_populates="reminders")
+
+
+class StudentGoal(Base):
+    __tablename__ = "student_goals"
+
+    id = Column(Integer, primary_key=True, index=True)
+    student_id = Column(Integer, ForeignKey("students.id", ondelete="CASCADE"), nullable=False, index=True)
+    title = Column(String(255), nullable=False)
+    target_date = Column(Date, nullable=True)
+    completed = Column(Boolean, nullable=False, default=False, server_default="0")
+    student = relationship("Student", back_populates="goals")
+
+
+class StudentPreference(Base):
+    __tablename__ = "student_preferences"
+    __table_args__ = (UniqueConstraint("student_id", name="uq_student_preferences_student"),)
+
+    id = Column(Integer, primary_key=True, index=True)
+    student_id = Column(Integer, ForeignKey("students.id", ondelete="CASCADE"), nullable=False, index=True)
+    preferred_study_time = Column(String(30), nullable=True)
+    preferred_session_length = Column(Integer, nullable=True)
+    study_style = Column(String(100), nullable=True)
+    student = relationship("Student", back_populates="preferences")
+
+
+class StudentHabit(Base):
+    __tablename__ = "student_habits"
+    __table_args__ = (CheckConstraint("streak >= 0", name="ck_student_habits_streak_nonneg"), CheckConstraint("completion_rate >= 0 AND completion_rate <= 100", name="ck_student_habits_completion_rate"))
+
+    id = Column(Integer, primary_key=True, index=True)
+    student_id = Column(Integer, ForeignKey("students.id", ondelete="CASCADE"), nullable=False, index=True)
+    habit_name = Column(String(120), nullable=False)
+    streak = Column(Integer, nullable=False, default=0, server_default="0")
+    completion_rate = Column(Float, nullable=False, default=0, server_default="0")
+    student = relationship("Student", back_populates="habits")
+
+
+# Backward-compatible class name for Phase 15 callers.
+DeadlineItem = AcademicDeadline
+
+
+class StudyActivityLog(Base):
+    """Daily/session-level study activity log for the digital twin."""
+    __tablename__ = "study_activity_logs"
+    __table_args__ = (
+        CheckConstraint(
+            "activity_type IN ('READING', 'FLASHCARD', 'QUIZ', 'PROBLEM_SOLVING', 'VIDEO', 'REVISION', 'GROUP_STUDY', 'OTHER')",
+            name="ck_study_activity_type",
+        ),
+        CheckConstraint("duration_minutes >= 0", name="ck_study_activity_duration_nonneg"),
+    )
+
+    id = Column(Integer, primary_key=True, index=True)
+    student_id = Column(Integer, ForeignKey("students.id", ondelete="CASCADE"), nullable=False, index=True)
+    academic_profile_id = Column(
+        Integer, ForeignKey("student_academic_profiles.id", ondelete="CASCADE"),
+        nullable=False, index=True,
+    )
+    subject_id = Column(
+        Integer, ForeignKey("subjects.id", ondelete="CASCADE"),
+        nullable=True, index=True,
+    )
+    activity_type = Column(String(30), nullable=False)
+    duration_minutes = Column(Float, nullable=False, default=0)
+    topics_covered = Column(JSON, nullable=True)
+    productivity_score = Column(Float, nullable=True)
+    notes = Column(Text, nullable=True)
+    logged_at = Column(DateTime, nullable=False, default=datetime.utcnow, index=True)
+
+    academic_profile = relationship("StudentAcademicProfile", back_populates="study_activity_logs")
+    student = relationship("Student")
+    subject = relationship("Subject")
+
+
+class DigitalTwinSnapshot(Base):
+    """Point-in-time snapshot of a student's complete academic state."""
+    __tablename__ = "digital_twin_snapshots"
+    __table_args__ = (
+        CheckConstraint(
+            "risk_level IN ('LOW', 'MEDIUM', 'HIGH', 'CRITICAL')",
+            name="ck_snapshot_risk_level",
+        ),
+        CheckConstraint(
+            "overall_readiness IS NULL OR (overall_readiness >= 0 AND overall_readiness <= 100)",
+            name="ck_snapshot_overall_readiness",
+        ),
+    )
+
+    id = Column(Integer, primary_key=True, index=True)
+    student_id = Column(Integer, ForeignKey("students.id", ondelete="CASCADE"), nullable=False, index=True)
+    academic_profile_id = Column(
+        Integer, ForeignKey("student_academic_profiles.id", ondelete="CASCADE"),
+        nullable=False, index=True,
+    )
+    overall_readiness = Column(Float, nullable=True)
+    risk_level = Column(String(10), nullable=False, default="LOW")
+    mastery_summary = Column(JSON, nullable=True)          # {subject_id: avg_mastery}
+    attendance_summary = Column(JSON, nullable=True)       # {subject_id: pct}
+    grade_summary = Column(JSON, nullable=True)            # {subject_id: {component: marks}}
+    upcoming_deadlines = Column(JSON, nullable=True)       # list of deadline dicts
+    ai_recommendations = Column(JSON, nullable=True)       # AI-generated recommendations
+    study_streak_days = Column(Integer, nullable=False, default=0)
+    total_study_minutes_week = Column(Float, nullable=False, default=0)
+    captured_at = Column(DateTime, nullable=False, default=datetime.utcnow, index=True)
+
+    academic_profile = relationship("StudentAcademicProfile", back_populates="digital_twin_snapshots")
+    student = relationship("Student")
+
+
 # Phase 14 models import to resolve mapper relationship names
 from app.models import (  # noqa: E402, F401
     Topic,
@@ -698,3 +1057,29 @@ from app.models import (  # noqa: E402, F401
     TopicMastery,
     LearningSession,
 )
+
+
+@event.listens_for(OrmSession, "before_flush")
+def _synchronize_profile_owned_student_ids(session, _flush_context, _instances):
+    profile_owned_models = (
+        AttendanceRecord,
+        GradeRecord,
+        DeadlineItem,
+        StudyActivityLog,
+        DigitalTwinSnapshot,
+    )
+    for record in session.new.union(session.dirty):
+        if not isinstance(record, profile_owned_models):
+            continue
+        profile = record.academic_profile
+        if profile is None and record.academic_profile_id is not None:
+            profile = session.get(StudentAcademicProfile, record.academic_profile_id)
+        if profile is None:
+            continue
+        owner_id = profile.student_id
+        if owner_id is None and profile.student is not None:
+            record.student = profile.student
+        elif record.student_id is None:
+            record.student_id = owner_id
+        elif owner_id is not None and record.student_id != owner_id:
+            raise ValueError("student_id must match the owning academic profile")

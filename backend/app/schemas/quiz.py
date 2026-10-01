@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 class QuizSessionBase(BaseModel):
     student_id: int
@@ -17,9 +17,7 @@ class QuizSession(QuizSessionBase):
     started_at: Optional[datetime] = None
     completed_at: Optional[datetime] = None
 
-    class Config:
-        from_attributes = True
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 class QuizQuestionBase(BaseModel):
     topic_id: Optional[int] = None
@@ -34,9 +32,7 @@ class QuizQuestion(QuizQuestionBase):
     id: int
     session_id: int
 
-    class Config:
-        from_attributes = True
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 class QuizAnswerBase(BaseModel):
     question_id: int
@@ -50,7 +46,5 @@ class QuizAnswer(QuizAnswerBase):
     id: int
     answered_at: Optional[datetime] = None
 
-    class Config:
-        from_attributes = True
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 

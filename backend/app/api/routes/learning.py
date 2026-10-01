@@ -9,10 +9,11 @@ Endpoints:
 from typing import List, Optional
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.orm import Session
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
+from app.api.student_scope import require_student_scope
 from app.db.database import get_db
 from app.services.learning_session_service import LearningSessionService
 from app.services.mastery_service import MasteryService
@@ -46,9 +47,7 @@ class LearningSessionResponse(BaseModel):
     score: Optional[float]
     created_at: Optional[datetime] = None
 
-    class Config:
-        from_attributes = True
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class TopicInsight(BaseModel):
@@ -73,9 +72,11 @@ class LearningInsightsResponse(BaseModel):
 @router.post("/learning/session", response_model=LearningSessionResponse)
 def create_learning_session(
     payload: LearningSessionCreate,
+    request: Request,
     db: Session = Depends(get_db),
 ):
     """Record a new learning session."""
+    require_student_scope(payload.student_id, request, db)
     if payload.activity_type not in VALID_ACTIVITY_TYPES:
         raise HTTPException(
             status_code=422,
@@ -98,6 +99,7 @@ def get_learning_history(
     skip: int = Query(default=0, ge=0),
     limit: int = Query(default=50, ge=1, le=200),
     db: Session = Depends(get_db),
+    _scope: int = Depends(require_student_scope),
 ):
     """Return a student's learning session history, newest first."""
     svc = LearningSessionService(db)
@@ -108,6 +110,7 @@ def get_learning_history(
 def get_learning_insights(
     student_id: int,
     db: Session = Depends(get_db),
+    _scope: int = Depends(require_student_scope),
 ):
     """Return a personalised learning analysis for the student.
 

@@ -4,6 +4,7 @@ from contextlib import contextmanager
 from datetime import datetime
 
 from sqlalchemy.orm import Session
+from app.services.time_service import utc_now_naive
 
 from app.db.database import SessionLocal
 from app.db.models import (
@@ -99,7 +100,7 @@ def store_memory(
         else:
             if memory.memory_value != serialized_value:
                 memory.memory_value = serialized_value
-                memory.updated_at = datetime.utcnow()
+                memory.updated_at = utc_now_naive()
         session.commit()
         session.refresh(memory)
         logger.info(
@@ -148,7 +149,7 @@ def update_memory(
         if memory is None:
             return None
         memory.memory_value = json.dumps(memory_value, default=str)
-        memory.updated_at = datetime.utcnow()
+        memory.updated_at = utc_now_naive()
         session.commit()
         session.refresh(memory)
         logger.info(
@@ -212,7 +213,7 @@ def update_student_profile(
             session.add(profile)
         for field, value in updates.items():
             setattr(profile, field, value)
-        profile.updated_at = datetime.utcnow()
+        profile.updated_at = utc_now_naive()
         session.commit()
         session.refresh(profile)
         return {
@@ -250,7 +251,7 @@ def record_readiness_snapshot(
         if (
             latest is not None
             and latest.readiness_score == readiness_score
-            and latest.captured_at.date() == datetime.utcnow().date()
+            and latest.captured_at.date() == utc_now_naive().date()
         ):
             store_memory(
                 student_id,

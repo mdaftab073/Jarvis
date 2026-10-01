@@ -5,7 +5,7 @@ Used by FastAPI request/response models.
 
 from typing import Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 class TopicBase(BaseModel):
     name: str = Field(..., max_length=255)
@@ -21,9 +21,7 @@ class TopicInDBBase(TopicBase):
     id: int
     subject_id: int
 
-    class Config:
-        from_attributes = True
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 class Topic(TopicInDBBase):
     pass

@@ -10,8 +10,9 @@ from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
+from app.api.student_scope import require_student_scope
 from app.db.database import get_db
 from app.services.mastery_service import MasteryService
 from app.models import TopicMastery, Topic
@@ -31,9 +32,7 @@ class MasteryWithTopic(BaseModel):
     mastery_score: float
     attempt_count: int
 
-    class Config:
-        from_attributes = True
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 def _enrich(mastery_obj: TopicMastery, db: Session) -> MasteryWithTopic:
@@ -55,6 +54,7 @@ def get_student_mastery(
     skip: int = Query(default=0, ge=0),
     limit: int = Query(default=100, ge=1, le=500),
     db: Session = Depends(get_db),
+    _scope: int = Depends(require_student_scope),
 ):
     """Return all topic mastery records for a student."""
     records = MasteryService(db).list_mastery_for_student(
@@ -68,6 +68,7 @@ def get_subject_mastery(
     subject_id: int,
     student_id: int = Query(..., ge=1, description="Student to filter mastery for"),
     db: Session = Depends(get_db),
+    _scope: int = Depends(require_student_scope),
 ):
     """Return mastery scores for all topics within a subject for a specific student."""
     topics = db.query(Topic).filter(Topic.subject_id == subject_id).all()
@@ -96,6 +97,7 @@ def get_weak_topics(
     threshold: float = Query(default=WEAK_THRESHOLD, ge=0.0, le=100.0),
     limit: int = Query(default=20, ge=1, le=100),
     db: Session = Depends(get_db),
+    _scope: int = Depends(require_student_scope),
 ):
     """Return topics where a student's mastery score is below the threshold (default 50)."""
     records = MasteryService(db).list_mastery_for_student(

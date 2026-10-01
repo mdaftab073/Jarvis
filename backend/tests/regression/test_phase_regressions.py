@@ -29,7 +29,11 @@ class PhaseRegressionTests(unittest.TestCase):
     def test_director_default_registry_covers_all_specialist_domains(self):
         self.assertEqual(
             set(create_default_registry().names()),
-            {"analytics", "study", "pyq", "retrieval", "memory", "semester", "learning"},
+            {
+                "analytics", "study", "pyq", "retrieval", "memory", "semester", "learning",
+                "academic_profile", "attendance", "deadline", "notification", "calendar",
+                "scheduler", "reminder",
+            },
         )
 
     def test_exam_goal_delegation_order_is_stable(self):

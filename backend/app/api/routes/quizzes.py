@@ -10,13 +10,15 @@ Endpoints:
 from typing import List, Optional
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.orm import Session
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
+from app.api.student_scope import require_record_owner, require_student_scope
 from app.db.database import get_db
 from app.services.quiz_service import QuizService
 from app.services.mastery_service import MasteryService
+from app.services.ownership_service import require_subject_owner
 from app.schemas.quiz import (
     QuizSession,
     QuizSessionCreate,
@@ -26,6 +28,7 @@ from app.schemas.quiz import (
     QuizAnswerCreate,
 )
 from app.schemas.mastery_learning import MasteryCreate
+from app.services.time_service import utc_now_naive
 
 router = APIRouter(tags=["Quizzes"])
 
@@ -72,17 +75,18 @@ class QuizSessionWithQuestions(BaseModel):
     session: QuizSession
     questions: List[QuizQuestion]
 
-    class Config:
-        from_attributes = True
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 @router.post("/quizzes/generate", response_model=QuizSessionWithQuestions)
 def generate_quiz(
     payload: QuizGenerateRequest,
+    request: Request,
     db: Session = Depends(get_db),
 ):
     """Create a new quiz session with the given questions."""
+    require_student_scope(payload.student_id, request, db)
+    require_subject_owner(db, payload.student_id, payload.subject_id)
     svc = QuizService(db)
     session = svc.create_session(
         QuizSessionCreate(
@@ -110,6 +114,7 @@ def generate_quiz(
 @router.post("/quizzes/submit", response_model=QuizSubmitResponse)
 def submit_quiz(
     payload: QuizSubmitRequest,
+    request: Request,
     db: Session = Depends(get_db),
 ):
     """Submit answers for a quiz session and get scored results."""
@@ -117,6 +122,7 @@ def submit_quiz(
     session = svc.get_session(payload.session_id)
     if session is None:
         raise HTTPException(status_code=404, detail="Quiz session not found")
+    require_record_owner(request, session.student_id)
 
     # Build question lookup
     questions = svc.get_questions(session_id=payload.session_id)
@@ -165,13 +171,13 @@ def submit_quiz(
                     student_id=session.student_id,
                     topic_id=q.topic_id,
                     mastery_score=new_score,
-                    last_reviewed_at=datetime.utcnow().isoformat(),
+                    last_reviewed_at=utc_now_naive().isoformat(),
                 )
             )
 
     # Persist score on session
     session.score = correct_count
-    session.completed_at = datetime.utcnow()
+    session.completed_at = utc_now_naive()
     db.commit()
     db.refresh(session)
 
@@ -189,6 +195,7 @@ def get_quiz_history(
     skip: int = Query(default=0, ge=0),
     limit: int = Query(default=50, ge=1, le=200),
     db: Session = Depends(get_db),
+    _scope: int = Depends(require_student_scope),
 ):
     """Return all quiz sessions for a student."""
     return QuizService(db).list_sessions(
@@ -199,6 +206,7 @@ def get_quiz_history(
 @router.get("/quizzes/session/{session_id}", response_model=QuizSessionWithQuestions)
 def get_quiz_session(
     session_id: int,
+    request: Request,
     db: Session = Depends(get_db),
 ):
     """Return a quiz session and its questions."""
@@ -206,5 +214,6 @@ def get_quiz_session(
     session = svc.get_session(session_id)
     if session is None:
         raise HTTPException(status_code=404, detail="Quiz session not found")
+    require_record_owner(request, session.student_id)
     questions = svc.get_questions(session_id=session_id)
     return QuizSessionWithQuestions(session=session, questions=questions)

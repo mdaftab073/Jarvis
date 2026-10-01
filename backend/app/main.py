@@ -24,6 +24,8 @@ from app.api.routes import flashcards
 from app.api.routes import quizzes
 from app.api.routes import mastery
 from app.api.routes import learning
+from app.api.routes import academic_profile, attendance, grades, deadlines, notifications, calendar, schedule, dashboard
+from app.api.routes import reminders
 from app.services.keyword_search_service import sync_keyword_index_from_chroma
 
 
@@ -163,3 +165,17 @@ app.include_router(
     learning.router,
     prefix="/api",
 )
+
+# Phase A: Student Operating System
+for router, tag in (
+    (academic_profile.router, "Academic Profile"),
+    (attendance.router, "Attendance"),
+    (grades.router, "Grades"),
+    (deadlines.router, "Deadlines"),
+    (notifications.router, "Notifications"),
+    (calendar.router, "Calendar"),
+    (schedule.router, "Schedule"),
+    (dashboard.router, "Dashboard"),
+    (reminders.router, "Reminders"),
+):
+    app.include_router(router, prefix="/api", tags=[tag])

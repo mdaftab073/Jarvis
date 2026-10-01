@@ -20,6 +20,15 @@ def create_execution_plan(goal: str) -> dict:
     semester_requested = bool(re.search(r"\b(semester|milestone|cgpa|risk)\b", text))
     memory_requested = bool(re.search(r"\b(profile|remember|history|past performance)\b", text))
     learning_requested = bool(re.search(r"\b(mastery|flashcard|insight|progress|learning)\b", text))
+    operating_system_routes = [
+        ("attendance", r"\battendance\b"),
+        ("deadline", r"\b(deadlines?|due dates?|overdue)\b"),
+        ("calendar", r"\bcalendar\b"),
+        ("scheduler", r"\b(schedule|scheduling|study blocks?)\b"),
+        ("academic_profile", r"\b(profile|enrollment|cpi|spi|credits)\b"),
+        ("notification", r"\bnotifications?\b"),
+        ("reminder", r"\breminders?\b"),
+    ]
 
     agents = []
     if retrieval_requested:
@@ -36,6 +45,7 @@ def create_execution_plan(goal: str) -> dict:
         agents.append("memory")
     if learning_requested:
         agents.append("learning")
+    agents.extend(name for name, pattern in operating_system_routes if re.search(pattern, text))
     if not agents:
         agents = ["analytics", "memory"]
     return {
@@ -46,6 +56,7 @@ def create_execution_plan(goal: str) -> dict:
             "revision_planning" if revision_requested else
             "semester_guidance" if semester_requested else
             "retrieval" if retrieval_requested else
+            "student_operating_system" if any(re.search(pattern, text) for _, pattern in operating_system_routes) else
             "general_guidance"
         ),
         "agents": list(dict.fromkeys(agents)),

@@ -1,7 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
+from app.api.student_scope import require_record_owner, require_student_scope
+from app.db.models import Semester
 from app.schemas.semester import (
     SemesterCreateRequest,
     SemesterMilestoneCreateRequest,
@@ -30,11 +32,19 @@ def _raise_semester_error(error: ValueError):
     raise HTTPException(status_code=status_code, detail=str(error)) from error
 
 
+def _require_semester_scope(db: Session, request: Request, semester_id: int) -> None:
+    owner_id = db.query(Semester.student_id).filter_by(id=semester_id).scalar()
+    if owner_id is not None:
+        require_record_owner(request, owner_id)
+
+
 @router.post("/semester", status_code=201, response_model=SemesterResponse)
 def post_semester(
     request: SemesterCreateRequest,
+    http_request: Request,
     db: Session = Depends(get_db),
 ):
+    require_student_scope(request.student_id, http_request, db)
     try:
         return create_semester(
             db,
@@ -50,7 +60,8 @@ def post_semester(
 
 
 @router.get("/semester/{semester_id}", response_model=SemesterResponse)
-def semester_detail(semester_id: int, db: Session = Depends(get_db)):
+def semester_detail(semester_id: int, request: Request, db: Session = Depends(get_db)):
+    _require_semester_scope(db, request, semester_id)
     try:
         return {
             **get_semester(db, semester_id),
@@ -61,7 +72,8 @@ def semester_detail(semester_id: int, db: Session = Depends(get_db)):
 
 
 @router.get("/semester/{semester_id}/health")
-def semester_health(semester_id: int, db: Session = Depends(get_db)):
+def semester_health(semester_id: int, request: Request, db: Session = Depends(get_db)):
+    _require_semester_scope(db, request, semester_id)
     try:
         return calculate_semester_health(db, semester_id)
     except ValueError as error:
@@ -69,7 +81,8 @@ def semester_health(semester_id: int, db: Session = Depends(get_db)):
 
 
 @router.get("/semester/{semester_id}/review")
-def semester_review(semester_id: int, db: Session = Depends(get_db)):
+def semester_review(semester_id: int, request: Request, db: Session = Depends(get_db)):
+    _require_semester_scope(db, request, semester_id)
     try:
         return generate_weekly_review(db, semester_id)
     except ValueError as error:
@@ -77,7 +90,8 @@ def semester_review(semester_id: int, db: Session = Depends(get_db)):
 
 
 @router.get("/semester/{semester_id}/risks")
-def semester_risks(semester_id: int, db: Session = Depends(get_db)):
+def semester_risks(semester_id: int, request: Request, db: Session = Depends(get_db)):
+    _require_semester_scope(db, request, semester_id)
     try:
         return detect_academic_risks(db, semester_id)
     except ValueError as error:
@@ -87,9 +101,11 @@ def semester_risks(semester_id: int, db: Session = Depends(get_db)):
 @router.post("/semester/{semester_id}/milestone", status_code=201)
 def post_semester_milestone(
     semester_id: int,
+    http_request: Request,
     request: SemesterMilestoneCreateRequest,
     db: Session = Depends(get_db),
 ):
+    _require_semester_scope(db, http_request, semester_id)
     try:
         return add_semester_milestone(
             db,
@@ -107,9 +123,11 @@ def post_semester_milestone(
 def patch_semester_milestone(
     semester_id: int,
     milestone_id: int,
+    http_request: Request,
     request: SemesterMilestoneUpdateRequest,
     db: Session = Depends(get_db),
 ):
+    _require_semester_scope(db, http_request, semester_id)
     try:
         milestone = update_milestone_completion(
             db,
@@ -125,7 +143,8 @@ def patch_semester_milestone(
 
 
 @router.get("/semester/{semester_id}/copilot")
-def semester_copilot(semester_id: int, db: Session = Depends(get_db)):
+def semester_copilot(semester_id: int, request: Request, db: Session = Depends(get_db)):
+    _require_semester_scope(db, request, semester_id)
     try:
         return generate_copilot_guidance(db, semester_id)
     except ValueError as error:
@@ -135,9 +154,11 @@ def semester_copilot(semester_id: int, db: Session = Depends(get_db)):
 @router.patch("/semester/{semester_id}/status", response_model=SemesterResponse)
 def patch_semester_status(
     semester_id: int,
+    http_request: Request,
     request: SemesterStatusUpdateRequest,
     db: Session = Depends(get_db),
 ):
+    _require_semester_scope(db, http_request, semester_id)
     try:
         return update_semester_status(db, semester_id, request.status)
     except ValueError as error:

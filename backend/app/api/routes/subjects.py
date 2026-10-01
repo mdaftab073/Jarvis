@@ -1,7 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 
+from app.api.student_scope import require_record_owner, require_student_scope
 from app.db.database import get_db
+from app.db.models import Course
 
 from app.schemas.subject import (
     SubjectCreate,
@@ -23,8 +25,12 @@ router = APIRouter()
 )
 def create_subject_endpoint(
     subject: SubjectCreate,
+    request: Request,
     db: Session = Depends(get_db),
 ):
+    owner_id = db.query(Course.student_id).filter_by(id=subject.course_id).scalar()
+    if owner_id is not None:
+        require_student_scope(owner_id, request, db)
     return create_subject(
         db=db,
         name=subject.name,
@@ -49,6 +55,7 @@ def get_subjects_endpoint(
 )
 def get_subject_endpoint(
     subject_id: int,
+    request: Request,
     db: Session = Depends(get_db),
 ):
     subject = get_subject(
@@ -61,5 +68,7 @@ def get_subject_endpoint(
             status_code=404,
             detail="Subject not found",
         )
+
+    require_record_owner(request, subject.course.student_id)
 
     return subject

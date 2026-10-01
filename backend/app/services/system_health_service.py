@@ -66,7 +66,11 @@ def get_system_health() -> dict:
     try:
         from app.agents.agent_registry import create_default_registry
         reg = create_default_registry()
-        expected = {"analytics", "study", "pyq", "retrieval", "memory", "semester"}
+        expected = {
+            "analytics", "study", "pyq", "retrieval", "memory", "semester", "learning",
+            "academic_profile", "attendance", "deadline", "notification", "calendar",
+            "scheduler", "reminder",
+        }
         statuses["agents"] = "healthy" if expected.issubset(set(reg.names())) else "unhealthy"
     except Exception:
         logger.exception("System health agent check failed")
@@ -266,6 +270,14 @@ def validate_system() -> dict:
             "retrieval",
             "memory",
             "semester",
+            "learning",
+            "academic_profile",
+            "attendance",
+            "deadline",
+            "notification",
+            "calendar",
+            "scheduler",
+            "reminder",
         }
     except Exception as error:
         checks["agent_registry"] = False

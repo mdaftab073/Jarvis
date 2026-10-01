@@ -65,6 +65,8 @@ class EndpointLoadTests(unittest.TestCase):
         with (
             patch("app.api.routes.rag.ask_question", return_value=rag_result),
             patch("app.api.routes.academic_agent.run_academic_agent", return_value=agent_result),
+            patch("app.api.routes.academic_agent.require_student_scope"),
+            patch("app.api.routes.director.require_student_scope"),
             patch.object(director_route.director, "execute", return_value=director_result),
         ):
             report = [

@@ -18,6 +18,7 @@ from app.services.performance_service import (
     get_weak_topics,
 )
 from app.services.study_plan_service import calculate_plan_progress
+from app.services.time_service import utc_now_naive
 
 logger = logging.getLogger(__name__)
 
@@ -172,7 +173,7 @@ def add_semester_milestone(
         description=description,
         due_date=due_date,
         completed=completed,
-        completed_at=datetime.utcnow() if completed else None,
+        completed_at=utc_now_naive() if completed else None,
     )
     db.add(milestone)
     db.commit()
@@ -224,7 +225,7 @@ def update_milestone_completion(
     if milestone is None:
         return None
     milestone.completed = completed
-    milestone.completed_at = datetime.utcnow() if completed else None
+    milestone.completed_at = utc_now_naive() if completed else None
     db.commit()
     db.refresh(milestone)
     return _serialize_milestone(milestone)

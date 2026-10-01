@@ -1,5 +1,5 @@
 from typing import Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 class MasteryBase(BaseModel):
     topic_id: int
@@ -13,9 +13,7 @@ class MasteryCreate(MasteryBase):
 class Mastery(MasteryBase):
     id: int
 
-    class Config:
-        from_attributes = True
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 class LearningSessionBase(BaseModel):
     student_id: int
@@ -30,7 +28,5 @@ class LearningSessionCreate(LearningSessionBase):
 class LearningSession(LearningSessionBase):
     id: int
 
-    class Config:
-        from_attributes = True
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 

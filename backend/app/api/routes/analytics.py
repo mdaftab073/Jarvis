@@ -1,7 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 
+from app.api.student_scope import require_record_owner, require_student_scope
 from app.db.database import get_db
+from app.db.models import PracticeSession
+from app.services.ownership_service import require_subject_owner
 from app.schemas.analytics import (
     AnalyticsDashboard,
     PracticeStartRequest,
@@ -32,8 +35,11 @@ def _service_error(error: ValueError):
 @router.post("/practice/start", response_model=PracticeStartResponse)
 def start_practice(
     request: PracticeStartRequest,
+    http_request: Request,
     db: Session = Depends(get_db),
 ):
+    require_student_scope(request.student_id, http_request, db)
+    require_subject_owner(db, request.student_id, request.subject_id)
     try:
         created = create_practice_session(
             db=db,
@@ -64,8 +70,12 @@ def start_practice(
 @router.post("/practice/submit", response_model=PracticeSubmitResponse)
 def submit_practice(
     request: PracticeSubmitRequest,
+    http_request: Request,
     db: Session = Depends(get_db),
 ):
+    session = db.query(PracticeSession).filter_by(id=request.session_id).first()
+    if session is not None:
+        require_record_owner(http_request, session.student_id)
     try:
         result = complete_practice_session(
             db=db,
@@ -81,7 +91,7 @@ def submit_practice(
     "/analytics/dashboard/{student_id}",
     response_model=AnalyticsDashboard,
 )
-def student_dashboard(student_id: int, db: Session = Depends(get_db)):
+def student_dashboard(student_id: int, db: Session = Depends(get_db), _scope: int = Depends(require_student_scope)):
     try:
         return get_student_dashboard(db, student_id)
     except ValueError as error:
@@ -96,6 +106,7 @@ def subject_readiness(
     student_id: int,
     subject_id: int,
     db: Session = Depends(get_db),
+    _scope: int = Depends(require_student_scope),
 ):
     try:
         return calculate_exam_readiness(db, student_id, subject_id)
@@ -104,7 +115,7 @@ def subject_readiness(
 
 
 @router.get("/analytics/weak-topics/{student_id}/{subject_id}")
-def weak_topics(student_id: int, subject_id: int, db: Session = Depends(get_db)):
+def weak_topics(student_id: int, subject_id: int, db: Session = Depends(get_db), _scope: int = Depends(require_student_scope)):
     try:
         return get_weak_topics(db, student_id, subject_id)
     except ValueError as error:
@@ -112,7 +123,7 @@ def weak_topics(student_id: int, subject_id: int, db: Session = Depends(get_db))
 
 
 @router.get("/analytics/strong-topics/{student_id}/{subject_id}")
-def strong_topics(student_id: int, subject_id: int, db: Session = Depends(get_db)):
+def strong_topics(student_id: int, subject_id: int, db: Session = Depends(get_db), _scope: int = Depends(require_student_scope)):
     try:
         return get_strong_topics(db, student_id, subject_id)
     except ValueError as error:
@@ -120,7 +131,7 @@ def strong_topics(student_id: int, subject_id: int, db: Session = Depends(get_db
 
 
 @router.get("/analytics/recommendations/{student_id}/{subject_id}")
-def recommendations(student_id: int, subject_id: int, db: Session = Depends(get_db)):
+def recommendations(student_id: int, subject_id: int, db: Session = Depends(get_db), _scope: int = Depends(require_student_scope)):
     try:
         return generate_personalized_recommendations(db, student_id, subject_id)
     except ValueError as error:
