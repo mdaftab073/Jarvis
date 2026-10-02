@@ -27,7 +27,7 @@ from app.api.routes import learning
 from app.api.routes import academic_profile, attendance, grades, deadlines, notifications, calendar, schedule, dashboard
 from app.api.routes import reminders
 from app.api.routes import goals, habits
-from app.api.routes import connectors
+from app.api.routes import connectors, mis
 from app.services.keyword_search_service import sync_keyword_index_from_chroma
 
 
@@ -182,5 +182,6 @@ for router, tag in (
     (goals.router, "Goals"),
     (habits.router, "Habits"),
     (connectors.router, "MIS Connectors"),
+    (mis.router, "SVNIT MIS"),
 ):
     app.include_router(router, prefix="/api", tags=[tag])

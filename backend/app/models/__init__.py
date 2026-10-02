@@ -9,3 +9,4 @@ from .quiz_question import QuizQuestion  # noqa: F401
 from .quiz_answer import QuizAnswer  # noqa: F401
 from .topic_mastery import TopicMastery  # noqa: F401
 from .learning_session import LearningSession  # noqa: F401
+from .student_profile import MISStudentProfile  # noqa: F401

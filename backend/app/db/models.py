@@ -104,6 +104,12 @@ class Student(Base):
     connectors = relationship("StudentConnector", back_populates="student", cascade="all, delete-orphan")
     sync_jobs = relationship("SyncJob", back_populates="student", cascade="all, delete-orphan")
     sync_history = relationship("SyncHistory", back_populates="student", cascade="all, delete-orphan")
+    mis_profile = relationship(
+        "MISStudentProfile",
+        back_populates="student",
+        cascade="all, delete-orphan",
+        uselist=False,
+    )
 
 class Course(Base):
     __tablename__ = "courses"
