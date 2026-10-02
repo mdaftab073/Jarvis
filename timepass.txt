@@ -1,0 +1,441 @@
+<body>
+    <form method="post" action="./iitmsv4eGq0RuNHb0G5WbhLmTKLmTO7YBcJ4RHuXxCNPvuIw=?%2fSVNIT%2f" onsubmit="javascript:return WebForm_OnSubmit();" onkeypress="javascript:return WebForm_FireDefaultButton(event, 'btnSubmit')" id="frmDefault" autocomplete="off">
+<div class="aspNetHidden">
+<input type="hidden" name="Script_water_HiddenField" id="Script_water_HiddenField" value=";;AjaxControlToolkit, Version=3.0.20229.20843, Culture=neutral, PublicKeyToken=28f01b0e84b6d53e:en-US:3b7d1b28-161f-426a-ab77-b345f2c428f5:e2e86ef9:1df13a87:8ccd9c1b">
+<input type="hidden" name="__EVENTTARGET" id="__EVENTTARGET" value="">
+<input type="hidden" name="__EVENTARGUMENT" id="__EVENTARGUMENT" value="">
+<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="PWEtsD89wT/qfSu48I79w9wWsp9OkhYq1y8qY6usl05CyjrnlhEgzcmEHkjuftVtst4PmrYZbxr1Z07xrXXTDlVfCIZyL51GI2t73AfODRxNfTooDh0JwPCuM+837SWsIQ7IFgrajGpkkSIMx0BufJXJhohnh1IwF3ol1WtSouXkZmI+P+yJWp6o9YO0cTLglupxiGMVvUAwCXfMdYiJwuugKordS85NfnmEy1QP4drwENNtugkhzYFtI4q2nPbtQJ+3xzK2EMtNLx9xWEFdJSdiGzrcvF/gEqP3rGAZTc9fg9iRsPvYwHcgJhBWBmwgES4cYlEh/8HEFnPjzioctw7hYVLR6vpvkyttR4uDO1vTE3mkBKCkHSxxqEpFXJ0aYTnx9yX4YteVQ91NJ7LFp0IdvOJdO5G6BPicB7fegO3Z5MQD5HfuyyGAJy9VCMoImAZCY3euN0ukYCyQBm1aODfPeT0hY7xaYyJqBEZBemjXm8GQjd+5AIg4Z/lf3t9m">
+</div>
+
+<script type="text/javascript">
+//<![CDATA[
+var theForm = document.forms['frmDefault'];
+if (!theForm) {
+    theForm = document.frmDefault;
+}
+function __doPostBack(eventTarget, eventArgument) {
+    if (!theForm.onsubmit || (theForm.onsubmit() != false)) {
+        theForm.__EVENTTARGET.value = eventTarget;
+        theForm.__EVENTARGUMENT.value = eventArgument;
+        theForm.submit();
+    }
+}
+//]]>
+</script>
+
+
+<script src="/svnit/WebResource.axd?d=7eGmDCwghRvdO4J2RFqaX9zVqbcuYdO87oaaiYhSUDqs34LLsbA24UgxFzcpe1VvJ6-vw9ljp5m5uf4mlAqJv_LVY1j8Tkp9ARBi5ggr2381&amp;t=639192094340000000" type="text/javascript"></script>
+
+
+<script src="/svnit/ScriptResource.axd?d=EdikyVu0epmlpXebYLY0FuNOAANTg8h5aHHQh_6Ji6o5ptR-WLOK7BVWXjJmURa5tR9qBPSiDyC2Aam2FtKH8xrlfYzqpaqu7CQD0JxJe3GY4XCNVMyK_Jn-LvLeFLX-yJPyXH1r5ZoCeQtJMAZ3T8kfX4l88GJapRDAXtHyZCQ1&amp;t=1d9c6500" type="text/javascript"></script>
+<script src="/svnit/ScriptResource.axd?d=nZ2UoGd9A8JkUmTqlTEOExkZyeXJ5GUspckHWRscBY6FSjCsNf1sy1UhvmlvY1N2T22yW4JbZEa3bdOnQ_VFr-r_Y3leIWD0hdZzu-LBqwIH2K0OCQW2Z7u53LEopCN8Pl0cQnwHBeUKSRWD1KD_fLw-ot-Rlda9O5J6RtsXVAs2w9H5ZVXAuZrywbMkiWUR0&amp;t=fffffffff7f39b88" type="text/javascript"></script>
+<script type="text/javascript">
+//<![CDATA[
+if (typeof(Sys) === 'undefined') throw new Error('ASP.NET Ajax client-side framework failed to load.');
+//]]>
+</script>
+
+<script src="/svnit/ScriptResource.axd?d=K4hb2vt9Hzq9N87T7-47Ma1VThb2ZmN_6g2g_Wg2GdOfmImhRR5xpobdAp0Bnb_snxuHwZsrIQ-AjCJfd0Hz-aN04U3DQHPdKpjDHdlDOc2ywhHt5ndGprHh6eI8oQDZ08-ZpkF-CFUbTALBSNpTAcVwtOO_75Tf3N2v13fFBeij4Sj_bMbMrpUErHmEzBBylQcNedWMftP3qzVCqluI7w2&amp;t=fffffffff7f39b88" type="text/javascript"></script>
+<script src="/SVNIT/default.aspx?_TSM_HiddenField_=Script_water_HiddenField&amp;_TSM_CombinedScripts_=%3b%3bAjaxControlToolkit%2c+Version%3d3.0.20229.20843%2c+Culture%3dneutral%2c+PublicKeyToken%3d28f01b0e84b6d53e%3aen-US%3a3b7d1b28-161f-426a-ab77-b345f2c428f5%3ae2e86ef9%3a1df13a87%3a8ccd9c1b" type="text/javascript"></script>
+<script src="/svnit/WebResource.axd?d=KCjJHRc67REGbI810Y6qWzHJjuCn2xRNKhlI4xsJVWU36flCjVoHdrW8-8dBDANptYbSgOmjN7BSBMOzQ84GJBdk43WdYg4d5OkojnxXI2A1&amp;t=639192094340000000" type="text/javascript"></script>
+<script type="text/javascript">
+//<![CDATA[
+function WebForm_OnSubmit() {
+null;if (typeof(ValidatorOnSubmit) == "function" && ValidatorOnSubmit() == false) return false;
+return true;
+}
+//]]>
+</script>
+
+<div class="aspNetHidden">
+
+	<input type="hidden" name="__VIEWSTATEGENERATOR" id="__VIEWSTATEGENERATOR" value="3BA42206">
+	<input type="hidden" name="__VIEWSTATEENCRYPTED" id="__VIEWSTATEENCRYPTED" value="">
+</div>
+
+        <script type="text/javascript">
+//<![CDATA[
+Sys.WebForms.PageRequestManager._initialize('Script_water', 'frmDefault', ['tUpdatePanel1',''], [], [], 90, '');
+//]]>
+</script>
+
+         <input type="hidden" name="hdnRsaModulus" id="hdnRsaModulus" value="CBDEEA243169FD8D921668FB9382E7602DB7D4BF945EA06297A4600243D39710DE2DB32AF7F1017B15080714DEE0DFE6621E660FFC77E4E4257FCB24800E397373DCD1BBF935FDD7F4AF9ECFBA5DF278277FB3C399575926D7029737C48730BFD18A40F1BED6FB04ED29888FB0DA6BBCA0D3482FB616C46B8BDD8BDF3B067BCE0BE4BC3EB246C6BC07BE3130803AF26A9DBCA0E4B912ED98214F79D8C01C3E3C02DA315386AD4B0D9585A758C90ED6A82B5F1E783FAFE3B1F5DB1B1859AE887CA378FDAF7D99B51331FC4CC8BE6A116D2D6B983E2FECF02457B9CF22633E7D89A03F6F2E7F845C128C04AAF0C2058208972E20E2534249C00498B7CBF0367765">
+        <input type="hidden" name="hdnRsaExponent" id="hdnRsaExponent" value="010001">
+        
+        <input type="hidden" name="hdnEncPwd" id="hdnEncPwd">
+        <div class="container-fluid">
+            <div class="relative-box">
+                <div class="col-sm-12">
+                    <div class="col-sm-6">
+                        <div>
+                            <div class="content text-center">
+                                <img src="IMAGES/Logo_NITMZ.png" alt="NITMZ logo">
+                                <div class="inner-content">
+                                   <h4>सरदार वल्लभभाई राष्ट्रीय प्रौधोगिकी संस्थान सूरत</h4>
+                                    <p>Sardar Vallabhbhai National Institute of Technology Surat</p>
+                                </div>
+                               
+                                <p>Ichchhanath Surat- Dumas Road, Keval Chowk, Surat, Gujarat 395007</p>
+                            </div>
+
+                           <div class="content text-center">
+                                 <a href="https://play.google.com/store/apps/details?id=com.iitms.sdsvnit" target="_blank"><img src="IMAGES/google-play.png" alt="Student Diary App"></a>
+                                <p class="">Click Here to Download Student Diary App</p>
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="absolute-box">
+                            <div class="form-header">
+                                Sign In
+                            </div>
+
+                            <div class="form-body">
+                                <div class="form-group">
+                                    <label>User name</label>
+                                    <input name="txt_username" type="text" id="txt_username" tabindex="1" class="form-control" placeholder="Enter Username" autocomplete="username">
+                                    <span id="req_username" style="display:none;"></span>
+                                </div>
+                                <div class="form-group pass-word">
+                                    <label>Password</label>
+                                    <input name="txt_password" type="password" id="txt_password" tabindex="2" class="form-control" placeholder="Enter Password" autocomplete="current-password">
+                                    <span id="req_password" style="display:none;"></span>
+                                     <span data-toggle="#txt_password" class="fa fa-eye field-icon toggle-password"></span>
+
+                                </div>
+                                <div class="form-group w49">
+                                    <label>Captcha</label>
+                                    <input name="txtcaptcha" type="text" maxlength="13" id="txtcaptcha" tabindex="3" class="form-control" style="text-transform: uppercase; padding: 0 5px">
+                                    <input type="hidden" name="TextBoxWatermarkExtender3_ClientState" id="TextBoxWatermarkExtender3_ClientState">
+                                    <span id="RequiredFieldValidator4" style="display:none;"></span>
+                                </div>
+
+                                
+                                 <div class="form-group w49 with-inline">
+                                         <div id="UpdatePanel1">
+	
+                                    <label>&nbsp;</label>
+                                    <div style="background-color:White;font-size:Smaller;"><img src="CaptchaImage.axd?guid=459c9141-b0a8-41b3-94ac-c4acdf3388c1" border="0" width="115" height="40"></div>
+                                    <input type="image" name="ImageButton1" id="ImageButton1" src="IMAGES/refresh.jpg" onclick="javascript:WebForm_DoPostBackWithOptions(new WebForm_PostBackOptions(&quot;ImageButton1&quot;, &quot;&quot;, true, &quot;&quot;, &quot;&quot;, false, false))" style="height:20px;width:20px;margin-top: -130px; margin-left: 120px; margin-bottom: 20px">
+                                              
+</div>
+                                              </div>
+                                <div class="clearfix"></div>
+                                <div>
+                                    <a id="btnSubmit" tabindex="4" class="form-control btn btn-success" href="javascript:WebForm_DoPostBackWithOptions(new WebForm_PostBackOptions(&quot;btnSubmit&quot;, &quot;&quot;, true, &quot;login&quot;, &quot;&quot;, false, true))">
+                            LOGIN
+                                    </a>
+                                </div>
+                                <div class="col-sm-6 col-xs-6">
+                                    <span>
+                                        </span>
+                                     
+                            
+                                </div>
+                                
+                                <div class="text-right col-sm-6 col-xs6">
+                                     
+                                    
+                                </div>
+                                <div class="col-sm-12 col-xs-12 text-center" style="margin-top:15px;">
+                                      <span><a id="lbtForgePass" data-toggle="modal" data-target="#myModal" tabindex="7" style="cursor: pointer" onclick="lbtForgePass_Click"><span>Forgot Password </span></a></span>
+                                </div>
+                              
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        
+        <div class="compatiblity">
+            <div class="container-fluid">
+            <ul class="list-inline">
+                <li>Site Compatible with</li>
+                <li>
+                    <img src="IMAGES/internet-explorer.png" alt="internet-explorer">
+                    Internet Explorer 10+ ,</li>
+                <li>
+                    <img src="IMAGES/chrome.png" alt="chrome">
+                    Google Chrome 70+ ,</li>
+                <li>
+                    <img src="IMAGES/firefox.png" alt="firefox">
+                    Firefox 65+</li>
+            </ul>
+                </div>
+        </div>
+         
+
+        <div class="modal fade" id="myModal" role="dialog">
+            <div class="modal-dialog modal-sm">
+                <!-- Modal content-->
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" title="Close">×</button>
+                        <h4 class="modal-title">Reset Password</h4>
+                    </div>
+                    <div class="modal-body clearfix">
+                        <div class="form-group col-md-12">
+                            <label>Enter Username :</label>
+                            <input name="txt_Name" type="text" id="txt_Name" tabindex="8" class="form-control" placeholder="Enter Username">
+                            <span id="RequiredFieldValidator2" style="display:none;"></span>
+                            <input type="hidden" name="TextBoxWatermarkExtender2_ClientState" id="TextBoxWatermarkExtender2_ClientState">
+                        </div>
+
+                        <div class="form-group col-md-12">
+                            <label>Enter Registered Email Id :</label>
+                            <input name="txt_emailid" type="text" id="txt_emailid" tabindex="9" class="form-control" placeholder="Enter Registered Email Id">
+                            <span id="RequiredFieldValidator1" style="display:none;"></span>
+                            <span id="RegularExpressionValidator1" style="display:none;"></span>
+                            <input type="hidden" name="TextBoxWatermarkExtender1_ClientState" id="TextBoxWatermarkExtender1_ClientState">
+                        </div>
+                        <div class="col-md-6 form-group">
+                            <label>&nbsp;</label>
+                            <div style="background-color:White;font-size:Smaller;"><img src="CaptchaImage.axd?guid=6720fd51-dbc1-4928-9c8e-fcc16049a928" border="0" width="110" height="40"></div>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label>Captcha :</label>
+                            <input name="txt_captcha" type="text" maxlength="7" id="txt_captcha" tabindex="10" class="form-control" placeholder="Captcha" style="text-transform: uppercase;">
+                            <input type="hidden" name="txt_captcha_TextBoxWatermarkExtender_ClientState" id="txt_captcha_TextBoxWatermarkExtender_ClientState">
+                            <span id="RequiredFieldValidator3" style="display:none;"></span>
+                        </div>
+
+                        <div class="col-md-12 text-center form-group">
+                            <input type="submit" name="btn_SubmitModal" value="Submit" onclick="javascript:WebForm_DoPostBackWithOptions(new WebForm_PostBackOptions(&quot;btn_SubmitModal&quot;, &quot;&quot;, true, &quot;login1&quot;, &quot;&quot;, false, false))" id="btn_SubmitModal" tabindex="11" class="btn btn-info">
+                            <input type="submit" name="btn_Cancel" value="Clear" onclick="return validate();WebForm_DoPostBackWithOptions(new WebForm_PostBackOptions(&quot;btn_Cancel&quot;, &quot;&quot;, true, &quot;&quot;, &quot;&quot;, false, false))" id="btn_Cancel" tabindex="12" class="btn btn-warning">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <p class="text-center"></p>
+                    <p>
+                        </p><div id="ValidationSummary1" style="display:none;">
+
+</div>
+                    <p></p>
+                </div>
+            </div>
+        </div>
+
+
+
+        <div id="val_summary" style="display:none;">
+
+</div>
+
+
+        <script>
+
+            function validate()
+            {
+
+               document.getElementById('txt_Name').value = '';
+               document.getElementById('txt_emailid').value = '';
+               document.getElementById('txt_captcha').value = '';
+               return false;
+            }
+        </script>
+            
+        <script type="text/javascript">
+            document.addEventListener('click', function (evt) {
+                try {
+                    var btn = document.getElementById('btnSubmit');
+                    if (!btn || !(evt.target === btn || btn.contains(evt.target))) {
+                        return;
+                    }
+                    var pwdField = document.getElementById('txt_password');
+                    //Modified on 26/09/2026 - Browser "Save Password" fix: ciphertext goes to hdnEncPwd, not into the password box
+                    var encField = document.getElementById('hdnEncPwd');
+                    var modulus = document.getElementById('hdnRsaModulus').value;
+                    var exponent = document.getElementById('hdnRsaExponent').value;
+                    encField.value = '';
+                    if (pwdField && pwdField.value && modulus && exponent && window.JSEncrypt) {
+                        var encrypt = new JSEncrypt();
+                        encrypt.getKey().setPublic(modulus, exponent);
+                        var cipher = encrypt.encrypt(pwdField.value);
+                        //Old code: if (cipher) { pwdField.value = cipher; }
+                        if (cipher) {
+                            // Send the ciphertext in a separate hidden field and leave the visible
+                            // password box untouched, so the browser's "Save password" stores the
+                            // real password (not ciphertext that would be re-encrypted on autofill).
+                            // Removing the box's name keeps the plain password out of the request body.
+                            encField.value = cipher;
+                            pwdField.removeAttribute('name');
+                        } else {
+                            // Encryption fails when the box holds an old saved ciphertext (too long for RSA),
+                            // left in the browser's password manager by the previous version of this page.
+                            evt.preventDefault();
+                            evt.stopPropagation();
+                            pwdField.value = '';
+                            pwdField.focus();
+                            alert('Saved password is not valid. Please type your password again.');
+                        }
+                        //End Modified on 26/09/2026
+                    }
+                } catch (ex) {
+                    //Encryption failed - fall through and submit as-is; server rejects a non-ciphertext
+                    //password rather than accepting it in plain text (see ResolveLoginPassword)
+                }
+            }, true);
+        </script>
+    
+<script type="text/javascript">
+//<![CDATA[
+var Page_ValidationSummaries =  new Array(document.getElementById("ValidationSummary1"), document.getElementById("val_summary"));
+var Page_Validators =  new Array(document.getElementById("req_username"), document.getElementById("req_password"), document.getElementById("RequiredFieldValidator4"), document.getElementById("RequiredFieldValidator2"), document.getElementById("RequiredFieldValidator1"), document.getElementById("RegularExpressionValidator1"), document.getElementById("RequiredFieldValidator3"));
+//]]>
+</script>
+
+<script type="text/javascript">
+//<![CDATA[
+var req_username = document.all ? document.all["req_username"] : document.getElementById("req_username");
+req_username.controltovalidate = "txt_username";
+req_username.errormessage = "Username Required !";
+req_username.display = "None";
+req_username.validationGroup = "login";
+req_username.evaluationfunction = "RequiredFieldValidatorEvaluateIsValid";
+req_username.initialvalue = "";
+var req_password = document.all ? document.all["req_password"] : document.getElementById("req_password");
+req_password.controltovalidate = "txt_password";
+req_password.errormessage = "Password Required !";
+req_password.display = "None";
+req_password.validationGroup = "login";
+req_password.evaluationfunction = "RequiredFieldValidatorEvaluateIsValid";
+req_password.initialvalue = "";
+var RequiredFieldValidator4 = document.all ? document.all["RequiredFieldValidator4"] : document.getElementById("RequiredFieldValidator4");
+RequiredFieldValidator4.controltovalidate = "txtcaptcha";
+RequiredFieldValidator4.errormessage = "Please enter CAPTCHA code!";
+RequiredFieldValidator4.display = "None";
+RequiredFieldValidator4.validationGroup = "login";
+RequiredFieldValidator4.evaluationfunction = "RequiredFieldValidatorEvaluateIsValid";
+RequiredFieldValidator4.initialvalue = "";
+var RequiredFieldValidator2 = document.all ? document.all["RequiredFieldValidator2"] : document.getElementById("RequiredFieldValidator2");
+RequiredFieldValidator2.controltovalidate = "txt_Name";
+RequiredFieldValidator2.focusOnError = "t";
+RequiredFieldValidator2.errormessage = "Username Required !";
+RequiredFieldValidator2.display = "None";
+RequiredFieldValidator2.validationGroup = "login1";
+RequiredFieldValidator2.evaluationfunction = "RequiredFieldValidatorEvaluateIsValid";
+RequiredFieldValidator2.initialvalue = "";
+var RequiredFieldValidator1 = document.all ? document.all["RequiredFieldValidator1"] : document.getElementById("RequiredFieldValidator1");
+RequiredFieldValidator1.controltovalidate = "txt_emailid";
+RequiredFieldValidator1.focusOnError = "t";
+RequiredFieldValidator1.errormessage = "Email Id Required !";
+RequiredFieldValidator1.display = "None";
+RequiredFieldValidator1.validationGroup = "login1";
+RequiredFieldValidator1.evaluationfunction = "RequiredFieldValidatorEvaluateIsValid";
+RequiredFieldValidator1.initialvalue = "";
+var RegularExpressionValidator1 = document.all ? document.all["RegularExpressionValidator1"] : document.getElementById("RegularExpressionValidator1");
+RegularExpressionValidator1.controltovalidate = "txt_emailid";
+RegularExpressionValidator1.errormessage = "Enter Valid Email ID";
+RegularExpressionValidator1.display = "None";
+RegularExpressionValidator1.validationGroup = "login1";
+RegularExpressionValidator1.evaluationfunction = "RegularExpressionValidatorEvaluateIsValid";
+RegularExpressionValidator1.validationexpression = "\\w+([-+.\']\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*";
+var RequiredFieldValidator3 = document.all ? document.all["RequiredFieldValidator3"] : document.getElementById("RequiredFieldValidator3");
+RequiredFieldValidator3.controltovalidate = "txt_captcha";
+RequiredFieldValidator3.focusOnError = "t";
+RequiredFieldValidator3.errormessage = "Captcha Character not Matched!";
+RequiredFieldValidator3.display = "None";
+RequiredFieldValidator3.validationGroup = "login1";
+RequiredFieldValidator3.evaluationfunction = "RequiredFieldValidatorEvaluateIsValid";
+RequiredFieldValidator3.initialvalue = "";
+var ValidationSummary1 = document.all ? document.all["ValidationSummary1"] : document.getElementById("ValidationSummary1");
+ValidationSummary1.showmessagebox = "True";
+ValidationSummary1.showsummary = "False";
+ValidationSummary1.displaymode = "List";
+ValidationSummary1.validationGroup = "login1";
+var val_summary = document.all ? document.all["val_summary"] : document.getElementById("val_summary");
+val_summary.showmessagebox = "True";
+val_summary.showsummary = "False";
+val_summary.displaymode = "List";
+val_summary.validationGroup = "login";
+//]]>
+</script>
+
+
+<script type="text/javascript">
+//<![CDATA[
+
+var Page_ValidationActive = false;
+if (typeof(ValidatorOnLoad) == "function") {
+    ValidatorOnLoad();
+}
+
+function ValidatorOnSubmit() {
+    if (Page_ValidationActive) {
+        return ValidatorCommonOnSubmit();
+    }
+    else {
+        return true;
+    }
+}
+        
+(function(id) {
+    var e = document.getElementById(id);
+    if (e) {
+        e.dispose = function() {
+            Array.remove(Page_ValidationSummaries, document.getElementById(id));
+        }
+        e = null;
+    }
+})('ValidationSummary1');
+
+(function(id) {
+    var e = document.getElementById(id);
+    if (e) {
+        e.dispose = function() {
+            Array.remove(Page_ValidationSummaries, document.getElementById(id));
+        }
+        e = null;
+    }
+})('val_summary');
+WebForm_AutoFocus('btnSubmit');
+document.getElementById('req_username').dispose = function() {
+    Array.remove(Page_Validators, document.getElementById('req_username'));
+}
+
+document.getElementById('req_password').dispose = function() {
+    Array.remove(Page_Validators, document.getElementById('req_password'));
+}
+Sys.Application.add_init(function() {
+    $create(AjaxControlToolkit.TextBoxWatermarkBehavior, {"ClientStateFieldID":"TextBoxWatermarkExtender3_ClientState","WatermarkText":"Enter Captcha","id":"TextBoxWatermarkExtender3"}, null, null, $get("txtcaptcha"));
+});
+
+document.getElementById('RequiredFieldValidator4').dispose = function() {
+    Array.remove(Page_Validators, document.getElementById('RequiredFieldValidator4'));
+}
+
+document.getElementById('RequiredFieldValidator2').dispose = function() {
+    Array.remove(Page_Validators, document.getElementById('RequiredFieldValidator2'));
+}
+Sys.Application.add_init(function() {
+    $create(AjaxControlToolkit.TextBoxWatermarkBehavior, {"ClientStateFieldID":"TextBoxWatermarkExtender2_ClientState","WatermarkText":"Enter Username","id":"TextBoxWatermarkExtender2"}, null, null, $get("txt_Name"));
+});
+
+document.getElementById('RequiredFieldValidator1').dispose = function() {
+    Array.remove(Page_Validators, document.getElementById('RequiredFieldValidator1'));
+}
+
+document.getElementById('RegularExpressionValidator1').dispose = function() {
+    Array.remove(Page_Validators, document.getElementById('RegularExpressionValidator1'));
+}
+Sys.Application.add_init(function() {
+    $create(AjaxControlToolkit.TextBoxWatermarkBehavior, {"ClientStateFieldID":"TextBoxWatermarkExtender1_ClientState","WatermarkText":"Enter Registered Email Id","id":"TextBoxWatermarkExtender1"}, null, null, $get("txt_emailid"));
+});
+Sys.Application.add_init(function() {
+    $create(AjaxControlToolkit.TextBoxWatermarkBehavior, {"ClientStateFieldID":"txt_captcha_TextBoxWatermarkExtender_ClientState","WatermarkText":"Captcha","id":"txt_captcha_TextBoxWatermarkExtender"}, null, null, $get("txt_captcha"));
+});
+
+document.getElementById('RequiredFieldValidator3').dispose = function() {
+    Array.remove(Page_Validators, document.getElementById('RequiredFieldValidator3'));
+}
+//]]>
+</script>
+</form>
+
+
+</body>
