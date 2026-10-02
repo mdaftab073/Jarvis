@@ -110,6 +110,11 @@ class Student(Base):
         cascade="all, delete-orphan",
         uselist=False,
     )
+    chat_sessions = relationship(
+        "ChatSession",
+        back_populates="student",
+        cascade="all, delete-orphan",
+    )
 
 class Course(Base):
     __tablename__ = "courses"

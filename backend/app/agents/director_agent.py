@@ -13,6 +13,79 @@ def generate_agent_response(goal, response_context):
 logger = logging.getLogger(__name__)
 
 
+def select_chat_tool(message: str) -> str | None:
+    text = message.casefold()
+    if re.search(r"\b(hello|hi|hey|good morning|good afternoon)\b", text):
+        return None
+    if "mis" in text:
+        if re.search(r"\b(attendance|present)\b", text):
+            return "mis_attendance"
+        if re.search(r"\b(result|grade|marks|cpi|spi)\b", text):
+            return "mis_results"
+        if re.search(r"\b(profile|roll|department|program)\b", text):
+            return "mis_profile"
+    routes = (
+        (r"\b(attendance|present|absent)\b", "attendance_summary"),
+        (r"\b(grades?|marks|cpi|spi|gpa|cgpa)\b", "grades"),
+        (r"\b(academic profile|profile|enrollment|department|program)\b", "academic_profile"),
+        (r"\b(deadlines?|due dates?|overdue)\b", "deadlines"),
+        (r"\b(calendar|events?)\b", "calendar_events"),
+        (r"\b(reminders?)\b", "reminders"),
+        (r"\b(goals?)\b", "goals"),
+        (r"\b(habits?)\b", "habits"),
+        (r"\b(productivity|consistency|focus routine)\b", "productivity_analytics"),
+        (r"\b(semester copilot|semester health|semester risks?|readiness forecast|exam countdown)\b", "semester_copilot"),
+        (r"\b(study plan|study schedule|schedule)\b", "study_plan"),
+        (r"\b(mastery|topic mastery|learning progress)\b", "topic_mastery"),
+        (r"\b(flashcards?)\b", "flashcards"),
+        (r"\b(quizzes|quiz|practice test)\b", "quizzes"),
+    )
+    return next((tool for pattern, tool in routes if re.search(pattern, text)), "rag_search")
+
+
+def _chat_tool_answer(tool_name: str, data) -> str:
+    if tool_name == "rag_search":
+        answer = data.get("answer") if isinstance(data, dict) else None
+        return answer or "I couldn't find an answer in the available study materials."
+    if tool_name == "attendance_summary":
+        records = data or []
+        if not records:
+            return "I couldn't find any attendance records yet."
+        summaries = []
+        for item in records:
+            record = item.get("record", {})
+            percentage = record.get("attendance_percentage")
+            if percentage is None:
+                percentage = "not recorded"
+            else:
+                percentage = f"{percentage:g}%"
+            summaries.append(f"Subject {record.get('subject_id')}: {percentage} ({item.get('risk', 'UNKNOWN')})")
+        return "Attendance summary: " + "; ".join(summaries)
+    if tool_name == "grades":
+        cpi = data.get("cpi") if isinstance(data, dict) else None
+        if cpi is None:
+            return "I couldn't find final grade records to calculate your CPI yet."
+        return f"Your current CPI is {cpi:g}. Semester SPI: {data.get('spi_by_semester', {})}."
+    if tool_name == "academic_profile":
+        profile = data.get("profile") if isinstance(data, dict) else None
+        if not profile:
+            return "Your academic profile hasn't been set up yet."
+        semester = profile.get("semester")
+        department = profile.get("department") or profile.get("branch")
+        return f"Your academic profile is available{f' for semester {semester}' if semester else ''}{f' in {department}' if department else ''}."
+    if isinstance(data, list):
+        if not data:
+            return f"I couldn't find any {tool_name.replace('_', ' ')} records yet."
+        first = data[0]
+        label = first.get("title") if isinstance(first, dict) else None
+        return f"I found {len(data)} {tool_name.replace('_', ' ')} record(s)" + (f", including {label}." if label else ".")
+    if isinstance(data, dict) and data.get("summary"):
+        return data["summary"]
+    if isinstance(data, dict) and "productivity_score" in data:
+        return f"Your productivity score is {data['productivity_score']}/100, with {data.get('study_hours_7d', 0)} study hours this week."
+    return f"I retrieved your {tool_name.replace('_', ' ')} information."
+
+
 def create_execution_plan(goal: str) -> dict:
     text = goal.casefold()
     retrieval_requested = bool(
@@ -164,11 +237,76 @@ def aggregate_agent_outputs(agent_outputs: list[dict]) -> dict:
 class AcademicDirectorAgent(BaseAgent):
     name = "director"
 
-    def __init__(self, registry: AgentRegistry | None = None):
+    def __init__(self, registry: AgentRegistry | None = None, tools=None):
         self.registry = registry or create_default_registry()
+        self.tool_registry = tools or get_tool_registry()
 
     def list_tools(self) -> list[dict]:
-        return get_tool_registry().list_tools()
+        return self.tool_registry.list_tools()
+
+    def process_message(self, context: dict) -> dict:
+        student_id = context.get("student_id")
+        message = (context.get("message") or "").strip()
+        if not student_id or not message:
+            raise ValueError("student_id and message are required")
+
+        tool_name = select_chat_tool(message)
+        history = context.get("history", [])[-20:]
+        if tool_name is None:
+            return {
+                "answer": "Hi. What would you like help with today?",
+                "agent_used": self.name,
+                "tool_used": None,
+                "metadata": {"tools_executed": [], "history_messages": len(history)},
+            }
+
+        payload = {
+            "db": context.get("db"),
+            "student_id": student_id,
+            "principal_id": context.get("principal_id"),
+        }
+        tools_executed = [tool_name]
+        if tool_name == "rag_search":
+            follow_up = re.search(r"\b(it|that|those|them|same)\b", message.casefold())
+            question = message
+            if follow_up and history:
+                prior = " ".join(
+                    str(item.get("content", ""))
+                    for item in history[-4:]
+                    if isinstance(item, dict) and item.get("content")
+                )
+                if prior:
+                    question = f"Conversation context: {prior}\nCurrent question: {message}"
+            payload["question"] = question
+        elif tool_name in {"study_plan", "flashcards"}:
+            subjects = self.tool_registry.execute_tool(
+                "student_subjects", {**payload, "goal": message}
+            ).data
+            tools_executed.insert(0, "student_subjects")
+            requested_subject_id = context.get("subject_id")
+            subject = next((item for item in subjects if item.get("id") == requested_subject_id), None) if requested_subject_id else (subjects[0] if subjects else None)
+            if subject is None:
+                return {
+                    "answer": "Which subject should I use for that?",
+                    "agent_used": self.name,
+                    "tool_used": "student_subjects",
+                    "metadata": {"tools_executed": tools_executed, "history_messages": len(history)},
+                }
+            payload["subject_id"] = subject["id"]
+            if tool_name == "study_plan":
+                payload["action"] = "rank_topics"
+
+        result = self.tool_registry.execute_tool(tool_name, payload)
+        return {
+            "answer": _chat_tool_answer(tool_name, result.data),
+            "agent_used": self.name,
+            "tool_used": tool_name,
+            "metadata": {
+                "tools_executed": tools_executed,
+                "execution_status": "succeeded",
+                "history_messages": len(history),
+            },
+        }
 
     def execute(self, context: dict) -> dict:
         started_at = time.perf_counter()

@@ -10,3 +10,5 @@ from .quiz_answer import QuizAnswer  # noqa: F401
 from .topic_mastery import TopicMastery  # noqa: F401
 from .learning_session import LearningSession  # noqa: F401
 from .student_profile import MISStudentProfile  # noqa: F401
+from .chat_session import ChatSession  # noqa: F401
+from .chat_message import ChatMessage  # noqa: F401
