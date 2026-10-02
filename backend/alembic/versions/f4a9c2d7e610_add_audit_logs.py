@@ -34,9 +34,17 @@ def upgrade():
     op.create_index("ix_audit_logs_student_created", "audit_logs", ["student_id", "created_at"])
     op.create_index("ix_audit_logs_event_created", "audit_logs", ["event_type", "created_at"])
     op.create_index("ix_audit_logs_resource", "audit_logs", ["resource_type", "resource_id"])
+    op.add_column("job_executions", sa.Column("queue_time_seconds", sa.Float(), nullable=True))
+    op.add_column("job_executions", sa.Column("duration_seconds", sa.Float(), nullable=True))
+    op.add_column("job_executions", sa.Column("retry_count", sa.Integer(), nullable=False, server_default="0"))
+    op.add_column("job_executions", sa.Column("error_details", sa.JSON(), nullable=True))
 
 
 def downgrade():
+    op.drop_column("job_executions", "error_details")
+    op.drop_column("job_executions", "retry_count")
+    op.drop_column("job_executions", "duration_seconds")
+    op.drop_column("job_executions", "queue_time_seconds")
     op.drop_index("ix_audit_logs_resource", table_name="audit_logs")
     op.drop_index("ix_audit_logs_event_created", table_name="audit_logs")
     op.drop_index("ix_audit_logs_student_created", table_name="audit_logs")

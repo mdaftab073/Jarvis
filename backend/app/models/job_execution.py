@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import CheckConstraint, Column, DateTime, ForeignKey, Index, Integer, JSON, String, Text
+from sqlalchemy import CheckConstraint, Column, DateTime, Float, ForeignKey, Index, Integer, JSON, String, Text
 
 from app.db.database import Base
 
@@ -24,4 +24,8 @@ class JobExecution(Base):
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow, index=True)
     started_at = Column(DateTime, nullable=True)
     completed_at = Column(DateTime, nullable=True)
+    queue_time_seconds = Column(Float, nullable=True)
+    duration_seconds = Column(Float, nullable=True)
+    retry_count = Column(Integer, nullable=False, default=0, server_default="0")
     error_message = Column(Text, nullable=True)
+    error_details = Column(JSON, nullable=True)

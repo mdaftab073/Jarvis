@@ -23,6 +23,7 @@ class Settings(BaseSettings):
     MIS_SYNC_RATE_LIMIT: str = "10/minute"
     UPLOAD_RATE_LIMIT: str = "10/minute"
     REQUIRE_AUTHENTICATED_STUDENT: bool = False
+    METRICS_ADMIN_TOKEN: str | None = None
 
     class Config:
         env_file = ".env"

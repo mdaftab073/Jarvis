@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 from fastapi import UploadFile, File, Form
@@ -36,8 +38,10 @@ from app.services.study_material_processing import process_pdf_material
 from app.api.student_scope import require_record_owner, require_student_scope
 from app.core.config import settings
 from app.api.rate_limit import limiter
+from app.services.audit_log_service import AuditLogService
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 
 def _material_owner(material) -> int:
@@ -192,6 +196,21 @@ def _upload_material_background(
         material_type=material_type,
     )
     job = enqueue_job(db, background_tasks, "process_pdf_material", {"material_id": record.id}, owner_id)
+    try:
+        with db.begin_nested():
+            AuditLogService.record_event(
+                db,
+                "FILE_UPLOAD",
+                "study_material",
+                "upload",
+                student_id=owner_id,
+                resource_id=record.id,
+                metadata_json={"processing_job_id": job.id, "material_type": str(material_type)},
+                ip_address=request.client.host if request.client else None,
+            )
+        db.commit()
+    except Exception:
+        logger.exception("Upload audit event could not be recorded: material_id=%s", record.id)
     return {
         "id": record.id,
         "title": record.title,

@@ -9,6 +9,7 @@ from app.models.chat_message import ChatMessage
 from app.models.chat_session import ChatSession
 from app.schemas.chat import ChatResponse
 from app.tools.exceptions import ToolError
+from app.services.audit_log_service import AuditLogService
 
 
 logger = logging.getLogger(__name__)
@@ -66,6 +67,8 @@ def create_session(db: Session, student_id: int, title: str | None = None) -> Ch
     db.add(session)
     db.commit()
     db.refresh(session)
+    _record_chat_audit(db, "CHAT_SESSION_CREATED", session, "create")
+    db.commit()
     return session
 
 
@@ -165,6 +168,8 @@ def process_chat(
     session_id: int | None = None,
     principal_id: int | None = None,
     director: AcademicDirectorAgent | None = None,
+    request_id: str | None = None,
+    ip_address: str | None = None,
 ) -> ChatResponse:
     if principal_id is not None and principal_id != student_id:
         raise ChatOwnershipError()
@@ -180,6 +185,16 @@ def process_chat(
 
     history = get_history(db, chat_session.id, DEFAULT_HISTORY_LIMIT)
     user_message = add_message(db, chat_session.id, "user", message)
+    _record_chat_audit(
+        db,
+        "CHAT_MESSAGE_SUBMITTED",
+        chat_session,
+        "submit",
+        resource_id=user_message.id,
+        metadata_json={"message_id": user_message.id, "request_id": request_id},
+        ip_address=ip_address,
+    )
+    db.commit()
     if chat_session.title == "New chat":
         title = " ".join(message.split())
         chat_session.title = title[:MAX_SESSION_TITLE_LENGTH].rstrip() or "New chat"
@@ -205,6 +220,14 @@ def process_chat(
         db.rollback()
         error_code = error.code if isinstance(error, ToolError) else "director_error"
         logger.exception("Chat director failed: student_id=%s session_id=%s", student_id, chat_session.id)
+        _record_chat_audit(
+            db,
+            "CHAT_FAILURE",
+            chat_session,
+            "process",
+            metadata_json={"error_code": error_code, "request_id": request_id},
+            ip_address=ip_address,
+        )
         assistant_message = add_message(
             db,
             chat_session.id,
@@ -228,6 +251,24 @@ def process_chat(
             "execution_status": "succeeded",
         },
     )
+    _record_chat_audit(
+        db,
+        "CHAT_AGENT_SELECTED",
+        chat_session,
+        "select_agent",
+        metadata_json={"agent_name": assistant_message.agent_name, "request_id": request_id},
+        ip_address=ip_address,
+    )
+    if assistant_message.tool_name:
+        _record_chat_audit(
+            db,
+            "CHAT_TOOL_SELECTED",
+            chat_session,
+            "select_tool",
+            metadata_json={"tool_name": assistant_message.tool_name, "request_id": request_id},
+            ip_address=ip_address,
+        )
+    db.commit()
     return ChatResponse(
         session_id=chat_session.id,
         user_message_id=user_message.id,
@@ -237,3 +278,29 @@ def process_chat(
         tool_used=assistant_message.tool_name,
         created_at=assistant_message.created_at,
     )
+
+
+def _record_chat_audit(
+    db: Session,
+    event_type: str,
+    session: ChatSession,
+    action: str,
+    *,
+    resource_id: str | int | None = None,
+    metadata_json: dict | None = None,
+    ip_address: str | None = None,
+) -> None:
+    try:
+        with db.begin_nested():
+            AuditLogService.record_event(
+                db,
+                event_type,
+                "chat_session",
+                action,
+                student_id=session.student_id,
+                resource_id=resource_id or session.id,
+                metadata_json=metadata_json,
+                ip_address=ip_address,
+            )
+    except Exception:
+        logger.exception("Chat audit event could not be recorded: event_type=%s", event_type)

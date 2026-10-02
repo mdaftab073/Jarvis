@@ -24,14 +24,17 @@
    ```
 3. **Run the stack**
    ```bash
-   docker compose up -d --build
+   docker compose up --build -d
    ```
-   This starts PostgreSQL, ChromaDB, and the API container.
-4. **Verify health**
+   This starts PostgreSQL, ChromaDB, and the API container. The image applies Alembic migrations before starting FastAPI.
+4. **Verify readiness and production configuration**
    ```bash
-   curl http://localhost:8000/api/system/health
+   curl http://localhost:8000/health/live
+   curl http://localhost:8000/health/ready
+   cd backend
+   python -m scripts.validate_production
    ```
-   You should receive a JSON payload with `overall: "healthy"`.
+   Readiness should report `ready: true`; the validator also checks dependencies, migrations, storage, tools, jobs, audit logging, and rate limits.
 5. **Run the test suite**
    ```bash
    cd backend
@@ -82,10 +85,24 @@ docker run -d \
 
 ## 5. Health Checks & Monitoring
 
-- **Health**: `GET /api/system/health`
+- **Liveness**: `GET /health/live`
+- **Readiness**: `GET /health/ready`
+- **Dependencies**: `GET /health/dependencies`
+- **Legacy system health**: `GET /system/health`
 - **Readiness**: `GET /api/system/readiness`
-- **Metrics**: `GET /api/metrics`
+- **Process metrics**: `GET /api/system/metrics`
+- **Administrative metrics summary**: `GET /api/metrics/summary` with `X-Admin-Token` set to `METRICS_ADMIN_TOKEN`
   - Provides request counts, error rates, latency stats, and agent execution counters.
+
+For an isolated clean-stack check, use a dedicated Compose project name so existing volumes are not reused:
+
+```bash
+docker compose -p jarvis-phase-g up --build -d
+docker compose -p jarvis-phase-g ps
+docker compose -p jarvis-phase-g down -v
+```
+
+The final command removes only the isolated Phase G project volumes; do not use it with your regular project name if its data must be retained.
 
 ## 6. Troubleshooting
 

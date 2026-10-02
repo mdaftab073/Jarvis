@@ -1,11 +1,27 @@
 import datetime
 import json
 import logging
-import os
 import sys
+from contextvars import ContextVar
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from typing import Any, Optional
+
+
+request_id_context: ContextVar[str | None] = ContextVar("request_id", default=None)
+correlation_id_context: ContextVar[str | None] = ContextVar("correlation_id", default=None)
+
+
+def set_log_context(request_id: str, correlation_id: str) -> tuple:
+    return (
+        request_id_context.set(request_id),
+        correlation_id_context.set(correlation_id),
+    )
+
+
+def reset_log_context(tokens: tuple) -> None:
+    request_id_context.reset(tokens[0])
+    correlation_id_context.reset(tokens[1])
 
 
 class JSONFormatter(logging.Formatter):
@@ -24,6 +40,12 @@ class JSONFormatter(logging.Formatter):
         # Include request_id if present
         if hasattr(record, "request_id"):
             log_obj["request_id"] = record.request_id
+        elif request_id_context.get():
+            log_obj["request_id"] = request_id_context.get()
+        if hasattr(record, "correlation_id"):
+            log_obj["correlation_id"] = record.correlation_id
+        elif correlation_id_context.get():
+            log_obj["correlation_id"] = correlation_id_context.get()
 
         # Include structured extra fields if provided
         if hasattr(record, "extra_data") and isinstance(record.extra_data, dict):
@@ -105,6 +127,7 @@ def log_api_request(
         "API Request completed",
         extra={
             "request_id": request_id,
+            "correlation_id": correlation_id_context.get(),
             "extra_data": {
                 "event": "api_request",
                 "method": method,

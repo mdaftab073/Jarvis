@@ -5,7 +5,7 @@ from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoin
 from starlette.requests import Request
 from starlette.responses import Response
 
-from app.core.logging import log_api_request
+from app.core.logging import log_api_request, reset_log_context, set_log_context
 from app.core.metrics import metrics
 
 logger = logging.getLogger("jarvis.request")
@@ -25,8 +25,11 @@ class RequestTrackingMiddleware(BaseHTTPMiddleware):
         request_id = request.headers.get("X-Request-ID")
         if not request_id:
             request_id = str(uuid.uuid4())
+        correlation_id = request.headers.get("X-Correlation-ID") or request_id
+        context_tokens = set_log_context(request_id, correlation_id)
 
         request.state.request_id = request_id
+        request.state.correlation_id = correlation_id
         start_time = time.time()
 
         # 2. Extract client IP and path
@@ -50,6 +53,7 @@ class RequestTrackingMiddleware(BaseHTTPMiddleware):
                 duration_ms=duration_ms,
                 client_ip=client_ip,
             )
+            reset_log_context(context_tokens)
             raise exc
 
         # 3. Complete tracking
@@ -67,4 +71,6 @@ class RequestTrackingMiddleware(BaseHTTPMiddleware):
 
         # 4. Attach request_id to response header
         response.headers["X-Request-ID"] = request_id
+        response.headers["X-Correlation-ID"] = correlation_id
+        reset_log_context(context_tokens)
         return response

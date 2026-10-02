@@ -55,6 +55,8 @@ def post_chat(payload: ChatRequest, request: Request, db: Session = Depends(get_
             payload.message,
             session_id=payload.session_id,
             principal_id=getattr(request.state, "student_id", None),
+            request_id=getattr(request.state, "request_id", None),
+            ip_address=request.client.host if request.client else None,
         )
     except ChatServiceError as error:
         _raise_chat_error(error)

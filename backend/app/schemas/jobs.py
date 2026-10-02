@@ -15,4 +15,7 @@ class JobExecutionResponse(BaseModel):
     created_at: datetime
     started_at: datetime | None = None
     completed_at: datetime | None = None
+    queue_time_seconds: float | None = None
+    duration_seconds: float | None = None
+    retry_count: int = 0
     error_message: str | None = None

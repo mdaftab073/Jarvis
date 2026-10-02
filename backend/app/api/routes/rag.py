@@ -14,6 +14,7 @@ from app.services.rag_service import (
     ask_question,
     debug_search,
 )
+from app.services.audit_log_service import AuditLogService
 from app.api.rate_limit import limiter
 from app.core.config import settings
 from app.services.ownership_service import require_subject_owner
@@ -46,6 +47,15 @@ def ask(
         question=payload.question,
         db=db,
         subject_id=payload.subject_id,
+    )
+    AuditLogService.record_event_isolated(
+        event_type="RAG_QUERY",
+        resource_type="subject" if payload.subject_id is not None else "rag",
+        resource_id=payload.subject_id,
+        action="query",
+        student_id=student_id,
+        metadata_json={"chunks_used": result.get("chunks_used", 0)},
+        ip_address=request.client.host if request.client else None,
     )
 
     sources = []

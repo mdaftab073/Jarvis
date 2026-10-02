@@ -5,6 +5,9 @@ from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 from slowapi import _rate_limit_exceeded_handler
 from app.api.rate_limit import limiter
+from app.core.config import settings
+from app.core.logging import setup_logging
+from app.core.middleware import RequestTrackingMiddleware
 from app.jobs.scheduler import start_scheduler, stop_scheduler
 from app.api.routes.health import router as health_router
 from app.api.routes.metrics import router as metrics_router
@@ -36,6 +39,7 @@ from app.api.routes import chat, connectors, jobs, mis
 from app.services.keyword_search_service import sync_keyword_index_from_chroma
 
 
+setup_logging(log_level=settings.LOG_LEVEL, log_dir=settings.LOG_DIR, enable_json=True)
 logger = logging.getLogger(__name__)
 
 app = FastAPI(
@@ -45,6 +49,7 @@ app = FastAPI(
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.add_middleware(SlowAPIMiddleware)
+app.add_middleware(RequestTrackingMiddleware)
 
 
 @app.on_event("startup")
@@ -69,6 +74,7 @@ app.include_router(
     health_router,
     prefix="/api",
 )
+app.include_router(health_router)
 
 app.include_router(
     student_router,

@@ -16,6 +16,7 @@ from app.tools.exceptions import (
     ToolValidationError,
 )
 from app.tools.schemas import ToolMetadata, ToolResponse
+from app.services.audit_log_service import AuditLogService
 
 
 logger = logging.getLogger(__name__)
@@ -97,22 +98,28 @@ class ToolRegistry:
         tool = self.get_tool(name)
         started = time.perf_counter()
         student_id = payload.get("student_id") if isinstance(payload, dict) else getattr(payload, "student_id", None)
+        request_fields = sorted(payload.keys()) if isinstance(payload, dict) else sorted(payload.model_fields_set)
         try:
             request = tool.input_model.model_validate(payload)
         except ValidationError as error:
             logger.info("Tool validation failed: tool=%s student_id=%s", name, student_id)
+            self._audit_tool(name, student_id, started, False, error, request_fields)
             raise ToolValidationError(name, str(error)) from error
 
         principal_id = getattr(request, "principal_id", None)
         if principal_id is not None and student_id is not None and principal_id != student_id:
-            raise ToolOwnershipError()
+            error = ToolOwnershipError()
+            self._audit_tool(name, student_id, started, False, error, request_fields)
+            raise error
         try:
             data = await tool.execute(request)
         except ToolError as error:
             logger.info("Tool rejected request: tool=%s student_id=%s code=%s", name, student_id, getattr(error, "code", "tool_error"))
+            self._audit_tool(name, student_id, started, False, error, request_fields)
             raise
         except Exception as error:
             logger.exception("Tool execution failed: tool=%s student_id=%s", name, student_id)
+            self._audit_tool(name, student_id, started, False, error, request_fields)
             raise ToolExecutionError(name) from error
         logger.info(
             "Tool executed: tool=%s student_id=%s duration_seconds=%.4f",
@@ -120,9 +127,28 @@ class ToolRegistry:
             student_id,
             time.perf_counter() - started,
         )
+        self._audit_tool(name, student_id, started, True, None, request_fields)
         response = ToolResponse(tool=name, data=_json_safe(data))
         response._raw_data = data
         return response
+
+    @staticmethod
+    def _audit_tool(name, student_id, started, success, error, request_fields) -> None:
+        AuditLogService.record_event_isolated(
+            event_type="TOOL_EXECUTION",
+            resource_type="tool",
+            resource_id=name,
+            action="execute",
+            student_id=student_id,
+            metadata_json={
+                "tool_name": name,
+                "duration_ms": round((time.perf_counter() - started) * 1000, 2),
+                "success": success,
+                "error_type": type(error).__name__ if error else None,
+                "error_message": str(error)[:500] if error else None,
+                "request_fields": request_fields,
+            },
+        )
 
     def execute_tool(self, name: str, payload: dict | BaseModel) -> ToolResponse:
         try:
