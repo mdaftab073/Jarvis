@@ -1,13 +1,22 @@
 from sqlalchemy.orm import Session
 
-from app.agents.base import BaseAgent
-from app.db.models import Course, Student, Subject
-from app.services.performance_service import (
-    calculate_exam_readiness,
-    generate_personalized_recommendations,
-    get_strong_topics,
-    get_weak_topics,
-)
+from app.agents.base import BaseAgent, execute_agent_tool
+
+
+def calculate_exam_readiness(db, student_id, subject_id):
+    return execute_agent_tool("exam_readiness", {"db": db, "student_id": student_id, "subject_id": subject_id})
+
+
+def get_weak_topics(db, student_id, subject_id):
+    return execute_agent_tool("weak_topics", {"db": db, "student_id": student_id, "subject_id": subject_id})
+
+
+def get_strong_topics(db, student_id, subject_id):
+    return execute_agent_tool("strong_topics", {"db": db, "student_id": student_id, "subject_id": subject_id})
+
+
+def generate_personalized_recommendations(db, student_id, subject_id):
+    return execute_agent_tool("personalized_recommendations", {"db": db, "student_id": student_id, "subject_id": subject_id})
 
 
 class AnalyticsAgent(BaseAgent):
@@ -16,22 +25,7 @@ class AnalyticsAgent(BaseAgent):
     def execute(self, context: dict) -> dict:
         db: Session = context["db"]
         student_id = context["student_id"]
-        student = db.query(Student.id).filter(Student.id == student_id).first()
-        if student is None:
-            raise ValueError("Student not found")
-        goal = context.get("goal", "").casefold()
-        subjects = (
-            db.query(Subject)
-            .join(Course, Subject.course_id == Course.id)
-            .filter(Course.student_id == student_id)
-            .order_by(Subject.name.asc())
-            .all()
-        )
-        matching = [item for item in subjects if item.name.casefold() in goal]
-        if matching:
-            subjects = matching
-        elif context.get("subject_id") is not None:
-            subjects = [item for item in subjects if item.id == context["subject_id"]]
+        subjects = self.invoke_tool("student_subjects", context)
 
         results = []
         for subject in subjects:

@@ -1,5 +1,9 @@
 from app.agents.base import BaseAgent
-from app.services.rag_service import ask_question
+from app.agents.base import execute_agent_tool
+
+
+def ask_question(*, question, db, subject_id=None):
+    return execute_agent_tool("rag_search", {"question": question, "db": db, "subject_id": subject_id})
 
 
 class RetrievalAgent(BaseAgent):

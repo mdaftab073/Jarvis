@@ -1,10 +1,21 @@
 from app.agents.base import BaseAgent
-from app.services.memory_service import (
-    build_student_profile,
-    generate_profile_summary,
-    get_memories,
-    get_readiness_trend,
-)
+from app.agents.base import execute_agent_tool
+
+
+def build_student_profile(student_id, db=None):
+    return execute_agent_tool("student_memory", {"db": db, "student_id": student_id, "action": "profile"})
+
+
+def get_memories(student_id, db=None):
+    return execute_agent_tool("student_memory", {"db": db, "student_id": student_id, "action": "memories"})
+
+
+def get_readiness_trend(student_id, db=None):
+    return execute_agent_tool("student_memory", {"db": db, "student_id": student_id, "action": "trend"})
+
+
+def generate_profile_summary(student_id, db=None):
+    return execute_agent_tool("student_memory", {"db": db, "student_id": student_id, "action": "summary"})
 
 
 class MemoryAgent(BaseAgent):

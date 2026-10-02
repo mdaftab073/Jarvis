@@ -3,8 +3,12 @@ import re
 import time
 
 from app.agents.agent_registry import AgentRegistry, create_default_registry
-from app.agents.base import BaseAgent
-from app.services.academic_agent_service import generate_agent_response
+from app.agents.base import BaseAgent, execute_agent_tool
+from app.tools.registry import get_tool_registry
+
+
+def generate_agent_response(goal, response_context):
+    return execute_agent_tool("academic_strategy", {"goal": goal, "strategy_context": response_context})
 
 logger = logging.getLogger(__name__)
 
@@ -163,6 +167,9 @@ class AcademicDirectorAgent(BaseAgent):
     def __init__(self, registry: AgentRegistry | None = None):
         self.registry = registry or create_default_registry()
 
+    def list_tools(self) -> list[dict]:
+        return get_tool_registry().list_tools()
+
     def execute(self, context: dict) -> dict:
         started_at = time.perf_counter()
         goal = context.get("goal", "")
@@ -254,6 +261,7 @@ class AcademicDirectorAgent(BaseAgent):
             "failures": aggregate["failures"],
             "execution_duration_seconds": round(duration, 4),
             "aggregation_duration_seconds": round(aggregation_duration, 4),
+            "available_tools": self.list_tools(),
         }
         return self.response(
             result["summary"],
