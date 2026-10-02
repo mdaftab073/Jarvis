@@ -34,6 +34,12 @@ Swagger UI: `http://localhost:8000/docs`.
 | Variable | Required | Meaning |
 |---|---|---|
 | `GROQ_API_KEY` | Yes | Groq API key; automated tests mock model calls |
+| `GOOGLE_CLIENT_ID` | Yes | Google OAuth Web client ID used to validate ID-token audience |
+| `JWT_SECRET_KEY` | Yes | Random signing key of at least 32 bytes; never commit it |
+| `JWT_ALGORITHM` | No | HMAC algorithm; defaults to `HS256` |
+| `ACCESS_TOKEN_EXPIRE_MINUTES` | No | Access-token lifetime; defaults to `15` |
+| `REFRESH_TOKEN_EXPIRE_DAYS` | No | Refresh-token lifetime; defaults to `30` |
+| `REQUIRE_AUTHENTICATED_STUDENT` | Runtime | Docker Compose sets this to `true` |
 | `POSTGRES_DB` | No | Database name; defaults to `jarvis` |
 | `POSTGRES_USER` | No | Database role; defaults to `jarvis` |
 | `POSTGRES_PASSWORD` | Yes | Database password |
@@ -45,6 +51,8 @@ Swagger UI: `http://localhost:8000/docs`.
 | `HF_HOME` | Runtime | Model cache directory; Compose persists `/opt/huggingface` |
 
 `.env.example` contains placeholders only. Never commit `.env`; rotate credentials before external deployment.
+
+See [docs/deployment/README.md](docs/deployment/README.md) for the auth flow, migration process, health endpoints, and production checklist. Run `python backend/scripts/validate_deployment.py` after startup; it writes `deployment_report.md` and returns a failing exit code when production checks do not pass.
 
 ## Operations
 

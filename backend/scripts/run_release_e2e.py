@@ -2,7 +2,7 @@ import json
 import os
 import sys
 import uuid
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from pathlib import Path
 from unittest.mock import patch
 
@@ -71,8 +71,10 @@ def _llm_strategy(goal: str, _context: dict) -> dict:
 
 
 def run() -> dict:
-    from app.api.routes import students as student_routes
+    from app.db.models import Course
     from app.main import app
+    from app.services.audit_log_service import AuditLogService
+    from app.tools.registry import get_tool_registry
     from app.services import academic_agent_service, pyq_service, rag_service
     from app.services.keyword_search_service import (
         delete_material_chunks as delete_keyword_chunks,
@@ -81,10 +83,19 @@ def run() -> dict:
 
     run_id = uuid.uuid4().hex[:10]
     today = date.today()
-    created_student_id = None
+    google_id_token = os.getenv("GOOGLE_ID_TOKEN")
+    if not google_id_token:
+        raise RuntimeError("Set GOOGLE_ID_TOKEN to a short-lived Google ID token for a dedicated test account")
+    course_ids = []
     subject_ids = []
     material_ids = []
     uploaded_paths = []
+    chat_session_id = None
+    goal_ids = []
+    habit_ids = []
+    reminder_ids = []
+    calendar_event_ids = []
+    job_ids = []
     outcomes = {}
     api_calls = []
     client = TestClient(app)
@@ -98,14 +109,137 @@ def run() -> dict:
         return response
 
     try:
-        student_response = call(
+        login = call(
             "post",
-            "/api/students",
+            "/api/auth/google",
             expected=200,
-            json={"name": f"E2E Student {run_id}", "email": f"e2e-{run_id}@example.com"},
+            json={"id_token": google_id_token},
         )
-        student_id = student_response.json()["id"]
-        created_student_id = student_id
+        student_id = login.json()["student"]["id"]
+        access_token = login.json()["tokens"]["access_token"]
+        if not access_token or not login.json()["tokens"].get("refresh_token"):
+            raise RuntimeError("Google login did not issue both required JWTs")
+        client.headers.update({"Authorization": f"Bearer {access_token}"})
+        call("get", "/api/auth/me")
+        metrics_data = call("get", "/api/system/metrics").json()
+        if "total_requests" not in metrics_data:
+            raise RuntimeError("Metrics endpoint returned an invalid payload")
+
+        chat_session = call(
+            "post",
+            "/api/chat/sessions",
+            json={"student_id": student_id, "title": f"Deployment E2E {run_id}"},
+        ).json()
+        chat_session_id = chat_session["id"]
+        with patch(
+            "app.services.chat_service.AcademicDirectorAgent.process_message",
+            return_value={
+                "answer": "Authenticated chat E2E completed.",
+                "agent_used": "deployment_e2e",
+                "tool_used": None,
+                "metadata": {},
+            },
+        ):
+            chat = call(
+                "post",
+                "/api/chat",
+                json={"session_id": chat_session_id, "message": "Validate this authenticated chat."},
+            ).json()
+        outcomes["authenticated_chat"] = {"session_id": chat["session_id"], "answer": chat["answer"]}
+
+        from app.db.database import SessionLocal
+
+        with SessionLocal() as tool_db:
+            tool_result = get_tool_registry().execute_tool(
+                "goals",
+                {
+                    "db": tool_db,
+                    "student_id": student_id,
+                    "principal_id": student_id,
+                    "action": "list",
+                },
+            )
+        if not tool_result.success:
+            raise RuntimeError("Registered goals tool did not execute successfully")
+        outcomes["tool_execution"] = {"tool": tool_result.tool, "success": tool_result.success}
+
+        with SessionLocal() as audit_db:
+            auth_events = AuditLogService.student_logs(
+                audit_db, student_id, event_type="AUTHENTICATION"
+            )
+            chat_events = AuditLogService.student_logs(
+                audit_db, student_id, event_type="CHAT_MESSAGE_SUBMITTED"
+            )
+            tool_events = AuditLogService.student_logs(
+                audit_db, student_id, event_type="TOOL_EXECUTION"
+            )
+        if not auth_events or not chat_events or not tool_events:
+            raise RuntimeError("Authentication, chat, or tool audit events were not persisted")
+        outcomes["audit_logging"] = {
+            "authentication_events": len(auth_events),
+            "chat_events": len(chat_events),
+            "tool_events": len(tool_events),
+        }
+
+        goal = call(
+            "post",
+            f"/api/goals/{student_id}",
+            json={
+                "title": f"Deployment E2E goal {run_id}",
+                "goal_type": "STUDY_HOURS",
+                "target_value": 5,
+                "target_unit": "hours",
+            },
+        ).json()
+        goal_ids.append(goal["id"])
+        habit = call(
+            "post",
+            f"/api/habits/{student_id}",
+            json={
+                "habit_name": f"Deployment E2E habit {run_id}",
+                "category": "DAILY_STUDY",
+                "target_per_week": 5,
+            },
+        ).json()
+        habit_ids.append(habit["id"])
+        reminder = call(
+            "post",
+            f"/api/reminders/{student_id}",
+            json={
+                "title": f"Deployment E2E reminder {run_id}",
+                "trigger_time": (datetime.utcnow() + timedelta(days=1)).isoformat(),
+            },
+        ).json()
+        reminder_ids.append(reminder["id"])
+        event_start = datetime.utcnow() + timedelta(days=1)
+        event = call(
+            "post",
+            f"/api/calendar/{student_id}",
+            json={
+                "title": f"Deployment E2E event {run_id}",
+                "start_time": event_start.isoformat(),
+                "end_time": (event_start + timedelta(hours=1)).isoformat(),
+                "event_type": "OTHER",
+            },
+        ).json()
+        calendar_event_ids.append(event["id"])
+        outcomes["student_os"] = {"goal_id": goal["id"], "habit_id": habit["id"], "reminder_id": reminder["id"], "calendar_event_id": event["id"]}
+
+        mis_job = call(
+            "post",
+            f"/api/mis/jobs?student_id={student_id}",
+            expected=202,
+            json={"student_id": student_id, "resource": "profile"},
+        ).json()
+        job_ids.append(mis_job["id"])
+        tracked_job = call(
+            "get",
+            f"/api/jobs/{mis_job['id']}",
+            params={"student_id": student_id},
+        ).json()
+        outcomes["mis_job_tracking"] = {"job_id": tracked_job["id"], "status": tracked_job["status"]}
+        call("get", "/health/live")
+
         course = call(
             "post",
             "/api/courses",
@@ -116,6 +250,7 @@ def run() -> dict:
                 "student_id": student_id,
             },
         ).json()
+        course_ids.append(course["id"])
         dbms = call(
             "post",
             "/api/subjects",
@@ -136,7 +271,7 @@ def run() -> dict:
         notes_response = call(
             "post",
             "/api/materials/upload",
-            expected=200,
+            expected=202,
             data={"title": f"DBMS Transactions Notes {run_id}", "subject_id": str(dbms["id"]), "material_type": "NOTES"},
             files={"file": (notes_name, _pdf_bytes([
                 "DBMS Transactions and ACID Properties",
@@ -160,7 +295,7 @@ def run() -> dict:
             pyq_response = call(
                 "post",
                 "/api/materials/upload",
-                expected=200,
+                expected=202,
                 data={"title": f"DBMS Previous Year Questions {run_id}", "subject_id": str(dbms["id"]), "material_type": "PYQ"},
                 files={"file": (pyq_name, _pdf_bytes([
                     "DBMS Previous Year Question Paper 2024",
@@ -324,7 +459,7 @@ def run() -> dict:
             "run_id": run_id,
             "outcomes": outcomes,
             "api_calls": api_calls,
-            "created_student_id": student_id,
+            "authenticated_student_id": student_id,
             "material_ids": material_ids,
             "subject_ids": subject_ids,
             "uploaded_paths": uploaded_paths,
@@ -336,12 +471,28 @@ def run() -> dict:
                 delete_keyword_chunks(material_id)
             except Exception:
                 pass
-        if created_student_id is not None:
-            from app.db.database import SessionLocal
-
+        for endpoint in (
+            *[f"/api/chat/sessions/{item_id}" for item_id in ([chat_session_id] if chat_session_id else [])],
+            *[f"/api/goals/{item_id}" for item_id in goal_ids],
+            *[f"/api/habits/{item_id}" for item_id in habit_ids],
+            *[f"/api/reminders/{item_id}" for item_id in reminder_ids],
+            *[f"/api/calendar/events/{item_id}" for item_id in calendar_event_ids],
+        ):
+            try:
+                client.delete(endpoint)
+            except Exception:
+                pass
+        if course_ids or job_ids:
             cleanup_db = SessionLocal()
             try:
-                student_routes.delete_student_endpoint(created_student_id, db=cleanup_db)
+                for course in cleanup_db.query(Course).filter(Course.id.in_(course_ids)).all() if course_ids else []:
+                    cleanup_db.delete(course)
+                if job_ids:
+                    from app.models.job_execution import JobExecution
+
+                    for job in cleanup_db.query(JobExecution).filter(JobExecution.id.in_(job_ids)).all():
+                        cleanup_db.delete(job)
+                cleanup_db.commit()
             except Exception:
                 cleanup_db.rollback()
             finally:
@@ -364,9 +515,9 @@ def _write_report(result: dict | None, error: str | None):
         f"Run date: {date.today().isoformat()}",
         "",
         "## Test Scenario",
-        "Created an isolated release-validation student, course, DBMS and Operating Systems subjects, uploaded realistic text PDFs, generated real local embeddings, and exercised database, Chroma, BM25, analytics, planning, memory, semester, and agent endpoints.",
+        "Authenticated a dedicated Google test student, created a course, DBMS and Operating Systems subjects, uploaded realistic text PDFs, generated real local embeddings, and exercised database, Chroma, BM25, analytics, planning, memory, semester, and agent endpoints.",
         "",
-        "Groq-generated prose and PYQ classification were deterministic mocks; PDF extraction, embeddings, Chroma persistence, keyword indexing, and hybrid retrieval were real. Test records, uploaded files, and vector/index chunks were removed during cleanup.",
+        "Groq-generated prose and PYQ classification were deterministic mocks; PDF extraction, embeddings, Chroma persistence, keyword indexing, and hybrid retrieval were real. Tracked run resources, files, and vector/index chunks are removed. The dedicated Google test student is retained; audit records and derived student history may remain.",
         "",
         "## API Calls",
     ]

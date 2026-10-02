@@ -43,7 +43,7 @@ def post_chat(payload: ChatRequest, request: Request, db: Session = Depends(get_
         if payload.student_id is not None and payload.student_id != student_id:
             raise HTTPException(status_code=403, detail={"success": False, "error": "ownership_error", "message": "This chat session is outside the current student scope."})
     else:
-        student_id = payload.student_id
+        student_id = getattr(request.state, "student_id", None) or payload.student_id
         if student_id is None:
             raise HTTPException(status_code=422, detail={"success": False, "error": "student_id_required", "message": "student_id is required when creating a chat session."})
         _validate_scope(request, db, student_id)

@@ -112,6 +112,9 @@ def enqueue_mis_sync(
     db: Session = Depends(get_db),
     _scope: int = Depends(require_student_scope),
 ):
+    principal_id = getattr(request.state, "student_id", None)
+    if principal_id is not None and payload.student_id != principal_id:
+        raise HTTPException(status_code=403, detail="Student scope mismatch")
     execution = enqueue_job(
         db,
         background_tasks,

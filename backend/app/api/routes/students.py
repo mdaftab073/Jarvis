@@ -1,10 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
 from app.api.student_scope import require_student_scope
 from app.db.database import get_db
 from app.db.models import Student
+from app.core.config import settings
 
 from app.services.student_service import (
     create_student,
@@ -28,8 +29,11 @@ router = APIRouter()
 )
 def create_student_endpoint(
     student: StudentCreate,
+    request: Request,
     db: Session = Depends(get_db),
 ):
+    if settings.REQUIRE_AUTHENTICATED_STUDENT:
+        raise HTTPException(status_code=403, detail="Students are created through verified Google login")
     try:
         return create_student(
             db=db,
@@ -49,8 +53,14 @@ def create_student_endpoint(
     response_model=list[StudentResponse],
 )
 def get_students(
+    request: Request,
     db: Session = Depends(get_db),
 ):
+    if settings.REQUIRE_AUTHENTICATED_STUDENT:
+        principal_id = getattr(request.state, "student_id", None)
+        if principal_id is None:
+            raise HTTPException(status_code=401, detail="Authentication required")
+        return db.query(Student).filter(Student.id == principal_id).all()
     return db.query(Student).all()
 
 
@@ -85,9 +95,12 @@ def get_student(
 def update_student_endpoint(
     student_id: int,
     student: StudentUpdate,
+    request: Request,
     db: Session = Depends(get_db),
     _scope: int = Depends(require_student_scope),
 ):
+    if settings.REQUIRE_AUTHENTICATED_STUDENT:
+        raise HTTPException(status_code=403, detail="Student profile is managed by verified Google login")
     try:
         updated_student = update_student(
             db=db,

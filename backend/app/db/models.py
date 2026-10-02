@@ -8,7 +8,7 @@ from sqlalchemy import (
     Text,
 )
 from app.db.database import Base
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy.orm import relationship, synonym
 from sqlalchemy import CheckConstraint, Float
 from sqlalchemy import Date
@@ -24,6 +24,13 @@ class Student(Base):
     name = Column(String, nullable=False)
 
     email = Column(String, unique=True, nullable=False)
+
+    google_id = Column(String, unique=True, nullable=True, index=True)
+    full_name = Column(String, nullable=True)
+    profile_picture = Column(String, nullable=True)
+    is_verified = Column(Boolean, nullable=False, default=False, server_default="false")
+    is_active = Column(Boolean, nullable=False, default=True, server_default="true")
+    last_login_at = Column(DateTime, nullable=True)
     
     courses = relationship(
         "Course",
@@ -116,6 +123,20 @@ class Student(Base):
         cascade="all, delete-orphan",
     )
     job_executions = relationship("JobExecution", cascade="all, delete-orphan")
+
+
+class AuthRefreshToken(Base):
+    __tablename__ = "auth_refresh_tokens"
+
+    jti = Column(String(36), primary_key=True)
+    student_id = Column(Integer, ForeignKey("students.id", ondelete="CASCADE"), nullable=False, index=True)
+    expires_at = Column(DateTime, nullable=False)
+    revoked_at = Column(DateTime, nullable=True)
+    issued_at = Column(
+        DateTime,
+        nullable=False,
+        default=lambda: datetime.now(timezone.utc).replace(tzinfo=None),
+    )
 
 class Course(Base):
     __tablename__ = "courses"

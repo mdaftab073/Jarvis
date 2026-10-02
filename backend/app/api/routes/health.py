@@ -3,11 +3,12 @@ import logging
 
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
-from sqlalchemy import text
+from sqlalchemy import inspect, text
 
 from app.core.config import settings
 from app.db.database import engine
 from app.jobs.scheduler import scheduler
+from app.core.metrics import metrics
 from app.services.system_health_service import _migration_state
 from app.services.vector_service import get_collection
 from app.tools.registry import get_tool_registry
@@ -47,6 +48,22 @@ def dependency_status() -> dict:
     except Exception:
         logger.exception("Health migration check failed")
         statuses["migrations"] = "error"
+    try:
+        statuses["metrics"] = "ok" if isinstance(metrics.get_metrics(), dict) else "error"
+    except Exception:
+        logger.exception("Health metrics check failed")
+        statuses["metrics"] = "error"
+    try:
+        statuses["audit_logging"] = "ok" if "audit_logs" in inspect(engine).get_table_names() else "error"
+    except Exception:
+        logger.exception("Health audit logging check failed")
+        statuses["audit_logging"] = "error"
+    statuses["authentication"] = (
+        "ok"
+        if not settings.REQUIRE_AUTHENTICATED_STUDENT
+        or (settings.JWT_SECRET_KEY and settings.GOOGLE_CLIENT_ID)
+        else "error"
+    )
     return statuses
 
 
@@ -58,7 +75,10 @@ def health_live():
 @router.get("/health/ready")
 def health_ready():
     checks = dependency_status()
-    ready = all(checks[key] == "ok" for key in ("database", "chromadb", "scheduler", "tool_registry", "migrations"))
+    ready = all(checks[key] == "ok" for key in (
+        "database", "chromadb", "scheduler", "tool_registry", "migrations",
+        "metrics", "audit_logging", "authentication",
+    ))
     return JSONResponse(
         status_code=200 if ready else 503,
         content={"status": "ready" if ready else "not_ready", "ready": ready, **checks},
@@ -68,12 +88,18 @@ def health_ready():
 @router.get("/health/dependencies")
 def health_dependencies():
     checks = dependency_status()
-    healthy = all(checks[key] == "ok" for key in ("database", "chromadb", "scheduler", "tool_registry", "migrations"))
+    healthy = all(checks[key] == "ok" for key in (
+        "database", "chromadb", "scheduler", "tool_registry", "migrations",
+        "metrics", "audit_logging", "authentication",
+    ))
     return JSONResponse(status_code=200 if healthy else 503, content={"status": "healthy" if healthy else "degraded", **checks})
 
 
 @router.get("/health")
 def health_check():
     checks = dependency_status()
-    healthy = all(checks[key] == "ok" for key in ("database", "chromadb", "scheduler", "tool_registry", "migrations"))
+    healthy = all(checks[key] == "ok" for key in (
+        "database", "chromadb", "scheduler", "tool_registry", "migrations",
+        "metrics", "audit_logging", "authentication",
+    ))
     return JSONResponse(status_code=200 if healthy else 503, content={"status": "healthy" if healthy else "degraded", **checks})

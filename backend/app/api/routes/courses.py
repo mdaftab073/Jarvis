@@ -15,6 +15,7 @@ from app.schemas.course import (
     CourseResponse,
     CourseWithSubjects,
 )
+from app.core.config import settings
 
 router = APIRouter()
 
@@ -42,8 +43,14 @@ def create_course_endpoint(
     response_model=list[CourseResponse],
 )
 def get_courses_endpoint(
+    request: Request,
     db: Session = Depends(get_db),
 ):
+    if settings.REQUIRE_AUTHENTICATED_STUDENT:
+        principal_id = getattr(request.state, "student_id", None)
+        if principal_id is None:
+            raise HTTPException(status_code=401, detail="Authentication required")
+        return db.query(Course).filter(Course.student_id == principal_id).all()
     return get_courses(db)
 
 

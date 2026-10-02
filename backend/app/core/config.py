@@ -23,6 +23,11 @@ class Settings(BaseSettings):
     MIS_SYNC_RATE_LIMIT: str = "10/minute"
     UPLOAD_RATE_LIMIT: str = "10/minute"
     REQUIRE_AUTHENTICATED_STUDENT: bool = False
+    GOOGLE_CLIENT_ID: str | None = None
+    JWT_SECRET_KEY: str | None = None
+    JWT_ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
+    REFRESH_TOKEN_EXPIRE_DAYS: int = 30
     METRICS_ADMIN_TOKEN: str | None = None
 
     class Config:

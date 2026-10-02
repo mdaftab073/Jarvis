@@ -121,7 +121,7 @@ def upgrade():
 
     op.execute(
         "INSERT INTO habits (student_id, habit_name, category, target_per_week, active) "
-        "SELECT student_id, habit_name, 'OTHER', 7, 1 FROM student_habits "
+        "SELECT student_id, habit_name, 'OTHER', 7, TRUE FROM student_habits "
         "GROUP BY student_id, habit_name"
     )
     op.execute(

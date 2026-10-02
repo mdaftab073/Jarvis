@@ -36,6 +36,8 @@ from app.api.routes import academic_profile, attendance, grades, deadlines, noti
 from app.api.routes import reminders
 from app.api.routes import goals, habits
 from app.api.routes import chat, connectors, jobs, mis
+from app.api.routes import auth
+from app.core.auth_middleware import StudentIdentityMiddleware
 from app.services.keyword_search_service import sync_keyword_index_from_chroma
 
 
@@ -50,6 +52,7 @@ app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.add_middleware(SlowAPIMiddleware)
 app.add_middleware(RequestTrackingMiddleware)
+app.add_middleware(StudentIdentityMiddleware)
 
 
 @app.on_event("startup")
@@ -74,6 +77,7 @@ app.include_router(
     health_router,
     prefix="/api",
 )
+app.include_router(auth.router, prefix="/api", tags=["Authentication"])
 app.include_router(health_router)
 
 app.include_router(
