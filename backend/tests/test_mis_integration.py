@@ -181,10 +181,22 @@ class MISSyncAndAPITests(unittest.TestCase):
         self.assertEqual(response.json()["roll_no"], "R100")
         attendance = self.client.get("/api/mis/attendance", params={"student_id": self.student.id})
         self.assertEqual(attendance.json()["records"][0]["percentage"], 80)
-        with patch("app.api.routes.mis.sync_profile", return_value=(profile, 2)):
+        queued_job = SimpleNamespace(
+            id=21,
+            job_name="sync_mis_resource",
+            status="PENDING",
+            student_id=self.student.id,
+            result_json=None,
+            created_at=profile.updated_at,
+            started_at=None,
+            completed_at=None,
+            error_message=None,
+        )
+        with patch("app.api.routes.mis.enqueue_job", return_value=queued_job):
             sync = self.client.post("/api/mis/sync-profile", params={"student_id": self.student.id})
-        self.assertEqual(sync.status_code, 200)
-        self.assertEqual(sync.json()["records_processed"], 2)
+        self.assertEqual(sync.status_code, 202)
+        self.assertEqual(sync.json()["id"], 21)
+        self.assertEqual(sync.json()["status"], "PENDING")
 
     def test_scope_rejects_a_different_authenticated_student(self):
         other = Student(name="Other", email="other@example.com")

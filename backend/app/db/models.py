@@ -115,6 +115,7 @@ class Student(Base):
         back_populates="student",
         cascade="all, delete-orphan",
     )
+    job_executions = relationship("JobExecution", cascade="all, delete-orphan")
 
 class Course(Base):
     __tablename__ = "courses"

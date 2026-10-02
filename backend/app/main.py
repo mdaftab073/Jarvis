@@ -1,6 +1,11 @@
 import logging
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
+from slowapi import _rate_limit_exceeded_handler
+from app.api.rate_limit import limiter
+from app.jobs.scheduler import start_scheduler, stop_scheduler
 from app.api.routes.health import router as health_router
 from app.api.routes.metrics import router as metrics_router
 from app.api.routes.db_health import router as db_health_router
@@ -27,7 +32,7 @@ from app.api.routes import learning
 from app.api.routes import academic_profile, attendance, grades, deadlines, notifications, calendar, schedule, dashboard
 from app.api.routes import reminders
 from app.api.routes import goals, habits
-from app.api.routes import chat, connectors, mis
+from app.api.routes import chat, connectors, jobs, mis
 from app.services.keyword_search_service import sync_keyword_index_from_chroma
 
 
@@ -37,6 +42,9 @@ app = FastAPI(
     title="Jarvis",
     version="0.1.0",
 )
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_middleware(SlowAPIMiddleware)
 
 
 @app.on_event("startup")
@@ -45,6 +53,12 @@ def sync_keyword_index():
         sync_keyword_index_from_chroma()
     except Exception:
         logger.exception("Failed to synchronize BM25 index from Chroma")
+    start_scheduler()
+
+
+@app.on_event("shutdown")
+def stop_background_scheduler():
+    stop_scheduler()
 
 app.include_router(
     course_router,
@@ -184,5 +198,6 @@ for router, tag in (
     (connectors.router, "MIS Connectors"),
     (mis.router, "SVNIT MIS"),
     (chat.router, "Chat"),
+    (jobs.router, "Background Jobs"),
 ):
     app.include_router(router, prefix="/api", tags=[tag])

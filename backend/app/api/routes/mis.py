@@ -1,11 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 
 from app.api.student_scope import require_student_scope
 from app.db.database import get_db
 from app.schemas.mis import (
     AttendanceResponse,
-    MISSyncResponse,
     ResultResponse,
     SemesterResult,
     StudentProfileResponse,
@@ -18,14 +17,20 @@ from app.services.mis.parser import MISParseError
 from app.services.mis_sync_service import (
     MISSyncError,
     get_profile,
-    sync_attendance,
-    sync_profile,
-    sync_results,
-    sync_timetable,
 )
+from app.api.rate_limit import limiter
+from app.core.config import settings
+from app.schemas.jobs import JobExecutionResponse
+from app.services.job_service import enqueue_job
+from pydantic import BaseModel, Field
 
 
 router = APIRouter()
+
+
+class MISJobRequest(BaseModel):
+    student_id: int = Field(gt=0)
+    resource: str = Field(pattern="^(profile|attendance|results)$")
 
 
 def _translate_error(error: Exception):
@@ -42,13 +47,10 @@ def _translate_error(error: Exception):
     raise error
 
 
-@router.post("/mis/sync-profile", response_model=MISSyncResponse)
-def post_sync_profile(student_id: int, db: Session = Depends(get_db), _scope: int = Depends(require_student_scope)):
-    try:
-        profile, count = sync_profile(db, student_id)
-        return MISSyncResponse(student_id=student_id, resource="profile", status="succeeded", records_processed=count, synced_at=profile.updated_at)
-    except Exception as error:
-        _translate_error(error)
+@router.post("/mis/sync-profile", response_model=JobExecutionResponse, status_code=202)
+@limiter.limit(settings.MIS_SYNC_RATE_LIMIT)
+def post_sync_profile(student_id: int, request: Request, background_tasks: BackgroundTasks, db: Session = Depends(get_db), _scope: int = Depends(require_student_scope)):
+    return enqueue_job(db, background_tasks, "sync_mis_resource", {"student_id": student_id, "resource": "profile"}, student_id)
 
 
 @router.get("/mis/profile", response_model=StudentProfileResponse)
@@ -59,13 +61,10 @@ def read_mis_profile(student_id: int, db: Session = Depends(get_db), _scope: int
     return profile
 
 
-@router.post("/mis/sync-attendance", response_model=MISSyncResponse)
-def post_sync_attendance(student_id: int, db: Session = Depends(get_db), _scope: int = Depends(require_student_scope)):
-    try:
-        profile, count = sync_attendance(db, student_id)
-        return MISSyncResponse(student_id=student_id, resource="attendance", status="succeeded", records_processed=count, synced_at=profile.updated_at)
-    except Exception as error:
-        _translate_error(error)
+@router.post("/mis/sync-attendance", response_model=JobExecutionResponse, status_code=202)
+@limiter.limit(settings.MIS_SYNC_RATE_LIMIT)
+def post_sync_attendance(student_id: int, request: Request, background_tasks: BackgroundTasks, db: Session = Depends(get_db), _scope: int = Depends(require_student_scope)):
+    return enqueue_job(db, background_tasks, "sync_mis_resource", {"student_id": student_id, "resource": "attendance"}, student_id)
 
 
 @router.get("/mis/attendance", response_model=AttendanceResponse)
@@ -76,13 +75,10 @@ def read_mis_attendance(student_id: int, db: Session = Depends(get_db), _scope: 
     return AttendanceResponse(student_id=student_id, records=[AttendanceRecord.model_validate(row) for row in profile.attendance_json], updated_at=profile.updated_at)
 
 
-@router.post("/mis/sync-results", response_model=MISSyncResponse)
-def post_sync_results(student_id: int, db: Session = Depends(get_db), _scope: int = Depends(require_student_scope)):
-    try:
-        profile, count = sync_results(db, student_id)
-        return MISSyncResponse(student_id=student_id, resource="results", status="succeeded", records_processed=count, synced_at=profile.updated_at)
-    except Exception as error:
-        _translate_error(error)
+@router.post("/mis/sync-results", response_model=JobExecutionResponse, status_code=202)
+@limiter.limit(settings.MIS_SYNC_RATE_LIMIT)
+def post_sync_results(student_id: int, request: Request, background_tasks: BackgroundTasks, db: Session = Depends(get_db), _scope: int = Depends(require_student_scope)):
+    return enqueue_job(db, background_tasks, "sync_mis_resource", {"student_id": student_id, "resource": "results"}, student_id)
 
 
 @router.get("/mis/results", response_model=ResultResponse)
@@ -101,10 +97,26 @@ def read_mis_timetable(student_id: int, db: Session = Depends(get_db), _scope: i
     return TimetableResponse(student_id=student_id, entries=[TimetableEntry.model_validate(row) for row in profile.timetable_json], updated_at=profile.updated_at)
 
 
-@router.post("/mis/sync-timetable", response_model=MISSyncResponse)
-def post_sync_timetable(student_id: int, db: Session = Depends(get_db), _scope: int = Depends(require_student_scope)):
-    try:
-        profile, count = sync_timetable(db, student_id)
-        return MISSyncResponse(student_id=student_id, resource="timetable", status="succeeded", records_processed=count, synced_at=profile.updated_at)
-    except Exception as error:
-        _translate_error(error)
+@router.post("/mis/sync-timetable", response_model=JobExecutionResponse, status_code=202)
+@limiter.limit(settings.MIS_SYNC_RATE_LIMIT)
+def post_sync_timetable(student_id: int, request: Request, background_tasks: BackgroundTasks, db: Session = Depends(get_db), _scope: int = Depends(require_student_scope)):
+    return enqueue_job(db, background_tasks, "sync_mis_resource", {"student_id": student_id, "resource": "timetable"}, student_id)
+
+
+@router.post("/mis/jobs", response_model=JobExecutionResponse, status_code=202)
+@limiter.limit(settings.MIS_SYNC_RATE_LIMIT)
+def enqueue_mis_sync(
+    payload: MISJobRequest,
+    request: Request,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+    _scope: int = Depends(require_student_scope),
+):
+    execution = enqueue_job(
+        db,
+        background_tasks,
+        "sync_mis_resource",
+        {"student_id": payload.student_id, "resource": payload.resource},
+        payload.student_id,
+    )
+    return execution

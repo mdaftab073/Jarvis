@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
@@ -14,6 +14,10 @@ from app.services.rag_service import (
     ask_question,
     debug_search,
 )
+from app.api.rate_limit import limiter
+from app.core.config import settings
+from app.services.ownership_service import require_subject_owner
+from fastapi import HTTPException
 
 router = APIRouter()
 
@@ -22,14 +26,26 @@ router = APIRouter()
     "/rag/ask",
     response_model=AskResponse,
 )
+@limiter.limit(settings.RAG_RATE_LIMIT)
 def ask(
-    request: AskRequest,
+    request: Request,
+    payload: AskRequest,
     db: Session = Depends(get_db),
 ):
+    student_id = getattr(request.state, "student_id", None)
+    if settings.REQUIRE_AUTHENTICATED_STUDENT and student_id is None:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    if student_id is not None:
+        if payload.subject_id is None:
+            raise HTTPException(status_code=422, detail="subject_id is required for student-scoped retrieval")
+        try:
+            require_subject_owner(db, student_id, payload.subject_id)
+        except HTTPException as error:
+            raise HTTPException(status_code=404, detail="Subject not found") from error
     result = ask_question(
-        question=request.question,
+        question=payload.question,
         db=db,
-        subject_id=request.subject_id,
+        subject_id=payload.subject_id,
     )
 
     sources = []
@@ -63,10 +79,21 @@ def ask(
 
 @router.get("/rag/debug-search")
 def rag_debug_search(
+    request: Request,
     query: str,
     subject_id: int | None = None,
     db: Session = Depends(get_db),
 ):
+    if settings.ENVIRONMENT.casefold() == "production":
+        raise HTTPException(status_code=404, detail="Not found")
+    student_id = getattr(request.state, "student_id", None)
+    if settings.REQUIRE_AUTHENTICATED_STUDENT and student_id is None:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    if student_id is not None and subject_id is not None:
+        try:
+            require_subject_owner(db, student_id, subject_id)
+        except HTTPException as error:
+            raise HTTPException(status_code=404, detail="Subject not found") from error
     return debug_search(
         question=query,
         db=db,

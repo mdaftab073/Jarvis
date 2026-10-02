@@ -16,11 +16,13 @@ from app.services.connector_service import (
     list_sync_history,
     list_sync_jobs,
     rotate_credentials,
-    run_sync_job,
     serialize_connector,
     serialize_job,
 )
 from app.services.mis_connectors import ConnectorConfigurationError
+from app.services.job_service import enqueue_job
+from app.api.rate_limit import limiter
+from app.core.config import settings
 
 router = APIRouter()
 
@@ -69,6 +71,7 @@ def update_connector_credentials(connector_id: int, payload: ConnectorCredential
 
 
 @router.post("/connectors/{connector_id}/sync")
+@limiter.limit(settings.MIS_SYNC_RATE_LIMIT)
 def manual_sync(connector_id: int, background_tasks: BackgroundTasks, request: Request, db: Session = Depends(get_db)):
     connector = get_connector(db, connector_id)
     if connector is None:
@@ -78,8 +81,14 @@ def manual_sync(connector_id: int, background_tasks: BackgroundTasks, request: R
         job = enqueue_sync(db, connector.student_id, connector_id)
     except (ConnectorOwnershipError, ValueError) as error:
         raise HTTPException(status_code=409, detail=str(error)) from error
-    background_tasks.add_task(run_sync_job, job.id)
-    return serialize_job(job)
+    execution = enqueue_job(
+        db,
+        background_tasks,
+        "run_connector_sync",
+        {"sync_job_id": job.id},
+        connector.student_id,
+    )
+    return {**serialize_job(job), "execution_job_id": execution.id, "execution_status": execution.status}
 
 
 @router.get("/connectors/{connector_id}/history")

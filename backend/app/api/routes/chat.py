@@ -12,6 +12,8 @@ from app.schemas.chat import (
 )
 from app.services import chat_service
 from app.services.chat_service import ChatServiceError
+from app.api.rate_limit import limiter
+from app.core.config import settings
 
 
 router = APIRouter()
@@ -29,6 +31,7 @@ def _raise_chat_error(error: ChatServiceError):
 
 
 @router.post("/chat", response_model=ChatResponse)
+@limiter.limit(settings.CHAT_RATE_LIMIT)
 def post_chat(payload: ChatRequest, request: Request, db: Session = Depends(get_db)):
     session = None
     if payload.session_id is not None:

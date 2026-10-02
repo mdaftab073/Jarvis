@@ -19,6 +19,8 @@ class StudyMaterialResponse(BaseModel):
     uploaded_at: datetime | None
     subject_id: int
     material_type: MaterialType = MaterialType.NOTES
+    processing_job_id: int | None = None
+    processing_status: str | None = None
 
     class Config:
         from_attributes = True

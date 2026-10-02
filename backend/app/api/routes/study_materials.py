@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 from fastapi import UploadFile, File, Form
 from app.services.file_service import save_uploaded_file
@@ -16,7 +16,6 @@ from app.schemas.study_material import (
 from app.services.study_material_service import (
     create_material,
     get_material,
-    get_materials,
     get_subject_materials,
 )
 
@@ -30,8 +29,28 @@ from app.services.keyword_search_service import (
     replace_material_chunks,
 )
 from app.services.pyq_service import analyze_pyq_material
+from app.db.models import Course, Subject, StudyMaterial
+from app.schemas.jobs import JobExecutionResponse
+from app.services.job_service import enqueue_job
+from app.services.study_material_processing import process_pdf_material
+from app.api.student_scope import require_record_owner, require_student_scope
+from app.core.config import settings
+from app.api.rate_limit import limiter
 
 router = APIRouter()
+
+
+def _material_owner(material) -> int:
+    subject = getattr(material, "subject", material)
+    return subject.course.student_id
+
+
+def _require_material_access(material, request: Request) -> int:
+    owner_id = _material_owner(material)
+    require_record_owner(request, owner_id)
+    if settings.REQUIRE_AUTHENTICATED_STUDENT and getattr(request.state, "student_id", None) is None:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    return owner_id
 
 
 @router.post(
@@ -40,8 +59,13 @@ router = APIRouter()
 )
 def create_material_endpoint(
     material: StudyMaterialCreate,
+    request: Request,
     db: Session = Depends(get_db),
 ):
+    subject = db.query(Subject).join(Course).filter(Subject.id == material.subject_id).first()
+    if subject is None:
+        raise HTTPException(status_code=404, detail="Subject not found")
+    _require_material_access(subject, request)
     return create_material(
         db=db,
         title=material.title,
@@ -56,9 +80,19 @@ def create_material_endpoint(
     response_model=list[StudyMaterialResponse],
 )
 def get_materials_endpoint(
+    student_id: int,
+    request: Request,
     db: Session = Depends(get_db),
+    _scope: int = Depends(require_student_scope),
 ):
-    return get_materials(db)
+    return (
+        db.query(StudyMaterial)
+        .join(Subject, StudyMaterial.subject_id == Subject.id)
+        .join(Course, Subject.course_id == Course.id)
+        .filter(Course.student_id == student_id)
+        .order_by(StudyMaterial.uploaded_at.desc())
+        .all()
+    )
 
 
 @router.get(
@@ -67,6 +101,7 @@ def get_materials_endpoint(
 )
 def get_material_endpoint(
     material_id: int,
+    request: Request,
     db: Session = Depends(get_db),
 ):
     material = get_material(
@@ -80,6 +115,8 @@ def get_material_endpoint(
             detail="Material not found",
         )
 
+    _require_material_access(material, request)
+
     return material
 
 
@@ -89,17 +126,18 @@ def get_material_endpoint(
 )
 def get_subject_materials_endpoint(
     subject_id: int,
+    request: Request,
     db: Session = Depends(get_db),
 ):
+    subject = db.query(Subject).join(Course).filter(Subject.id == subject_id).first()
+    if subject is None:
+        raise HTTPException(status_code=404, detail="Subject not found")
+    _require_material_access(subject, request)
     return get_subject_materials(
         db=db,
         subject_id=subject_id,
     )
     
-@router.post(
-    "/materials/upload",
-    response_model=StudyMaterialResponse,
-)
 def upload_material(
     title: str = Form(...),
     subject_id: int = Form(...),
@@ -122,11 +160,55 @@ def upload_material(
 
     return material
 
+
+@router.post("/materials/upload", response_model=StudyMaterialResponse, status_code=202)
+@limiter.limit(settings.UPLOAD_RATE_LIMIT)
+def _upload_material_background(
+    request: Request,
+    background_tasks: BackgroundTasks,
+    title: str = Form(...),
+    subject_id: int = Form(...),
+    material_type: MaterialType = Form(MaterialType.NOTES),
+    file: UploadFile = File(...),
+    student_id: int | None = Form(None),
+    db: Session = Depends(get_db),
+):
+    subject = db.query(Subject).join(Course).filter(Subject.id == subject_id).first()
+    if subject is None:
+        raise HTTPException(status_code=404, detail="Subject not found")
+    owner_id = subject.course.student_id
+    principal_id = getattr(request.state, "student_id", None)
+    if student_id is not None and student_id != owner_id:
+        raise HTTPException(status_code=403, detail="Subject is outside the requested student scope")
+    require_record_owner(request, owner_id)
+    if settings.REQUIRE_AUTHENTICATED_STUDENT and principal_id is None:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    material = save_uploaded_file(file=file, subject_id=subject_id)
+    record = create_material(
+        db=db,
+        title=title,
+        file_path=material,
+        subject_id=subject_id,
+        material_type=material_type,
+    )
+    job = enqueue_job(db, background_tasks, "process_pdf_material", {"material_id": record.id}, owner_id)
+    return {
+        "id": record.id,
+        "title": record.title,
+        "file_path": record.file_path,
+        "uploaded_at": record.uploaded_at,
+        "subject_id": record.subject_id,
+        "material_type": record.material_type,
+        "processing_job_id": job.id,
+        "processing_status": job.status,
+    }
+
 @router.get(
     "/materials/{material_id}/extract-text"
 )
 def extract_material_text(
     material_id: int,
+    request: Request,
     db: Session = Depends(get_db),
 ):
     material = get_material(
@@ -139,6 +221,8 @@ def extract_material_text(
             status_code=404,
             detail="Material not found",
         )
+
+    _require_material_access(material, request)
 
     text = extract_text_from_pdf(
         material.file_path
@@ -154,6 +238,7 @@ def extract_material_text(
 )
 def get_material_chunks(
     material_id: int,
+    request: Request,
     db: Session = Depends(get_db),
 ):
     material = get_material(
@@ -166,6 +251,8 @@ def get_material_chunks(
             status_code=404,
             detail="Material not found",
         )
+
+    _require_material_access(material, request)
 
     from app.services.pdf_service import (
         extract_text_from_pdf,
@@ -187,26 +274,10 @@ def get_material_chunks(
     }
 
 
-@router.post(
-    "/materials/{material_id}/embed",
-    response_model=StudyMaterialEmbedResponse,
-)
 def embed_material(
     material_id: int,
     db: Session = Depends(get_db),
 ):
-    """
-    Extract text from PDF, chunk it, generate embeddings, and store in ChromaDB.
-    
-    Flow:
-    1. Get material from database
-    2. Extract text from PDF
-    3. Chunk the text
-    4. Generate embeddings and store chunks in ChromaDB
-    5. Update material's embedding_status to "embedded"
-    6. Return response with material_id and chunk count
-    """
-    # Step 1: Get material from database
     material = get_material(
         db=db,
         material_id=material_id,
@@ -219,81 +290,49 @@ def embed_material(
         )
 
     try:
-        # Step 2: Extract text from PDF
-        text = extract_text_from_pdf(material.file_path)
-        
-        if not text or not text.strip():
-            raise HTTPException(
-                status_code=400,
-                detail="Failed to extract text from PDF",
-            )
-
-        # Step 3: Chunk the text
-        chunks = chunk_text(text)
-        
-        if not chunks:
-            raise HTTPException(
-                status_code=400,
-                detail="No text extracted from PDF",
-            )
-
-        # Step 4: Generate embeddings and store in ChromaDB
-        # Remove old embeddings first
-        vector_service.delete_material_chunks(
-            material_id
+        result = process_pdf_material(
+            material_id,
+            db=db,
+            dependencies={
+                "extract_text": extract_text_from_pdf,
+                "chunk_text": chunk_text,
+                "vector_service": vector_service,
+                "delete_keyword_chunks": delete_keyword_chunks,
+                "replace_material_chunks": replace_material_chunks,
+                "analyze_pyq_material": analyze_pyq_material,
+            },
         )
-        delete_keyword_chunks(material_id)
+        return StudyMaterialEmbedResponse(**result)
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
+    except Exception as error:
+        raise HTTPException(status_code=500, detail="Failed to embed material") from error
 
-        # Create fresh embeddings
-        chunks_stored = vector_service.add_chunks_to_vector_db(
-            material_id=material_id,
-            chunks=chunks,
-            title=material.title,
-            subject_id=material.subject.id,
-            subject_name=material.subject.name,
-        )
 
-        replace_material_chunks(
-            material_id=material_id,
-            chunks=chunks,
-            title=material.title,
-            subject_id=material.subject.id,
-            subject_name=material.subject.name,
-        )
-
-        pyq_questions = []
-        if material.material_type == MaterialType.PYQ.value:
-            pyq_questions = analyze_pyq_material(
-                db=db,
-                material=material,
-                text=text,
-            )
-
-        # Step 5: Update material's embedding_status
-        material.embedding_status = "embedded"
-        db.commit()
-
-        # Step 6: Return response
-        return StudyMaterialEmbedResponse(
-            material_id=material_id,
-            chunks_stored=chunks_stored,
-            questions_extracted=len(pyq_questions),
-        )
-
-    except HTTPException:
-        # Re-raise HTTP exceptions as-is
-        raise
-    except Exception as e:
-        # Catch any other exception, set status to "failed", and re-raise
-        material.embedding_status = "failed"
-        db.commit()
-        raise HTTPException(
-            status_code=500,
-            detail=f"Failed to embed material: {str(e)}",
-        )
+@router.post("/materials/{material_id}/embed", response_model=JobExecutionResponse, status_code=202)
+@limiter.limit(settings.UPLOAD_RATE_LIMIT)
+def enqueue_material_embedding(
+    material_id: int,
+    request: Request,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+):
+    material = get_material(db, material_id)
+    if material is None:
+        raise HTTPException(status_code=404, detail="Material not found")
+    student_id = material.subject.course.student_id
+    require_record_owner(request, student_id)
+    if settings.REQUIRE_AUTHENTICATED_STUDENT and getattr(request.state, "student_id", None) is None:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    execution = enqueue_job(db, background_tasks, "process_pdf_material", {"material_id": material_id}, student_id)
+    return execution
         
 @router.get("/debug/chroma")
-def debug_chroma():
+def debug_chroma(request: Request):
+    if settings.ENVIRONMENT.casefold() == "production":
+        raise HTTPException(status_code=404, detail="Not found")
+    if settings.REQUIRE_AUTHENTICATED_STUDENT and getattr(request.state, "student_id", None) is None:
+        raise HTTPException(status_code=401, detail="Authentication required")
     from app.services.vector_service import get_collection
 
     collection = get_collection()
@@ -311,13 +350,19 @@ def debug_chroma():
     
 @router.get("/debug/search")
 def debug_search(
+    request: Request,
     query: str,
     subject_id: int,
+    db: Session = Depends(get_db),
 ):
     from app.services.vector_service import (
         search_similar_chunks,
     )
 
+    subject = db.query(Subject).join(Course).filter(Subject.id == subject_id).first()
+    if subject is None:
+        raise HTTPException(status_code=404, detail="Subject not found")
+    _require_material_access(subject, request)
     return search_similar_chunks(
         query=query,
         subject_id=subject_id,
