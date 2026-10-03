@@ -105,4 +105,4 @@ Readiness checks cover the database, Chroma, scheduler, tools, migration state, 
 
 ## Release-specific follow-up
 
-The migration cycle was verified against an empty temporary PostgreSQL database, but the configured local database was deliberately left at `4c8ef6d1a203`. Docker image build/startup could not be verified because the Docker daemon was unavailable during this audit. Before production traffic, rehearse on a restored staging backup, verify OAuth and CORS from the deployed frontend origin, and build/start the Compose stack on a Docker-enabled host.
+The configured local database was backed up and migrated from `4c8ef6d1a203` to `f0b1c3d5e709`; the full migration cycle was independently verified against an empty temporary PostgreSQL database. The Docker image and isolated Compose startup were verified with placeholder credentials. Before production traffic, rehearse on a restored staging backup and verify OAuth and CORS from the deployed frontend origin.

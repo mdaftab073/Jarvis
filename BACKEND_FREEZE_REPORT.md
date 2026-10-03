@@ -19,11 +19,12 @@ Audit date: 2026-10-03
 - An isolated empty PostgreSQL database upgraded to head, matched all 50 ORM tables, and passed a full downgrade-to-base/re-upgrade cycle.
 - Schema checks verified 146 ORM indexes, 76 foreign keys, 66 check constraints, and 13 unique constraints.
 - Production Compose configuration parsed with non-production placeholder values. The checked-in local environment did not provide every required Compose setting.
-- Docker image build/startup could not be tested because the Docker daemon was unavailable.
+- The 2.49 GB Docker image built successfully; an isolated Compose deployment reached healthy on PostgreSQL, ChromaDB, and API containers.
 
 ## Migration and data risk
 
-The configured local database remains at `4c8ef6d1a203`; it was deliberately not upgraded. Its next release migration removes legacy MIS data/tables and cannot restore that data on downgrade. See [MIGRATION_AUDIT.md](./MIGRATION_AUDIT.md) for the verified isolated migration run and required backup/review procedure.
+The configured local database was backed up and upgraded from `4c8ef6d1a203` to `f0b1c3d5e709`; targeted legacy MIS tables/connector rows were empty. Production databases still require their own backup and data review because the MIS-removal downgrade cannot restore deleted data. See [MIGRATION_AUDIT.md](./MIGRATION_AUDIT.md).
+The pre-upgrade backup was restored into a disposable database and verified at revision `4c8ef6d1a203`; the temporary restore database was removed.
 
 ## Dependency summary
 
@@ -38,7 +39,7 @@ The configured local database remains at `4c8ef6d1a203`; it was deliberately not
 | Priority | Item | Follow-up |
 |---|---|---|
 | Release gate | Existing databases require review/backups before the destructive MIS-removal migration. | Rehearse upgrade and rollback on a recent restored staging backup. |
-| Release gate | Docker build/startup and staging credentials were unavailable during this audit. | Build and run the clean Compose stack on a Docker-enabled staging host. |
+| Release gate | A clean Compose deployment was verified with placeholder credentials; staging authentication was not exercised. | Repeat with real staging configuration and exercise Google OAuth/CORS. |
 | Recommended | 92 operations have unconstrained `Any` response data. | Add explicit response models incrementally without changing current envelope behavior. |
 | Recommended | OpenAPI auth metadata is absent although middleware requires authentication. | Add a bearer security scheme and explicit public-operation declarations in a separately reviewed contract change. |
 | Recommended | Rate limiting is in-memory and per process. | Follow [RATE_LIMITING_PLAN.md](./RATE_LIMITING_PLAN.md) before multi-instance production traffic. |
@@ -59,8 +60,8 @@ These scores are qualitative audit estimates, not automated measurements.
 
 - **Backend readiness: 90/100.** The contract, tests, lint, fresh migration, schema parity, and production startup dependency checks were verified. Remaining points reflect migration-data risk and OpenAPI typing/auth metadata.
 - **Frontend readiness: 82/100.** A full operation reference is available, but 92 payloads are unconstrained and OpenAPI does not encode auth requirements.
-- **Production readiness: 68/100.** The disposable PostgreSQL deployment path passed, but the actual existing database has not been migrated, Docker could not be built/launched, and staging secrets/OAuth/restore behavior remain to be verified.
+- **Production readiness: 80/100.** The configured database has been backed up, migrated, and schema-verified; the backup restored successfully to a disposable database; a fresh Compose deployment reached healthy on all services. Staging OAuth, CORS, and production-scale restore behavior remain to be verified.
 
 ## Release decision
 
-The backend API is documented for frontend integration. Production deployment is **not signed off** until the MIS-removal impact is approved, a restored staging database is migrated, and the Compose image is built and exercised on a Docker-enabled host with real staging configuration.
+The backend API is documented for frontend integration. Production deployment is **not signed off** until the MIS-removal impact is reviewed for each target environment, a restored staging database is migrated, and the Compose image is built and exercised with real staging configuration.

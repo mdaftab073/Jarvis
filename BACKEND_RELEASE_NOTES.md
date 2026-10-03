@@ -27,8 +27,8 @@ FastAPI routes invoke services and agent/tool orchestration. PostgreSQL stores r
 - OpenAPI does not declare the bearer security scheme; auth requirements are described in the frontend API reference.
 - SlowAPI uses in-memory per-process storage; limits are not shared across API instances.
 - Existing databases must be reviewed and backed up before applying the irreversible MIS-removal migration.
-- Docker image build and Compose startup were not executable in the audit environment because the Docker daemon was unavailable.
-- The configured local database remains at revision `4c8ef6d1a203`; it was intentionally not upgraded.
+- Docker image build and an isolated clean Compose startup were verified with placeholder configuration; production provider authentication still needs staging verification.
+- The configured local database was backed up, migrated to `f0b1c3d5e709`, and schema-verified. Production databases require their own backup and MIS-removal impact review.
 - Production OAuth, browser CORS, external-provider credentials, and backup restore must be verified in staging.
 
 ## Deployment requirements

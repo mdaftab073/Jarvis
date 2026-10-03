@@ -66,7 +66,7 @@ services:
         - CMD
         - python
         - -c
-        - "import json, urllib.request; data=json.load(urllib.request.urlopen('http://localhost:8000/system/health', timeout=5)); assert data['overall'] == 'healthy'"
+        - "import json, urllib.request; data=json.load(urllib.request.urlopen('http://localhost:8000/system/health', timeout=5)); assert data['success'] is True and data['data']['overall'] == 'healthy'"
       interval: 15s
       timeout: 8s
       retries: 20
