@@ -230,9 +230,9 @@ class AuthenticationTests(unittest.TestCase):
                 json={"name": "Unverified", "email": "unverified@example.com"},
             )
         api_app.dependency_overrides.clear()
-        self.assertEqual([student["id"] for student in students.json()], [self.student.id])
-        self.assertEqual([course["student_id"] for course in courses.json()], [self.student.id])
-        self.assertEqual([subject["name"] for subject in subjects.json()], ["Own Subject"])
+        self.assertEqual([student["id"] for student in students.json()["data"]], [self.student.id])
+        self.assertEqual([course["student_id"] for course in courses.json()["data"]], [self.student.id])
+        self.assertEqual([subject["name"] for subject in subjects.json()["data"]], ["Own Subject"])
         self.assertEqual(creation.status_code, 403)
 
 

@@ -152,7 +152,7 @@ class ChatAPITests(unittest.TestCase):
     def test_session_chat_history_and_delete_endpoints(self):
         created = self.client.post("/api/chat/sessions", json={"student_id": self.student.id})
         self.assertEqual(created.status_code, 200)
-        session_id = created.json()["id"]
+        session_id = created.json()["data"]["id"]
         director = Mock()
         director.process_message.return_value = {
             "answer": "Attendance is 80%.",
@@ -166,16 +166,16 @@ class ChatAPITests(unittest.TestCase):
                 json={"session_id": session_id, "message": "What is my attendance?"},
             )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()["tool_used"], "attendance_summary")
+        self.assertEqual(response.json()["data"]["tool_used"], "attendance_summary")
         session = self.client.get(f"/api/chat/sessions/{session_id}")
-        self.assertEqual(session.json()["title"], "What is my attendance?")
+        self.assertEqual(session.json()["data"]["title"], "What is my attendance?")
         messages = self.client.get(f"/api/chat/sessions/{session_id}/messages")
-        self.assertEqual([message["role"] for message in messages.json()], ["user", "assistant"])
-        self.assertEqual(messages.json()[1]["tool_name"], "attendance_summary")
+        self.assertEqual([message["role"] for message in messages.json()["data"]], ["user", "assistant"])
+        self.assertEqual(messages.json()["data"][1]["tool_name"], "attendance_summary")
         sessions = self.client.get("/api/chat/sessions", params={"student_id": self.student.id})
-        self.assertEqual(len(sessions.json()), 1)
+        self.assertEqual(len(sessions.json()["data"]), 1)
         deleted = self.client.delete(f"/api/chat/sessions/{session_id}")
-        self.assertEqual(deleted.json(), {"success": True, "session_id": session_id})
+        self.assertEqual(deleted.json(), {"success": True, "data": {"session_id": session_id}})
         self.assertEqual(self.client.get(f"/api/chat/sessions/{session_id}").status_code, 404)
 
     def test_api_rejects_mismatched_student_and_standardizes_director_errors(self):
@@ -195,7 +195,7 @@ class ChatAPITests(unittest.TestCase):
                 json={"session_id": session.id, "message": "Fail safely"},
             )
         self.assertEqual(failed.status_code, 502)
-        self.assertEqual(failed.json()["detail"]["error"], "director_error")
+        self.assertEqual(failed.json()["error"]["code"], "director_error")
         self.assertNotIn("private internals", failed.text)
         director.process_message.side_effect = ToolValidationError("flashcards", "subject_id is required")
         with patch("app.services.chat_service.AcademicDirectorAgent", return_value=director):
@@ -204,7 +204,7 @@ class ChatAPITests(unittest.TestCase):
                 json={"session_id": session.id, "message": "Show me flashcards"},
             )
         self.assertEqual(invalid_tool_input.status_code, 422)
-        self.assertEqual(invalid_tool_input.json()["detail"]["error"], "tool_validation_error")
+        self.assertEqual(invalid_tool_input.json()["error"]["code"], "tool_validation_error")
 
     def test_chat_endpoint_executes_the_attendance_tool(self):
         response = self.client.post(
@@ -212,7 +212,7 @@ class ChatAPITests(unittest.TestCase):
             json={"student_id": self.student.id, "message": "What is my attendance?"},
         )
         self.assertEqual(response.status_code, 200)
-        body = response.json()
+        body = response.json()["data"]
         self.assertEqual(body["tool_used"], "attendance_summary")
         self.assertIn("attendance records", body["answer"])
         assistant = self.db.query(ChatMessage).filter_by(id=body["assistant_message_id"]).one()

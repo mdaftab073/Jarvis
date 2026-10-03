@@ -136,14 +136,14 @@ class PhaseAStudentOSTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         response = self.client.post(f"/api/attendance/{self.student.id}", json={"subject_id": self.subject.id, "attended_classes": 7, "total_classes": 10})
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()["risk"], "WARNING")
+        self.assertEqual(response.json()["data"]["risk"], "WARNING")
         response = self.client.post(f"/api/grades/{self.student.id}", json={"subject_id": self.subject.id, "semester": 2, "credits": 3, "grade": "A", "grade_points": 8, "grade_type": "FINAL"})
         self.assertEqual(response.status_code, 200)
         due = (datetime.utcnow() + timedelta(days=2)).isoformat()
         response = self.client.post(f"/api/deadlines/{self.student.id}", json={"title": "Quiz", "type": "QUIZ", "due_date": due, "priority": "HIGH"})
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()["type"], "QUIZ")
-        dashboard = self.client.get(f"/api/dashboard/{self.student.id}").json()
+        self.assertEqual(response.json()["data"]["type"], "QUIZ")
+        dashboard = self.client.get(f"/api/dashboard/{self.student.id}").json()["data"]
         self.assertIn("deadlines", dashboard)
         self.assertEqual(dashboard["readiness"], 70.0)
         self.assertEqual(dashboard["grades"][0]["grade_type"], "FINAL")
@@ -236,7 +236,7 @@ class PhaseAStudentOSTests(unittest.TestCase):
         self.assertEqual(self.client.post(f"/api/calendar/{self.student.id}", json={"title": "Lecture", "start_time": event_start.isoformat(), "end_time": (event_start + timedelta(hours=1)).isoformat()}).status_code, 200)
         response = self.client.post(f"/api/schedule/{self.student.id}/generate", json={"subject_ids": [self.subject.id], "start_time": (event_start + timedelta(hours=2)).isoformat(), "session_length": 30})
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json()), 1)
+        self.assertEqual(len(response.json()["data"]), 1)
 
     def test_reminder_crud_and_owner_scope_hook(self):
         response = self.client.post(
@@ -244,17 +244,17 @@ class PhaseAStudentOSTests(unittest.TestCase):
             json={"title": "Review notes", "trigger_time": datetime.utcnow().isoformat()},
         )
         self.assertEqual(response.status_code, 200)
-        reminder_id = response.json()["id"]
-        self.assertEqual(len(self.client.get(f"/api/reminders/{self.student.id}").json()), 1)
+        reminder_id = response.json()["data"]["id"]
+        self.assertEqual(len(self.client.get(f"/api/reminders/{self.student.id}").json()["data"]), 1)
         response = self.client.patch(
             f"/api/reminders/{reminder_id}",
             json={"completed": True, "title": "Review notes thoroughly"},
         )
         self.assertEqual(response.status_code, 200)
-        self.assertTrue(response.json()["completed"])
-        self.assertEqual(response.json()["title"], "Review notes thoroughly")
+        self.assertTrue(response.json()["data"]["completed"])
+        self.assertEqual(response.json()["data"]["title"], "Review notes thoroughly")
         self.assertEqual(self.client.delete(f"/api/reminders/{reminder_id}").status_code, 200)
-        self.assertEqual(self.client.get(f"/api/reminders/{self.student.id}").json(), [])
+        self.assertEqual(self.client.get(f"/api/reminders/{self.student.id}").json()["data"], [])
         with self.assertRaises(HTTPException) as error:
             require_record_owner(SimpleNamespace(state=SimpleNamespace(student_id=999)), self.student.id)
         self.assertEqual(error.exception.status_code, 403)

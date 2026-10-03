@@ -91,13 +91,14 @@ class PhaseGTests(unittest.TestCase):
         client = TestClient(app)
         response = client.get("/health/live")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), {"status": "alive"})
+        self.assertEqual(response.json(), {"success": True, "data": {"status": "alive"}})
 
     def test_health_readiness_reports_unhealthy_dependencies(self):
         with patch("app.api.routes.health.dependency_status", return_value={"database": "error"}):
             response = TestClient(app).get("/health/ready")
         self.assertEqual(response.status_code, 503)
-        self.assertFalse(response.json()["ready"])
+        self.assertFalse(response.json()["success"])
+        self.assertEqual(response.json()["error"]["code"], "http_503")
 
     def test_admin_metrics_endpoint_requires_configured_token(self):
         original = settings.METRICS_ADMIN_TOKEN
@@ -111,7 +112,7 @@ class PhaseGTests(unittest.TestCase):
             self.assertEqual(client.get("/api/metrics/summary").status_code, 403)
             response = client.get("/api/metrics/summary", headers={"X-Admin-Token": "test-admin-token"})
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json()["total_users"], 1)
+            self.assertEqual(response.json()["data"]["total_users"], 1)
         finally:
             settings.METRICS_ADMIN_TOKEN = original
             app.dependency_overrides.clear()

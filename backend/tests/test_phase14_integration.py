@@ -87,8 +87,8 @@ class Phase14EndToEndIntegrationTests(unittest.TestCase):
             },
         )
         self.assertEqual(quiz_res.status_code, 200)
-        session_id = quiz_res.json()["session"]["id"]
-        q_ids = [q["id"] for q in quiz_res.json()["questions"]]
+        session_id = quiz_res.json()["data"]["session"]["id"]
+        q_ids = [q["id"] for q in quiz_res.json()["data"]["questions"]]
 
         # Submit answers: 1 right, 1 wrong
         submit_res = self.client.post(
@@ -103,7 +103,7 @@ class Phase14EndToEndIntegrationTests(unittest.TestCase):
             },
         )
         self.assertEqual(submit_res.status_code, 200)
-        self.assertEqual(submit_res.json()["score"], 1)
+        self.assertEqual(submit_res.json()["data"]["score"], 1)
 
         # 4. Verify Topic Mastery was updated in database
         mastery_t1 = self.db.query(TopicMastery).filter(TopicMastery.topic_id == t1.id).first()
@@ -128,7 +128,7 @@ class Phase14EndToEndIntegrationTests(unittest.TestCase):
         # 6. Verify Learning Insights via API
         insights_res = self.client.get(f"/api/learning/insights/{self.student.id}")
         self.assertEqual(insights_res.status_code, 200)
-        insights = insights_res.json()
+        insights = insights_res.json()["data"]
         self.assertEqual(insights["student_id"], self.student.id)
         self.assertTrue(len(insights["weak_topics"]) > 0)
 

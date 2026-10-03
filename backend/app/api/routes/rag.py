@@ -88,6 +88,7 @@ def ask(
 
 
 @router.get("/rag/debug-search")
+@limiter.limit(settings.RAG_RATE_LIMIT)
 def rag_debug_search(
     request: Request,
     query: str,
@@ -99,6 +100,11 @@ def rag_debug_search(
     student_id = getattr(request.state, "student_id", None)
     if settings.REQUIRE_AUTHENTICATED_STUDENT and student_id is None:
         raise HTTPException(status_code=401, detail="Authentication required")
+    if student_id is not None and subject_id is None:
+        raise HTTPException(
+            status_code=422,
+            detail="subject_id is required for student-scoped retrieval",
+        )
     if student_id is not None and subject_id is not None:
         try:
             require_subject_owner(db, student_id, subject_id)

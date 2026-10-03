@@ -54,8 +54,8 @@ class APIContractTests(unittest.TestCase):
             )
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()["agent_name"], "director")
-        self.assertEqual(response.json()["recommendations"], ["Review transactions"])
+        self.assertEqual(response.json()["data"]["agent_name"], "director")
+        self.assertEqual(response.json()["data"]["recommendations"], ["Review transactions"])
 
     def test_director_request_validation_returns_422(self):
         response = self.client.post(
@@ -84,8 +84,8 @@ class APIContractTests(unittest.TestCase):
             )
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()["goal_type"], "exam_preparation")
-        self.assertEqual(response.json()["execution_order"][0], "analytics")
+        self.assertEqual(response.json()["data"]["goal_type"], "exam_preparation")
+        self.assertEqual(response.json()["data"]["execution_order"][0], "analytics")
 
     def test_semester_creation_returns_201_and_invalid_student_404(self):
         payload = {
@@ -98,7 +98,7 @@ class APIContractTests(unittest.TestCase):
         }
         created = self.client.post("/api/semester", json=payload)
         self.assertEqual(created.status_code, 201)
-        self.assertEqual(created.json()["subjects"][0]["subject_name"], "DBMS")
+        self.assertEqual(created.json()["data"]["subjects"][0]["subject_name"], "DBMS")
 
         payload["student_id"] = 9999
         missing = self.client.post("/api/semester", json=payload)
@@ -124,7 +124,7 @@ class APIContractTests(unittest.TestCase):
                 "start_date": "2026-09-01",
                 "end_date": "2027-01-31",
             },
-        ).json()
+        ).json()["data"]
         invalid_milestone = self.client.post(
             f"/api/semester/{semester['id']}/milestone",
             json={"title": "Midterm", "due_date": "2027-02-01"},
@@ -148,7 +148,7 @@ class APIContractTests(unittest.TestCase):
             response = self.client.get("/system/health")
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), health)
+        self.assertEqual(response.json(), {"success": True, "data": health})
 
 
 if __name__ == "__main__":

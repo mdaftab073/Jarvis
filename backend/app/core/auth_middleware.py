@@ -1,10 +1,10 @@
 from fastapi import HTTPException
-from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.requests import Request
 from starlette.responses import Response
 
 from app.core.config import settings
+from app.api.responses import error_response
 from app.db.database import SessionLocal
 from app.services.auth.auth_service import AuthService
 
@@ -32,7 +32,7 @@ class StudentIdentityMiddleware(BaseHTTPMiddleware):
         if authorization:
             scheme, separator, credentials = authorization.partition(" ")
             if not separator or scheme.lower() != "bearer" or not credentials.strip():
-                return JSONResponse(status_code=401, content={"detail": "Invalid authorization header"})
+                return error_response(401, "unauthorized", "Invalid authorization header.")
             token = credentials.strip()
 
         is_public = request.url.path in _PUBLIC_PATHS
@@ -42,7 +42,7 @@ class StudentIdentityMiddleware(BaseHTTPMiddleware):
             and not is_public
             and request.url.path.startswith("/api/")
         ):
-            return JSONResponse(status_code=401, content={"detail": "Authentication required"})
+            return error_response(401, "unauthorized", "Authentication required.")
         if token is not None:
             db = SessionLocal()
             try:
@@ -50,9 +50,9 @@ class StudentIdentityMiddleware(BaseHTTPMiddleware):
                 student = auth_service.get_current_student(token)
                 claims = auth_service.jwt.verify_token(token, "access")
             except HTTPException as error:
-                return JSONResponse(status_code=error.status_code, content={"detail": error.detail})
+                return error_response(error.status_code, "unauthorized", str(error.detail))
             except RuntimeError:
-                return JSONResponse(status_code=503, content={"detail": "Authentication is not configured"})
+                return error_response(503, "authentication_unavailable", "Authentication is not configured.")
             finally:
                 db.close()
             request.state.student_id = student.id

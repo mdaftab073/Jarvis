@@ -13,45 +13,59 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
-from app.db.models import StudyMaterial, Subject
+from app.db.models import Course, StudyMaterial, Subject
 from app.api.student_scope import require_record_owner
 from app.services.topic_service import TopicService
 from app.services.topic_extraction_service import TopicExtractionService
 from app.schemas.topic import Topic
+from app.models import Topic as TopicModel
 
 router = APIRouter(tags=["Topics"])
 
 
-def _get_topic_or_404(topic_id: int, db: Session) -> Topic:
-    svc = TopicService(db)
-    topic = svc.get_topic(topic_id)
-    if topic is None:
-        raise HTTPException(status_code=404, detail="Topic not found")
-    return topic
-
-
 @router.get("/topics", response_model=List[Topic])
 def list_topics(
+    request: Request,
     skip: int = Query(default=0, ge=0),
     limit: int = Query(default=100, ge=1, le=500),
     db: Session = Depends(get_db),
 ):
     """Return all topics with optional pagination."""
-    return TopicService(db).get_topics(skip=skip, limit=limit)
+    student_id = getattr(request.state, "student_id", None)
+    if student_id is None:
+        return TopicService(db).get_topics(skip=skip, limit=limit)
+    return (
+        db.query(TopicModel)
+        .join(Subject, TopicModel.subject_id == Subject.id)
+        .join(Course, Subject.course_id == Course.id)
+        .filter(Course.student_id == student_id)
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
 
 
 @router.get("/topics/{topic_id}", response_model=Topic)
 def get_topic(
     topic_id: int,
+    request: Request,
     db: Session = Depends(get_db),
 ):
     """Return a single topic by ID."""
-    return _get_topic_or_404(topic_id, db)
+    topic = db.query(TopicModel).filter_by(id=topic_id).first()
+    if topic is None:
+        raise HTTPException(status_code=404, detail="Topic not found")
+    subject = db.query(Subject).filter_by(id=topic.subject_id).first()
+    if subject is None:
+        raise HTTPException(status_code=404, detail="Topic not found")
+    require_record_owner(request, subject.course.student_id)
+    return topic
 
 
 @router.get("/subjects/{subject_id}/topics", response_model=List[Topic])
 def list_subject_topics(
     subject_id: int,
+    request: Request,
     skip: int = Query(default=0, ge=0),
     limit: int = Query(default=100, ge=1, le=500),
     db: Session = Depends(get_db),
@@ -60,6 +74,7 @@ def list_subject_topics(
     subject = db.query(Subject).filter(Subject.id == subject_id).first()
     if subject is None:
         raise HTTPException(status_code=404, detail="Subject not found")
+    require_record_owner(request, subject.course.student_id)
     return TopicService(db).get_subject_topics(
         subject_id=subject_id, skip=skip, limit=limit
     )

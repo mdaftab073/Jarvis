@@ -60,7 +60,7 @@ class AuthService:
             metadata_json={"provider": "google"} if audit_action == "google_login" else {},
         )
         self.db.commit()
-        return {"success": True, "student": self.student_data(student), "tokens": tokens}
+        return {"student": self.student_data(student), "tokens": tokens}
 
     def login_with_google(self, google_id_token: str) -> dict:
         claims = self.google_auth.verify_google_token(google_id_token)

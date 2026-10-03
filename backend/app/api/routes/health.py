@@ -1,7 +1,7 @@
 import logging
 
 from fastapi import APIRouter
-from fastapi.responses import JSONResponse
+from fastapi import Response
 from sqlalchemy import inspect, text
 
 from app.core.config import settings
@@ -70,33 +70,33 @@ def health_live():
 
 
 @router.get("/health/ready")
-def health_ready():
+def health_ready(response: Response):
     checks = dependency_status()
     ready = all(checks[key] == "ok" for key in (
         "database", "chromadb", "scheduler", "tool_registry", "migrations",
         "metrics", "audit_logging", "authentication",
     ))
-    return JSONResponse(
-        status_code=200 if ready else 503,
-        content={"status": "ready" if ready else "not_ready", "ready": ready, **checks},
-    )
+    response.status_code = 200 if ready else 503
+    return {"status": "ready" if ready else "not_ready", "ready": ready, **checks}
 
 
 @router.get("/health/dependencies")
-def health_dependencies():
+def health_dependencies(response: Response):
     checks = dependency_status()
     healthy = all(checks[key] == "ok" for key in (
         "database", "chromadb", "scheduler", "tool_registry", "migrations",
         "metrics", "audit_logging", "authentication",
     ))
-    return JSONResponse(status_code=200 if healthy else 503, content={"status": "healthy" if healthy else "degraded", **checks})
+    response.status_code = 200 if healthy else 503
+    return {"status": "healthy" if healthy else "degraded", **checks}
 
 
 @router.get("/health")
-def health_check():
+def health_check(response: Response):
     checks = dependency_status()
     healthy = all(checks[key] == "ok" for key in (
         "database", "chromadb", "scheduler", "tool_registry", "migrations",
         "metrics", "audit_logging", "authentication",
     ))
-    return JSONResponse(status_code=200 if healthy else 503, content={"status": "healthy" if healthy else "degraded", **checks})
+    response.status_code = 200 if healthy else 503
+    return {"status": "healthy" if healthy else "degraded", **checks}

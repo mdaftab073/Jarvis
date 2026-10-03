@@ -63,6 +63,7 @@ def post_chat(payload: ChatRequest, request: Request, db: Session = Depends(get_
 
 
 @router.post("/chat/sessions", response_model=ChatSessionResponse)
+@limiter.limit(settings.CHAT_RATE_LIMIT)
 def post_chat_session(payload: CreateSessionRequest, request: Request, db: Session = Depends(get_db)):
     _validate_scope(request, db, payload.student_id)
     try:
@@ -72,6 +73,7 @@ def post_chat_session(payload: CreateSessionRequest, request: Request, db: Sessi
 
 
 @router.get("/chat/sessions", response_model=list[ChatSessionResponse])
+@limiter.limit(settings.CHAT_RATE_LIMIT)
 def get_chat_sessions(
     student_id: int,
     request: Request,
@@ -83,6 +85,7 @@ def get_chat_sessions(
 
 
 @router.get("/chat/sessions/{session_id}", response_model=ChatSessionResponse)
+@limiter.limit(settings.CHAT_RATE_LIMIT)
 def get_chat_session(session_id: int, request: Request, db: Session = Depends(get_db)):
     session = chat_service.get_session(db, session_id)
     if session is None:
@@ -92,6 +95,7 @@ def get_chat_session(session_id: int, request: Request, db: Session = Depends(ge
 
 
 @router.get("/chat/sessions/{session_id}/messages", response_model=list[ChatMessageResponse])
+@limiter.limit(settings.CHAT_RATE_LIMIT)
 def get_chat_messages(
     session_id: int,
     request: Request,
@@ -107,6 +111,7 @@ def get_chat_messages(
 
 
 @router.delete("/chat/sessions/{session_id}")
+@limiter.limit(settings.CHAT_RATE_LIMIT)
 def delete_chat_session(session_id: int, request: Request, db: Session = Depends(get_db)):
     session = chat_service.get_session(db, session_id)
     if session is None:
@@ -116,4 +121,4 @@ def delete_chat_session(session_id: int, request: Request, db: Session = Depends
         chat_service.delete_session(db, session_id, session.student_id)
     except ChatServiceError as error:
         _raise_chat_error(error)
-    return {"success": True, "session_id": session_id}
+    return {"session_id": session_id}

@@ -7,6 +7,8 @@ from sqlalchemy.orm import Session
 from app.db.database import get_db
 from app.services.auth.auth_service import AuthService
 from app.services.auth.google_auth import GoogleTokenError
+from app.api.rate_limit import limiter
+from app.core.config import settings
 
 
 router = APIRouter()
@@ -21,7 +23,12 @@ class RefreshRequest(BaseModel):
 
 
 @router.post("/auth/google")
-def login_with_google(payload: GoogleLoginRequest, db: Session = Depends(get_db)):
+@limiter.limit(settings.AUTH_RATE_LIMIT)
+def login_with_google(
+    request: Request,
+    payload: GoogleLoginRequest,
+    db: Session = Depends(get_db),
+):
     try:
         return AuthService(db).login_with_google(payload.id_token)
     except GoogleTokenError as error:
@@ -31,7 +38,12 @@ def login_with_google(payload: GoogleLoginRequest, db: Session = Depends(get_db)
 
 
 @router.post("/auth/refresh")
-def refresh_access_token(payload: RefreshRequest, db: Session = Depends(get_db)):
+@limiter.limit(settings.REFRESH_RATE_LIMIT)
+def refresh_access_token(
+    request: Request,
+    payload: RefreshRequest,
+    db: Session = Depends(get_db),
+):
     try:
         return AuthService(db).refresh_access_token(payload.refresh_token)
     except RuntimeError as error:
@@ -39,6 +51,7 @@ def refresh_access_token(payload: RefreshRequest, db: Session = Depends(get_db))
 
 
 @router.get("/auth/me")
+@limiter.limit(settings.AUTH_RATE_LIMIT)
 def get_me(request: Request):
     student = getattr(request.state, "student", None)
     claims = getattr(request.state, "auth_claims", None)
@@ -46,13 +59,13 @@ def get_me(request: Request):
         raise HTTPException(status_code=401, detail="Authentication required")
     expires_at = datetime.fromtimestamp(claims["exp"], timezone.utc).isoformat()
     return {
-        "success": True,
         "student": AuthService.student_data(student),
         "tokens": {"token_type": "bearer", "expires_at": expires_at},
     }
 
 
 @router.post("/auth/logout")
+@limiter.limit(settings.AUTH_RATE_LIMIT)
 def logout(
     payload: RefreshRequest,
     request: Request,
@@ -66,7 +79,6 @@ def logout(
     except RuntimeError as error:
         raise HTTPException(status_code=503, detail="Authentication is not configured") from error
     return {
-        "success": True,
         "student": AuthService.student_data(request.state.student),
         "tokens": {"token_type": "bearer", "revoked": True},
     }

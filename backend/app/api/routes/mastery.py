@@ -8,13 +8,14 @@ Endpoints:
 
 from typing import List
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, ConfigDict
 
 from app.api.student_scope import require_student_scope
 from app.db.database import get_db
 from app.services.mastery_service import MasteryService
+from app.services.ownership_service import require_subject_owner
 from app.models import TopicMastery, Topic
 
 router = APIRouter(tags=["Mastery"])
@@ -65,11 +66,16 @@ def get_student_mastery(
 @router.get("/mastery/subject/{subject_id}", response_model=List[MasteryWithTopic])
 def get_subject_mastery(
     subject_id: int,
+    request: Request,
     student_id: int = Query(..., ge=1, description="Student to filter mastery for"),
     db: Session = Depends(get_db),
     _scope: int = Depends(require_student_scope),
 ):
     """Return mastery scores for all topics within a subject for a specific student."""
+    try:
+        require_subject_owner(db, student_id, subject_id)
+    except ValueError as error:
+        raise HTTPException(status_code=404, detail="Subject not found") from error
     topics = db.query(Topic).filter(Topic.subject_id == subject_id).all()
     topic_ids = {t.id for t in topics}
     topic_map = {t.id: t.name for t in topics}

@@ -164,7 +164,7 @@ class PhaseFTests(unittest.TestCase):
             own = client.get(f"/api/jobs/{execution.id}", params={"student_id": self.student.id})
             other = client.get(f"/api/jobs/{execution.id}", params={"student_id": self.other.id})
             self.assertEqual(own.status_code, 200)
-            self.assertEqual(own.json()["status"], "SUCCESS")
+            self.assertEqual(own.json()["data"]["status"], "SUCCESS")
             self.assertEqual(other.status_code, 404)
         finally:
             api_app.dependency_overrides.clear()
@@ -213,7 +213,7 @@ class PhaseFTests(unittest.TestCase):
                     files={"file": ("notes.pdf", b"%PDF-1.7 content", "application/pdf")},
                 )
             self.assertEqual(response.status_code, 202)
-            self.assertEqual(response.json()["processing_job_id"], 71)
+            self.assertEqual(response.json()["data"]["processing_job_id"], 71)
             mismatch = client.post(
                 "/api/materials/upload",
                 data={"title": "Notes", "subject_id": str(subject.id), "student_id": str(self.other.id)},

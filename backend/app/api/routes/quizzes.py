@@ -27,6 +27,7 @@ from app.schemas.quiz import (
 )
 from app.schemas.mastery_learning import MasteryCreate
 from app.services.time_service import utc_now_naive
+from app.models import Topic as TopicModel
 
 router = APIRouter(tags=["Quizzes"])
 
@@ -85,6 +86,14 @@ def generate_quiz(
     """Create a new quiz session with the given questions."""
     require_student_scope(payload.student_id, request, db)
     require_subject_owner(db, payload.student_id, payload.subject_id)
+    for question in payload.questions:
+        if question.topic_id is not None:
+            topic = db.query(TopicModel.id).filter_by(
+                id=question.topic_id,
+                subject_id=payload.subject_id,
+            ).first()
+            if topic is None:
+                raise HTTPException(status_code=404, detail="Topic not found for subject")
     svc = QuizService(db)
     session = svc.create_session(
         QuizSessionCreate(

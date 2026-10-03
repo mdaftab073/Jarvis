@@ -17,6 +17,7 @@ from app.api.student_scope import require_student_scope
 from app.db.database import get_db
 from app.services.learning_session_service import LearningSessionService
 from app.services.mastery_service import MasteryService
+from app.services.ownership_service import require_subject_owner
 from app.models import Topic
 
 router = APIRouter(tags=["Learning"])
@@ -77,6 +78,10 @@ def create_learning_session(
 ):
     """Record a new learning session."""
     require_student_scope(payload.student_id, request, db)
+    try:
+        require_subject_owner(db, payload.student_id, payload.subject_id)
+    except ValueError as error:
+        raise HTTPException(status_code=404, detail="Subject not found") from error
     if payload.activity_type not in VALID_ACTIVITY_TYPES:
         raise HTTPException(
             status_code=422,

@@ -4,6 +4,8 @@
 
 Copy `.env.example` to `.env` and replace every `replace-with-...` value. Keep `.env` out of version control. Production requires PostgreSQL, a reachable Chroma service, a Groq API key, a Google OAuth client ID, a random JWT signing key of at least 32 bytes, and an admin metrics token.
 
+Set `ALLOWED_ORIGINS` to a comma-separated list of exact browser origins (for example, `https://app.example.com`). Origins must include scheme and port where applicable; wildcard origins are rejected because credentialed requests are enabled. An empty list disables cross-origin browser access.
+
 `REQUIRE_AUTHENTICATED_STUDENT` defaults to `true`; production settings reject an explicit false value during configuration loading. Docker Compose also sets it to true. Local unit tests may patch the setting, but that mode is not production-ready.
 
 ## Google OAuth Setup
@@ -63,6 +65,8 @@ These endpoints are public and contain dependency status only, never credentials
 Readiness covers database, ChromaDB, scheduler, tool registry, migrations, metrics, audit logging, and authentication configuration. Run `python backend/scripts/validate_deployment.py` after startup; it writes `deployment_report.md` and exits nonzero on failed checks.
 
 See [API_INVENTORY.md](./API_INVENTORY.md) for the registered routes, methods, authentication treatment, and OpenAPI request/response schemas.
+
+All successful API responses use `{ "success": true, "data": ... }`; errors use `{ "success": false, "error": { "code": "...", "message": "..." } }`. Regenerate the route inventory with `python backend/scripts/generate_api_inventory.py` after API changes.
 
 ## Authentication Routes
 

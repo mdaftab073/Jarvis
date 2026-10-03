@@ -1,11 +1,20 @@
 import logging
 
 from fastapi import FastAPI
+from fastapi.exceptions import RequestValidationError
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
-from slowapi import _rate_limit_exceeded_handler
 from app.api.rate_limit import limiter
+from app.api.responses import (
+    envelope_routes,
+    handle_http_exception,
+    handle_rate_limit_error,
+    handle_unexpected_error,
+    handle_validation_error,
+)
 from app.core.config import settings
+from app.core.cors import add_cors_middleware
 from app.core.logging import setup_logging
 from app.core.middleware import RequestTrackingMiddleware
 from app.jobs.scheduler import start_scheduler, stop_scheduler
@@ -49,7 +58,10 @@ app = FastAPI(
     version="0.1.0",
 )
 app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_exception_handler(StarletteHTTPException, handle_http_exception)
+app.add_exception_handler(RequestValidationError, handle_validation_error)
+app.add_exception_handler(RateLimitExceeded, handle_rate_limit_error)
+app.add_exception_handler(Exception, handle_unexpected_error)
 app.add_middleware(SlowAPIMiddleware)
 app.add_middleware(RequestTrackingMiddleware)
 app.add_middleware(StudentIdentityMiddleware)
@@ -210,3 +222,6 @@ for router, tag in (
     (jobs.router, "Background Jobs"),
 ):
     app.include_router(router, prefix="/api", tags=[tag])
+
+envelope_routes(app.routes)
+add_cors_middleware(app, settings.allowed_origins)

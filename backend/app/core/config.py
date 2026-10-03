@@ -24,9 +24,12 @@ class Settings(BaseSettings):
     ANALYTICS_JOB_INTERVAL_SECONDS: int = 21600
     CHAT_RATE_LIMIT: str = "30/minute"
     RAG_RATE_LIMIT: str = "120/minute"
+    AUTH_RATE_LIMIT: str = "10/minute"
+    REFRESH_RATE_LIMIT: str = "10/minute"
     CONNECTOR_SYNC_RATE_LIMIT: str = "10/minute"
     ALERT_GENERATION_RATE_LIMIT: str = "10/minute"
     UPLOAD_RATE_LIMIT: str = "10/minute"
+    ALLOWED_ORIGINS: str = ""
     REQUIRE_AUTHENTICATED_STUDENT: bool = True
     GOOGLE_CLIENT_ID: str | None = None
     JWT_SECRET_KEY: str | None = None
@@ -54,7 +57,13 @@ class Settings(BaseSettings):
                 raise ValueError("JWT_SECRET_KEY must contain at least 32 bytes in production")
             if not self.GOOGLE_CLIENT_ID:
                 raise ValueError("GOOGLE_CLIENT_ID is required in production")
+            if "*" in self.allowed_origins:
+                raise ValueError("ALLOWED_ORIGINS cannot contain '*' in production")
         return self
+
+    @property
+    def allowed_origins(self) -> list[str]:
+        return [origin.strip() for origin in self.ALLOWED_ORIGINS.split(",") if origin.strip()]
 
 
 settings = Settings()

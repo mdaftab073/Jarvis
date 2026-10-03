@@ -343,7 +343,10 @@ def enqueue_material_embedding(
     return execution
         
 @router.get("/debug/chroma")
-def debug_chroma(request: Request):
+def debug_chroma(
+    request: Request,
+    db: Session = Depends(get_db),
+):
     if settings.ENVIRONMENT.casefold() == "production":
         raise HTTPException(status_code=404, detail="Not found")
     if settings.REQUIRE_AUTHENTICATED_STUDENT and getattr(request.state, "student_id", None) is None:
@@ -351,8 +354,22 @@ def debug_chroma(request: Request):
     from app.services.vector_service import get_collection
 
     collection = get_collection()
-
-    results = collection.get()
+    student_id = getattr(request.state, "student_id", None)
+    if student_id is None:
+        results = collection.get()
+    else:
+        subject_ids = [
+            subject_id
+            for (subject_id,) in db.query(Subject.id)
+            .join(Course, Subject.course_id == Course.id)
+            .filter(Course.student_id == student_id)
+            .all()
+        ]
+        results = (
+            collection.get(where={"subject_id": {"$in": subject_ids}})
+            if subject_ids
+            else {"ids": [], "metadatas": []}
+        )
 
     return {
         "total_chunks": len(results["ids"]),

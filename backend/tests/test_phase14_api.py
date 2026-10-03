@@ -48,7 +48,7 @@ class Phase14APITests(unittest.TestCase):
         # Initial empty
         res = self.client.get("/api/topics")
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(res.json(), [])
+        self.assertEqual(res.json()["data"], [])
 
         # Create topic directly in DB to test GET
         topic = Topic(subject_id=self.subject.id, name="Dynamic Programming", description="Memoization & Tabulation")
@@ -59,18 +59,18 @@ class Phase14APITests(unittest.TestCase):
         # GET /api/topics
         res = self.client.get("/api/topics")
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(len(res.json()), 1)
-        self.assertEqual(res.json()[0]["name"], "Dynamic Programming")
+        self.assertEqual(len(res.json()["data"]), 1)
+        self.assertEqual(res.json()["data"][0]["name"], "Dynamic Programming")
 
         # GET /api/topics/{topic_id}
         res = self.client.get(f"/api/topics/{topic.id}")
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(res.json()["id"], topic.id)
+        self.assertEqual(res.json()["data"]["id"], topic.id)
 
         # GET /api/subjects/{subject_id}/topics
         res = self.client.get(f"/api/subjects/{self.subject.id}/topics")
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(len(res.json()), 1)
+        self.assertEqual(len(res.json()["data"]), 1)
 
         # POST /api/topics/extract/{material_id} with mocked LLM
         mat = StudyMaterial(title="Graph Algorithms", file_path="graph.pdf", subject_id=self.subject.id)
@@ -87,7 +87,7 @@ class Phase14APITests(unittest.TestCase):
         with patch("httpx.post", return_value=fake_groq):
             res = self.client.post(f"/api/topics/extract/{mat.id}?subject_id={self.subject.id}")
         self.assertEqual(res.status_code, 200)
-        extracted = res.json()
+        extracted = res.json()["data"]
         self.assertEqual(len(extracted), 2)
         names = [t["name"] for t in extracted]
         self.assertIn("Dijkstra", names)
@@ -119,8 +119,8 @@ class Phase14APITests(unittest.TestCase):
         with patch("httpx.post", return_value=fake_groq):
             res = self.client.post("/api/flashcards/generate", json=payload)
         self.assertEqual(res.status_code, 200)
-        deck_data = res.json()["deck"]
-        cards = res.json()["flashcards"]
+        deck_data = res.json()["data"]["deck"]
+        cards = res.json()["data"]["flashcards"]
         self.assertEqual(deck_data["name"], "Greedy Algorithms")
         self.assertEqual(len(cards), 2)
 
@@ -129,12 +129,12 @@ class Phase14APITests(unittest.TestCase):
         # GET /api/flashcards/decks
         res = self.client.get(f"/api/flashcards/decks?subject_id={self.subject.id}")
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(len(res.json()), 1)
+        self.assertEqual(len(res.json()["data"]), 1)
 
         # GET /api/flashcards/decks/{deck_id}
         res = self.client.get(f"/api/flashcards/decks/{deck_id}")
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(res.json()["name"], "Greedy Algorithms")
+        self.assertEqual(res.json()["data"]["name"], "Greedy Algorithms")
 
     # ── Quizzes Endpoints ─────────────────────────────────────────────
     def test_quizzes_flow_and_mastery_update(self):
@@ -164,8 +164,8 @@ class Phase14APITests(unittest.TestCase):
         }
         res = self.client.post("/api/quizzes/generate", json=payload)
         self.assertEqual(res.status_code, 200)
-        session_id = res.json()["session"]["id"]
-        questions = res.json()["questions"]
+        session_id = res.json()["data"]["session"]["id"]
+        questions = res.json()["data"]["questions"]
         self.assertEqual(len(questions), 2)
 
         q1_id = questions[0]["id"]
@@ -182,19 +182,19 @@ class Phase14APITests(unittest.TestCase):
         }
         res = self.client.post("/api/quizzes/submit", json=submit_payload)
         self.assertEqual(res.status_code, 200)
-        data = res.json()
+        data = res.json()["data"]
         self.assertEqual(data["score"], 1)
         self.assertEqual(data["total_questions"], 2)
 
         # GET /api/quizzes/session/{session_id}
         res = self.client.get(f"/api/quizzes/session/{session_id}")
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(res.json()["session"]["score"], 1)
+        self.assertEqual(res.json()["data"]["session"]["score"], 1)
 
         # GET /api/quizzes/history/{student_id}
         res = self.client.get(f"/api/quizzes/history/{self.student.id}")
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(len(res.json()), 1)
+        self.assertEqual(len(res.json()["data"]), 1)
 
     # ── Mastery Endpoints ─────────────────────────────────────────────
     def test_mastery_endpoints(self):
@@ -216,19 +216,19 @@ class Phase14APITests(unittest.TestCase):
         # GET /api/mastery/student/{student_id}
         res = self.client.get(f"/api/mastery/student/{self.student.id}")
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(len(res.json()), 1)
-        self.assertEqual(res.json()[0]["mastery_score"], 35.0)
+        self.assertEqual(len(res.json()["data"]), 1)
+        self.assertEqual(res.json()["data"][0]["mastery_score"], 35.0)
 
         # GET /api/mastery/subject/{subject_id}?student_id={student_id}
         res = self.client.get(f"/api/mastery/subject/{self.subject.id}?student_id={self.student.id}")
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(len(res.json()), 1)
+        self.assertEqual(len(res.json()["data"]), 1)
 
         # GET /api/mastery/weak/{student_id}
         res = self.client.get(f"/api/mastery/weak/{self.student.id}?threshold=50.0")
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(len(res.json()), 1)
-        self.assertEqual(res.json()[0]["topic_name"], "Recursion")
+        self.assertEqual(len(res.json()["data"]), 1)
+        self.assertEqual(res.json()["data"][0]["topic_name"], "Recursion")
 
     # ── Learning Endpoints ────────────────────────────────────────────
     def test_learning_session_and_insights(self):
@@ -242,18 +242,18 @@ class Phase14APITests(unittest.TestCase):
         }
         res = self.client.post("/api/learning/session", json=payload)
         self.assertEqual(res.status_code, 200)
-        session_data = res.json()
+        session_data = res.json()["data"]
         self.assertEqual(session_data["activity_type"], "flashcard_review")
 
         # GET /api/learning/history/{student_id}
         res = self.client.get(f"/api/learning/history/{self.student.id}")
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(len(res.json()), 1)
+        self.assertEqual(len(res.json()["data"]), 1)
 
         # GET /api/learning/insights/{student_id}
         res = self.client.get(f"/api/learning/insights/{self.student.id}")
         self.assertEqual(res.status_code, 200)
-        insights = res.json()
+        insights = res.json()["data"]
         self.assertIn("average_mastery", insights)
         self.assertIn("recommended_actions", insights)
         self.assertIn("overall_readiness", insights)

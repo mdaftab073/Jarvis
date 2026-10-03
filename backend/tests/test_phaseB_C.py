@@ -51,7 +51,7 @@ class PhaseBCIntegrationTests(unittest.TestCase):
             json={"title": "Reach CPI target", "goal_type": "CPI", "target_value": 8.5, "target_unit": "CPI"},
         )
         self.assertEqual(goal.status_code, 200)
-        goal_id = goal.json()["id"]
+        goal_id = goal.json()["data"]["id"]
         milestone = self.client.post(
             f"/api/milestones/{goal_id}",
             json={"title": "Complete semester", "target_value": 1},
@@ -59,8 +59,8 @@ class PhaseBCIntegrationTests(unittest.TestCase):
         self.assertEqual(milestone.status_code, 200)
         progress = self.client.post(f"/api/progress/{goal_id}", json={"progress_value": 8.5})
         self.assertEqual(progress.status_code, 200)
-        self.assertEqual(self.client.get(f"/api/goals/{self.student.id}").json()[0]["progress_percent"], 100.0)
-        self.assertEqual(len(self.client.get(f"/api/progress/{goal_id}").json()), 1)
+        self.assertEqual(self.client.get(f"/api/goals/{self.student.id}").json()["data"][0]["progress_percent"], 100.0)
+        self.assertEqual(len(self.client.get(f"/api/progress/{goal_id}").json()["data"]), 1)
 
     def test_habit_streak_completion_and_consistency(self):
         habit = create_habit(self.db, self.student.id, "Daily study", "DAILY_STUDY", 7)
@@ -81,11 +81,11 @@ class PhaseBCIntegrationTests(unittest.TestCase):
         self.assertEqual(goal.status_code, 200)
         habit = self.client.post(f"/api/habits/{self.student.id}", json={"habit_name": "PYQ practice", "category": "PYQ_PRACTICE", "target_per_week": 3})
         self.assertEqual(habit.status_code, 200)
-        habit_id = habit.json()["id"]
+        habit_id = habit.json()["data"]["id"]
         log = self.client.post(f"/api/habits/{habit_id}/logs", json={"completed": True, "duration_minutes": 30})
         self.assertEqual(log.status_code, 200)
         self.assertIn("/api/calendar/{student_id}/today", app.openapi()["paths"])
-        self.assertIn("items", self.client.get(f"/api/calendar/{self.student.id}/today").json())
+        self.assertIn("items", self.client.get(f"/api/calendar/{self.student.id}/today").json()["data"])
 
     def test_semester_copilot_returns_readiness_exam_and_revision_data(self):
         from app.agents.semester_copilot_agent import SemesterCopilotAgent
