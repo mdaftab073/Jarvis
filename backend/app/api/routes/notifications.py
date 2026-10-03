@@ -25,7 +25,7 @@ def add_notification(student_id: int, payload: NotificationInput, db: Session = 
 
 
 @router.post("/notifications/{student_id}/generate-alerts", response_model=JobExecutionResponse, status_code=202)
-@limiter.limit(settings.MIS_SYNC_RATE_LIMIT)
+@limiter.limit(settings.ALERT_GENERATION_RATE_LIMIT)
 def create_alerts(student_id: int, request: Request, background_tasks: BackgroundTasks, db: Session = Depends(get_db), _scope: int = Depends(require_student_scope)):
     return enqueue_job(db, background_tasks, "generate_student_alerts", {"student_id": student_id}, student_id)
 

@@ -3,7 +3,7 @@ import logging
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 from fastapi import UploadFile, File, Form
-from app.services.file_service import save_uploaded_file
+from app.services.file_service import save_uploaded_file, validate_uploaded_file_path
 from app.core.material_types import MaterialType
 from app.db.database import get_db
 from app.services.pdf_service import (
@@ -73,7 +73,7 @@ def create_material_endpoint(
     return create_material(
         db=db,
         title=material.title,
-        file_path=material.file_path,
+        file_path=validate_uploaded_file_path(material.file_path),
         subject_id=material.subject_id,
         material_type=material.material_type,
     )
@@ -243,9 +243,7 @@ def extract_material_text(
 
     _require_material_access(material, request)
 
-    text = extract_text_from_pdf(
-        material.file_path
-    )
+    text = extract_text_from_pdf(validate_uploaded_file_path(material.file_path))
 
     return {
         "title": material.title,
@@ -277,9 +275,7 @@ def get_material_chunks(
         extract_text_from_pdf,
     )
 
-    text = extract_text_from_pdf(
-        material.file_path
-    )
+    text = extract_text_from_pdf(validate_uploaded_file_path(material.file_path))
 
     chunks = chunk_text(text)
 

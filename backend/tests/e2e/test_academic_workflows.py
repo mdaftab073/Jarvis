@@ -1,6 +1,8 @@
 import unittest
 from datetime import date, timedelta
 from io import BytesIO
+from pathlib import Path
+import tempfile
 from unittest.mock import patch
 
 from sqlalchemy import create_engine
@@ -16,6 +18,7 @@ from app.db.models import Course, Student, StudentTopicPerformance, Subject
 from app.services.memory_service import build_student_profile, get_memories
 from app.services.performance_service import calculate_exam_readiness
 from app.services.study_plan_service import complete_study_task, generate_study_plan
+from app.services.file_service import UPLOAD_DIR
 from starlette.datastructures import UploadFile
 
 
@@ -29,6 +32,13 @@ class AcademicWorkflowE2ETests(unittest.TestCase):
         self.db.add(self.subject)
         self.db.commit()
         self.db.refresh(self.subject)
+        self.upload_directory = tempfile.TemporaryDirectory(dir=UPLOAD_DIR)
+        self.addCleanup(self.upload_directory.cleanup)
+
+    def _upload_path(self, filename: str) -> str:
+        file_path = Path(self.upload_directory.name) / filename
+        file_path.write_bytes(b"%PDF-1.7")
+        return file_path.resolve().relative_to(Path.cwd()).as_posix()
 
     def tearDown(self):
         self.db.close()
@@ -37,7 +47,10 @@ class AcademicWorkflowE2ETests(unittest.TestCase):
 
     def test_notes_embedding_then_rag_answer(self):
         upload = UploadFile(filename="notes.pdf", file=BytesIO(b"mock PDF upload"))
-        with patch("app.api.routes.study_materials.save_uploaded_file", return_value="uploads/notes.pdf"):
+        with patch(
+            "app.api.routes.study_materials.save_uploaded_file",
+            return_value=self._upload_path("notes.pdf"),
+        ):
             material = upload_material(
                 title="DBMS Notes",
                 subject_id=self.subject.id,
@@ -72,7 +85,10 @@ class AcademicWorkflowE2ETests(unittest.TestCase):
 
     def test_pyq_embedding_then_topics_and_revision_recommendations(self):
         upload = UploadFile(filename="pyq.pdf", file=BytesIO(b"mock PYQ upload"))
-        with patch("app.api.routes.study_materials.save_uploaded_file", return_value="uploads/pyq.pdf"):
+        with patch(
+            "app.api.routes.study_materials.save_uploaded_file",
+            return_value=self._upload_path("pyq.pdf"),
+        ):
             material = upload_material(
                 title="DBMS PYQ",
                 subject_id=self.subject.id,

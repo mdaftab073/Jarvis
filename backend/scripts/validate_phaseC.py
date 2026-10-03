@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import subprocess
 import sys
+import importlib
 from pathlib import Path
 
 from alembic.config import Config
@@ -14,16 +15,14 @@ if str(BACKEND) not in sys.path:
     sys.path.insert(0, str(BACKEND))
 os.chdir(BACKEND)
 
-from app.agents.agent_registry import create_default_registry
-from app.agents.director_agent import create_execution_plan
-from app.db.database import Base
-from app.db.models import StudentConnector
-from app.main import app as fastapi_app
-from app.services.connector_crypto_service import decrypt_credentials, encrypt_credentials
-from app.services.connector_service import serialize_connector
-from app.services.memory_service import get_memories, store_memory
-
-import importlib
+from app.agents.agent_registry import create_default_registry  # noqa: E402
+from app.agents.director_agent import create_execution_plan  # noqa: E402
+from app.db.database import Base  # noqa: E402
+from app.db.models import StudentConnector  # noqa: E402
+from app.main import app as fastapi_app  # noqa: E402
+from app.services.connector_crypto_service import decrypt_credentials, encrypt_credentials  # noqa: E402
+from app.services.connector_service import serialize_connector  # noqa: E402
+from app.services.memory_service import get_memories, store_memory  # noqa: E402
 
 importlib.import_module("app.db.models")
 HEAD = "e6b2d8a4c913"
@@ -34,13 +33,16 @@ def main() -> None:
     if script.get_revision(HEAD) is None:
         raise RuntimeError(f"Missing Phase C migration {HEAD}")
 
-    required_tables = {"mis_accounts", "student_connectors", "sync_jobs", "sync_history"}
+    required_tables = {"student_connectors", "sync_jobs", "sync_history"}
     if not required_tables.issubset(Base.metadata.tables):
         raise RuntimeError("Connector/sync persistence models are incomplete")
-    required_paths = {"/api/mis/login/start", "/api/mis/login/complete", "/api/mis/sync-profile"}
+    required_paths = {
+        "/api/connectors/{student_id}",
+        "/api/connectors/{connector_id}/sync",
+    }
     missing = required_paths.difference(fastapi_app.openapi()["paths"])
     if missing:
-        raise RuntimeError(f"Missing MIS routes: {sorted(missing)}")
+        raise RuntimeError(f"Missing connector routes: {sorted(missing)}")
 
     test_key = Fernet.generate_key().decode("ascii")
     sample = {"username": "test-student", "password": "never-print-this"}
@@ -69,7 +71,7 @@ def main() -> None:
         cwd=BACKEND,
         check=True,
     )
-    print("MIS account/routes, generic connector persistence, memory, SemesterCopilotAgent, and director verified")
+    print("Generic connector persistence, memory, SemesterCopilotAgent, and director verified")
     print("PHASE C VALIDATION PASSED")
 
 

@@ -7,7 +7,6 @@ from sqlalchemy.pool import StaticPool
 
 from app.db.database import Base
 from app.db.models import Course, Student, StudyMaterial, Subject
-from app.models import Topic, FlashcardDeck, Flashcard, QuizSession, QuizQuestion, TopicMastery, LearningSession
 from app.schemas.topic import TopicCreate
 from app.schemas.flashcard import FlashcardCreate, FlashcardDeckCreate
 from app.schemas.quiz import QuizSessionCreate, QuizQuestionCreate, QuizAnswerCreate

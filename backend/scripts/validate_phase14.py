@@ -115,7 +115,7 @@ def validate_openapi_routes() -> dict:
 
 def validate_agent_and_director() -> dict:
     from app.agents.agent_registry import create_default_registry
-    from app.agents.director_agent import AcademicDirectorAgent, create_execution_plan
+    from app.agents.director_agent import create_execution_plan
     from app.agents.learning_agent import LearningAgent
 
     registry = create_default_registry()

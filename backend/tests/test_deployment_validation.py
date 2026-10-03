@@ -1,11 +1,44 @@
 import unittest
+import os
 from unittest.mock import patch
 
+from pydantic import ValidationError
+
 from app.core.config import settings
+from app.core.config import Settings
 from scripts.validate_deployment import environment_status, format_report
 
 
 class DeploymentValidationTests(unittest.TestCase):
+    def test_production_settings_reject_disabled_student_authentication(self):
+        with self.assertRaises(ValidationError):
+            Settings(
+                DATABASE_URL="postgresql://db/jarvis",
+                GROQ_API_KEY="groq-test",
+                ENVIRONMENT="production",
+                REQUIRE_AUTHENTICATED_STUDENT=False,
+                JWT_SECRET_KEY="j" * 32,
+                GOOGLE_CLIENT_ID="google-client",
+            )
+
+    def test_student_authentication_is_enabled_by_default(self):
+        with patch.dict(os.environ, {}, clear=True):
+            configured = Settings(
+                DATABASE_URL="postgresql://db/jarvis",
+                GROQ_API_KEY="groq-test",
+                ENVIRONMENT="test",
+            )
+        self.assertTrue(configured.REQUIRE_AUTHENTICATED_STUDENT)
+
+    def test_production_settings_require_jwt_secret(self):
+        with self.assertRaises(ValidationError):
+            Settings(
+                DATABASE_URL="postgresql://db/jarvis",
+                GROQ_API_KEY="groq-test",
+                ENVIRONMENT="production",
+                GOOGLE_CLIENT_ID="google-client",
+            )
+
     def test_environment_requires_strict_auth_and_complete_credentials(self):
         with (
             patch.object(settings, "DATABASE_URL", "postgresql://db/jarvis"),

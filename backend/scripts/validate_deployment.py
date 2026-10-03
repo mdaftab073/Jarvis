@@ -142,7 +142,7 @@ def _scheduler_status() -> tuple[bool, str]:
     if not already_running:
         start_scheduler()
     registered = {job.id for job in scheduler.get_jobs()}
-    required = {"reminder_generation", "analytics_refresh", "mis_sync_schedule"}
+    required = {"reminder_generation", "analytics_refresh"}
     if not already_running and scheduler.running:
         stop_scheduler()
     missing = sorted(required - registered)
@@ -151,7 +151,7 @@ def _scheduler_status() -> tuple[bool, str]:
 
 def _tool_status() -> tuple[bool, str]:
     tools = [tool["name"] for tool in get_tool_registry().list_tools()]
-    passed = len(tools) >= 32 and len(tools) == len(set(tools))
+    passed = bool(tools) and len(tools) == len(set(tools))
     return passed, f"{len(tools)} unique tools"
 
 

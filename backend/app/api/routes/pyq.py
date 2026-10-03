@@ -1,6 +1,6 @@
 import logging
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
@@ -25,15 +25,18 @@ from app.services.pyq_service import (
     get_topic_frequency,
     get_yearly_topic_frequency,
 )
+from app.api.student_scope import require_record_owner
+from app.services.file_service import validate_uploaded_file_path
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-def _require_subject(db: Session, subject_id: int):
+def _require_subject(db: Session, subject_id: int, request: Request):
     subject = db.query(Subject).filter(Subject.id == subject_id).first()
     if subject is None:
         raise HTTPException(status_code=404, detail="Subject not found")
+    require_record_owner(request, subject.course.student_id)
     return subject
 
 
@@ -41,8 +44,8 @@ def _require_subject(db: Session, subject_id: int):
     "/pyq/topics/{subject_id}",
     response_model=TopicDashboardResponse,
 )
-def get_topics(subject_id: int, db: Session = Depends(get_db)):
-    _require_subject(db, subject_id)
+def get_topics(subject_id: int, request: Request, db: Session = Depends(get_db)):
+    _require_subject(db, subject_id, request)
     frequencies = get_topic_frequency(db, subject_id)
     yearly = get_yearly_topic_frequency(db, subject_id)
     trends = analyze_exam_trends(db, subject_id)
@@ -58,8 +61,8 @@ def get_topics(subject_id: int, db: Session = Depends(get_db)):
 
 
 @router.get("/pyq/trends/{subject_id}")
-def get_trends(subject_id: int, db: Session = Depends(get_db)):
-    _require_subject(db, subject_id)
+def get_trends(subject_id: int, request: Request, db: Session = Depends(get_db)):
+    _require_subject(db, subject_id, request)
     return analyze_exam_trends(db, subject_id)
 
 
@@ -67,8 +70,8 @@ def get_trends(subject_id: int, db: Session = Depends(get_db)):
     "/pyq/revision-plan/{subject_id}",
     response_model=RevisionPlanResponse,
 )
-def get_revision_plan(subject_id: int, db: Session = Depends(get_db)):
-    _require_subject(db, subject_id)
+def get_revision_plan(subject_id: int, request: Request, db: Session = Depends(get_db)):
+    _require_subject(db, subject_id, request)
     return create_revision_plan(db, subject_id)
 
 
@@ -76,8 +79,8 @@ def get_revision_plan(subject_id: int, db: Session = Depends(get_db)):
     "/pyq/important-topics/{subject_id}",
     response_model=list[ImportantTopic],
 )
-def get_important_topics(subject_id: int, db: Session = Depends(get_db)):
-    _require_subject(db, subject_id)
+def get_important_topics(subject_id: int, request: Request, db: Session = Depends(get_db)):
+    _require_subject(db, subject_id, request)
     return generate_important_topics(db, subject_id)
 
 
@@ -87,8 +90,10 @@ def get_important_topics(subject_id: int, db: Session = Depends(get_db)):
 )
 def generate_practice(
     request: PracticeQuestionRequest,
+    http_request: Request,
     db: Session = Depends(get_db),
 ):
+    _require_subject(db, request.subject_id, http_request)
     try:
         return generate_practice_questions(
             db=db,
@@ -104,7 +109,11 @@ def generate_practice(
     "/pyq/debug/questions/{material_id}",
     response_model=ExtractedQuestionsResponse,
 )
-def debug_questions(material_id: int, db: Session = Depends(get_db)):
+def debug_questions(
+    material_id: int,
+    request: Request,
+    db: Session = Depends(get_db),
+):
     material = (
         db.query(StudyMaterial)
         .filter(StudyMaterial.id == material_id)
@@ -112,9 +121,10 @@ def debug_questions(material_id: int, db: Session = Depends(get_db)):
     )
     if material is None:
         raise HTTPException(status_code=404, detail="Material not found")
+    require_record_owner(request, material.subject.course.student_id)
 
     try:
-        text = extract_text_from_pdf(material.file_path)
+        text = extract_text_from_pdf(validate_uploaded_file_path(material.file_path))
     except Exception as error:
         logger.exception("Unable to extract debug PYQ material_id=%d", material_id)
         raise HTTPException(

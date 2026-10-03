@@ -9,14 +9,15 @@ Endpoints:
 
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
-from app.db.models import Subject
+from app.db.models import StudyMaterial, Subject
+from app.api.student_scope import require_record_owner
 from app.services.topic_service import TopicService
 from app.services.topic_extraction_service import TopicExtractionService
-from app.schemas.topic import Topic, TopicCreate
+from app.schemas.topic import Topic
 
 router = APIRouter(tags=["Topics"])
 
@@ -67,6 +68,7 @@ def list_subject_topics(
 @router.post("/topics/extract/{material_id}", response_model=List[Topic])
 def extract_topics(
     material_id: int,
+    request: Request,
     subject_id: int = Query(..., ge=1, description="Subject to associate extracted topics with"),
     db: Session = Depends(get_db),
 ):
@@ -74,6 +76,14 @@ def extract_topics(
     subject = db.query(Subject).filter(Subject.id == subject_id).first()
     if subject is None:
         raise HTTPException(status_code=404, detail="Subject not found")
+    material = (
+        db.query(StudyMaterial)
+        .filter_by(id=material_id, subject_id=subject_id)
+        .first()
+    )
+    if material is None:
+        raise HTTPException(status_code=404, detail="Material not found")
+    require_record_owner(request, subject.course.student_id)
     try:
         svc = TopicExtractionService(db)
         topics = svc.extract_and_store(material_id=material_id, subject_id=subject_id)

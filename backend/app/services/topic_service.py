@@ -13,8 +13,7 @@ from typing import List, Optional
 from sqlalchemy.orm import Session
 
 from app.models import Topic
-from app.schemas.topic import TopicCreate, TopicUpdate
-from app.core.config import settings
+from app.schemas.topic import TopicCreate
 
 class TopicService:
     def __init__(self, db: Session):

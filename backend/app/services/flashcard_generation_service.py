@@ -8,12 +8,16 @@ Workflow:
 """
 
 from typing import List, Dict
+from typing import TYPE_CHECKING
 
 from app.services.flashcard_service import FlashcardService
 from app.schemas.flashcard import FlashcardCreate
 from app.core.config import settings
 import httpx
 import json
+
+if TYPE_CHECKING:
+    from app.models import Flashcard
 
 class FlashcardGenerationService:
     def __init__(self, db_session):

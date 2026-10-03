@@ -18,13 +18,6 @@ REQUIRED_TOOLS = {
     "study_schedule",
     "deadlines",
     "reminders",
-    "mis_profile",
-    "mis_attendance",
-    "mis_results",
-    "mis_sync_profile",
-    "mis_get_attendance",
-    "mis_get_results",
-    "mis_get_timetable",
 }
 
 

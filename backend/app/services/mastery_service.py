@@ -5,7 +5,7 @@ from typing import List, Optional
 from sqlalchemy.orm import Session
 
 from app.models import TopicMastery
-from app.schemas.mastery_learning import MasteryCreate, Mastery as MasterySchema
+from app.schemas.mastery_learning import MasteryCreate
 
 class MasteryService:
     def __init__(self, db: Session):

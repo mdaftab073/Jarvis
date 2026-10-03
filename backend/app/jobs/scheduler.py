@@ -44,16 +44,6 @@ def start_scheduler() -> None:
         max_instances=1,
         coalesce=True,
     )
-    scheduler.add_job(
-        _enqueue_and_run,
-        "interval",
-        id="mis_sync_schedule",
-        args=["scheduled_mis_sync", {}],
-        seconds=settings.MIS_SYNC_JOB_INTERVAL_SECONDS,
-        replace_existing=True,
-        max_instances=1,
-        coalesce=True,
-    )
     scheduler.start()
     logger.info("Background scheduler started")
 

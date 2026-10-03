@@ -1,7 +1,6 @@
 import unittest
 from datetime import datetime, timedelta, timezone
 from types import SimpleNamespace
-from unittest.mock import patch
 
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
@@ -12,7 +11,7 @@ from sqlalchemy.pool import StaticPool
 from app.agents.agent_registry import create_default_registry
 from app.agents.director_agent import create_execution_plan
 from app.db.database import Base, get_db
-from app.db.models import CalendarEvent, Course, Student, StudentAcademicProfile, Subject
+from app.db.models import CalendarEvent, Course, Student, Subject
 from app.main import app
 from app.services.academic_profile_service import create_or_update_profile
 from app.services.attendance_service import attendance_risk, classes_to_recover, upsert_attendance

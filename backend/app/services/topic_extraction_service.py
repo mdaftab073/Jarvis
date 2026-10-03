@@ -8,6 +8,7 @@ Workflow:
 """
 
 from typing import List
+from typing import TYPE_CHECKING
 
 from app.services.topic_service import TopicService
 from app.services.study_material_service import StudyMaterialService  # existing service
@@ -15,6 +16,9 @@ from app.schemas.topic import TopicCreate
 from app.core.config import settings
 import httpx
 import json
+
+if TYPE_CHECKING:
+    from app.models import Topic
 
 class TopicExtractionService:
     def __init__(self, db_session):
@@ -67,9 +71,12 @@ class TopicExtractionService:
             if file_path:
                 import os
                 if os.path.exists(file_path):
+                    from app.services.file_service import validate_uploaded_file_path
+
+                    safe_file_path = validate_uploaded_file_path(file_path)
                     from app.services.pdf_service import extract_text_from_pdf
                     try:
-                        content = extract_text_from_pdf(file_path)
+                        content = extract_text_from_pdf(safe_file_path)
                     except Exception:
                         content = getattr(material, "title", "")
                 else:

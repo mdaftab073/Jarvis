@@ -128,6 +128,7 @@ class PYQIntelligenceTests(unittest.TestCase):
         )
         with (
             patch.object(pyq_service, "extract_text_from_pdf", return_value="Database notes"),
+            patch.object(pyq_service, "validate_uploaded_file_path", return_value="notes.pdf"),
             patch("app.services.rag_service.build_context", return_value=("RAG facts", [])),
             patch.object(pyq_service.client.chat.completions, "create", return_value=response) as llm_call,
         ):

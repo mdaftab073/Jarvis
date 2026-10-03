@@ -5,7 +5,6 @@ review, revision, RAG question, etc.) together with its duration and score.
 """
 
 from typing import List, Optional
-from datetime import datetime
 
 from sqlalchemy.orm import Session
 

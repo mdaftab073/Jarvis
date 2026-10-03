@@ -1,7 +1,6 @@
-from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, Enum, func
+from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, func
 from sqlalchemy.orm import relationship
 from app.db.base_class import Base
-import enum
 
 class Topic(Base):
     __tablename__ = "topics"

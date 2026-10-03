@@ -1,4 +1,4 @@
-from app.db.models import DigitalTwinSnapshot, GradeRecord, StudentAcademicProfile, StudentNotification, StudentGoal, TopicMastery
+from app.db.models import DigitalTwinSnapshot, GradeRecord, StudentAcademicProfile, StudentNotification, TopicMastery
 from app.services.attendance_service import attendance_summary
 from app.services.calendar_service import get_events, get_agenda, get_week_agenda
 from app.services.deadline_service import serialize_deadline, upcoming_deadlines

@@ -43,9 +43,6 @@ class MetricsService:
         total_tool_executions = db.query(func.count(AuditLog.id)).filter(
             AuditLog.event_type == "TOOL_EXECUTION"
         ).scalar() or 0
-        mis_syncs = db.query(func.count(AuditLog.id)).filter(
-            AuditLog.event_type.in_(("MIS_SYNC", "MIS_SYNC_COMPLETED"))
-        ).scalar() or 0
         rag_queries = db.query(func.count(AuditLog.id)).filter(
             AuditLog.event_type == "RAG_QUERY"
         ).scalar() or 0
@@ -58,7 +55,6 @@ class MetricsService:
             "job_failures": db.query(func.count(JobExecution.id)).filter(
                 JobExecution.status == "FAILED"
             ).scalar() or 0,
-            "mis_sync_count": mis_syncs,
             "rag_query_count": rag_queries,
             "jobs": JobMetricsService.summarize(db),
             "http": metrics.get_metrics(),

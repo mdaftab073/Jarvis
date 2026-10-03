@@ -15,12 +15,12 @@ if str(BACKEND) not in sys.path:
     sys.path.insert(0, str(BACKEND))
 os.chdir(BACKEND)
 
-from app.agents.agent_registry import create_default_registry
-from app.agents.director_agent import create_execution_plan
-from app.db.database import Base
-from app.db.models import AcademicDeadline, DeadlineItem, GradeRecord
-from app.main import app
-from app.services.grade_service import calculate_cpi, calculate_spi
+from app.agents.agent_registry import create_default_registry  # noqa: E402
+from app.agents.director_agent import create_execution_plan  # noqa: E402
+from app.db.database import Base  # noqa: E402
+from app.db.models import AcademicDeadline, DeadlineItem, GradeRecord  # noqa: E402
+from app.main import app  # noqa: E402
+from app.services.grade_service import calculate_cpi, calculate_spi  # noqa: E402
 
 HEAD = "e6b2d8a4c913"
 PRE_STABILIZATION_HEAD = "c82d4e6f1a30"

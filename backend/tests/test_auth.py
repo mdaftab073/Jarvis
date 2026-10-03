@@ -229,17 +229,11 @@ class AuthenticationTests(unittest.TestCase):
                 headers=headers,
                 json={"name": "Unverified", "email": "unverified@example.com"},
             )
-            mismatched_mis_job = client.post(
-                f"/api/mis/jobs?student_id={self.student.id}",
-                headers=headers,
-                json={"student_id": self.other.id, "resource": "profile"},
-            )
         api_app.dependency_overrides.clear()
         self.assertEqual([student["id"] for student in students.json()], [self.student.id])
         self.assertEqual([course["student_id"] for course in courses.json()], [self.student.id])
         self.assertEqual([subject["name"] for subject in subjects.json()], ["Own Subject"])
         self.assertEqual(creation.status_code, 403)
-        self.assertEqual(mismatched_mis_job.status_code, 403)
 
 
 if __name__ == "__main__":

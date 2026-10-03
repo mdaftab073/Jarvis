@@ -114,15 +114,6 @@ class JobRegistry:
                     student_id=execution.student_id,
                     metadata_json={"job_name": job_name, "duration_seconds": execution.duration_seconds, "status": "SUCCESS"},
                 )
-                if "mis" in job_name.casefold():
-                    AuditLogService.record_event_isolated(
-                        event_type="MIS_SYNC",
-                        resource_type="job_execution",
-                        resource_id=job_id,
-                        action="sync",
-                        student_id=execution.student_id,
-                        metadata_json={"job_name": job_name, "success": True},
-                    )
                 return self.serialize(execution)
         except Exception as error:
             logger.exception("Job failed: job_id=%s name=%s", job_id, job_name)
@@ -145,15 +136,6 @@ class JobRegistry:
                     student_id=execution.student_id,
                     metadata_json={"job_name": job_name, "error_type": type(error).__name__, "duration_seconds": execution.duration_seconds},
                 )
-                if "mis" in job_name.casefold():
-                    AuditLogService.record_event_isolated(
-                        event_type="MIS_SYNC",
-                        resource_type="job_execution",
-                        resource_id=job_id,
-                        action="sync",
-                        student_id=execution.student_id,
-                        metadata_json={"job_name": job_name, "success": False},
-                    )
                 return self.serialize(execution)
 
     def list_jobs(self) -> list[dict[str, str]]:
@@ -186,7 +168,7 @@ class JobRegistry:
     def _ensure_jobs(self) -> None:
         global _tasks_loaded
         if self is job_registry and not _tasks_loaded:
-            from app.jobs.tasks import analytics, mis_sync, pdf_processing, reminders  # noqa: F401
+            from app.jobs.tasks import analytics, pdf_processing, reminders  # noqa: F401
 
             for definition in _JOB_HANDLERS.values():
                 self.register_job(definition.name, definition.handler, definition.description)

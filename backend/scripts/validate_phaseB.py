@@ -12,10 +12,10 @@ BACKEND = Path(__file__).resolve().parents[1]
 if str(BACKEND) not in sys.path:
     sys.path.insert(0, str(BACKEND))
 
-from app.agents.agent_registry import create_default_registry
-from app.agents.director_agent import create_execution_plan
-from app.db.database import Base
-from app.main import app as fastapi_app
+from app.agents.agent_registry import create_default_registry  # noqa: E402
+from app.agents.director_agent import create_execution_plan  # noqa: E402
+from app.db.database import Base  # noqa: E402
+from app.main import app as fastapi_app  # noqa: E402
 importlib.import_module("app.db.models")
 
 HEAD = "e6b2d8a4c913"

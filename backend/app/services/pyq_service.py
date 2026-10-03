@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 from app.db.models import ExamQuestion, StudyMaterial, Subject
 from app.core.material_types import MaterialType
 from app.services.llm_service import client
+from app.services.file_service import validate_uploaded_file_path
 from app.services.pdf_service import extract_text_from_pdf
 
 logger = logging.getLogger(__name__)
@@ -391,7 +392,9 @@ def generate_practice_questions(
     note_contexts = []
     for material in note_materials:
         try:
-            note_text = extract_text_from_pdf(material.file_path)
+            note_text = extract_text_from_pdf(
+                validate_uploaded_file_path(material.file_path)
+            )
         except Exception:
             logger.exception(
                 "Could not extract practice source material_id=%d",

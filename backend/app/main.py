@@ -1,6 +1,6 @@
 import logging
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 from slowapi import _rate_limit_exceeded_handler
@@ -35,7 +35,7 @@ from app.api.routes import learning
 from app.api.routes import academic_profile, attendance, grades, deadlines, notifications, calendar, schedule, dashboard
 from app.api.routes import reminders
 from app.api.routes import goals, habits
-from app.api.routes import chat, connectors, jobs, mis
+from app.api.routes import chat, connectors, jobs
 from app.api.routes import auth
 from app.core.auth_middleware import StudentIdentityMiddleware
 from app.services.keyword_search_service import sync_keyword_index_from_chroma
@@ -57,10 +57,6 @@ app.add_middleware(StudentIdentityMiddleware)
 
 @app.on_event("startup")
 def sync_keyword_index():
-    logger.info(
-        "SVNIT MIS configured: %s",
-        bool(settings.SVNIT_MIS_BASE_URL),
-    )
     try:
         sync_keyword_index_from_chroma()
     except Exception:
@@ -210,7 +206,6 @@ for router, tag in (
     (goals.router, "Goals"),
     (habits.router, "Habits"),
     (connectors.router, "Connectors"),
-    (mis.router, "SVNIT MIS"),
     (chat.router, "Chat"),
     (jobs.router, "Background Jobs"),
 ):

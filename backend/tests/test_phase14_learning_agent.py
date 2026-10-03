@@ -5,7 +5,7 @@ from sqlalchemy.pool import StaticPool
 
 from app.db.database import Base
 from app.db.models import Course, Student, Subject
-from app.models import Topic, TopicMastery, QuizSession, LearningSession
+from app.models import Topic, TopicMastery, LearningSession
 from app.agents.learning_agent import LearningAgent
 
 

@@ -77,7 +77,7 @@ def update_connector_credentials(connector_id: int, payload: ConnectorCredential
 
 
 @router.post("/connectors/{connector_id}/sync")
-@limiter.limit(settings.MIS_SYNC_RATE_LIMIT)
+@limiter.limit(settings.CONNECTOR_SYNC_RATE_LIMIT)
 def manual_sync(connector_id: int, background_tasks: BackgroundTasks, request: Request, db: Session = Depends(get_db)):
     connector = _get_registered_connector(db, connector_id)
     if connector is None:

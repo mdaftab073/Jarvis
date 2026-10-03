@@ -8,7 +8,7 @@ Endpoints:
 
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, ConfigDict
 
@@ -16,7 +16,6 @@ from app.api.student_scope import require_student_scope
 from app.db.database import get_db
 from app.services.mastery_service import MasteryService
 from app.models import TopicMastery, Topic
-from app.schemas.mastery_learning import Mastery
 
 router = APIRouter(tags=["Mastery"])
 

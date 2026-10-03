@@ -17,13 +17,6 @@ def select_chat_tool(message: str) -> str | None:
     text = message.casefold()
     if re.search(r"\b(hello|hi|hey|good morning|good afternoon)\b", text):
         return None
-    if "mis" in text:
-        if re.search(r"\b(attendance|present)\b", text):
-            return "mis_attendance"
-        if re.search(r"\b(result|grade|marks|cpi|spi)\b", text):
-            return "mis_results"
-        if re.search(r"\b(profile|roll|department|program)\b", text):
-            return "mis_profile"
     routes = (
         (r"\b(attendance|present|absent)\b", "attendance_summary"),
         (r"\b(grades?|marks|cpi|spi|gpa|cgpa)\b", "grades"),

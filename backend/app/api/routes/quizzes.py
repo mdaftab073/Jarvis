@@ -8,7 +8,6 @@ Endpoints:
 """
 
 from typing import List, Optional
-from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.orm import Session
@@ -24,7 +23,6 @@ from app.schemas.quiz import (
     QuizSessionCreate,
     QuizQuestion,
     QuizQuestionCreate,
-    QuizAnswer,
     QuizAnswerCreate,
 )
 from app.schemas.mastery_learning import MasteryCreate

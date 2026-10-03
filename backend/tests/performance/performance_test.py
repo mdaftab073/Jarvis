@@ -1,7 +1,6 @@
 import asyncio
 import httpx
 import os
-from pathlib import Path
 
 BASE_URL = os.getenv("BASE_URL", "http://localhost:8000")
 

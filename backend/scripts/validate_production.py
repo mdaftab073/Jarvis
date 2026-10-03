@@ -16,8 +16,6 @@ from app.jobs.registry import get_job_registry
 from app.jobs.scheduler import scheduler, start_scheduler, stop_scheduler
 from app.services.system_health_service import _migration_details
 from app.services.vector_service import get_collection
-from app.services.mis.configuration import get_mis_site_configuration
-from app.services.mis.client import MISClientError
 from app.tools.registry import get_tool_registry
 
 
@@ -75,7 +73,7 @@ def run_validation() -> dict[str, dict[str, object]]:
 
     def check_tools():
         names = [tool["name"] for tool in get_tool_registry().list_tools()]
-        return len(names) >= 32 and len(names) == len(set(names)), f"{len(names)} unique tools"
+        return bool(names) and len(names) == len(set(names)), f"{len(names)} unique tools"
 
     def check_jobs():
         names = [job["name"] for job in get_job_registry().list_jobs()]
@@ -90,10 +88,6 @@ def run_validation() -> dict[str, dict[str, object]]:
         missing = [key for key, value in required.items() if not value or value.startswith("replace-with-")]
         if not settings.METRICS_ADMIN_TOKEN:
             missing.append("METRICS_ADMIN_TOKEN")
-        try:
-            get_mis_site_configuration()
-        except MISClientError:
-            missing.append("SVNIT_MIS_BASE_URL and valid SVNIT_MIS_CONFIGURATION_JSON")
         return not missing, "configured" if not missing else ", ".join(missing)
 
     def check_storage():
@@ -105,7 +99,8 @@ def run_validation() -> dict[str, dict[str, object]]:
         configured = {
             "CHAT_RATE_LIMIT": settings.CHAT_RATE_LIMIT,
             "RAG_RATE_LIMIT": settings.RAG_RATE_LIMIT,
-            "MIS_SYNC_RATE_LIMIT": settings.MIS_SYNC_RATE_LIMIT,
+            "CONNECTOR_SYNC_RATE_LIMIT": settings.CONNECTOR_SYNC_RATE_LIMIT,
+            "ALERT_GENERATION_RATE_LIMIT": settings.ALERT_GENERATION_RATE_LIMIT,
             "UPLOAD_RATE_LIMIT": settings.UPLOAD_RATE_LIMIT,
         }
         invalid = [name for name, value in configured.items() if not validate_rate_limit(value)]

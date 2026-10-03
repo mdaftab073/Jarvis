@@ -9,7 +9,6 @@ from app.db.database import Base, get_db
 from app.db.models import CalendarEvent, Course, DigitalTwinSnapshot, Semester, SemesterSubject, Student, Subject
 from app.main import app
 from app.services.calendar_service import get_agenda
-from app.services.goals_service import create_goal, create_milestone, record_progress, serialize_goal
 from app.services.habit_service import create_habit, log_habit
 from app.services.notification_service import generate_alerts
 from app.services.productivity_service import analyze_productivity
@@ -137,7 +136,6 @@ class PhaseBCIntegrationTests(unittest.TestCase):
         self.assertEqual([item["start_time"] for item in agenda["items"]], sorted(item["start_time"] for item in agenda["items"]))
 
     def test_intelligent_schedule_uses_priority_and_avoids_calendar_conflicts(self):
-        from app.db.models import DigitalTwinSnapshot
         from app.services.academic_profile_service import create_or_update_profile
         from app.services.attendance_service import upsert_attendance
         from app.services.deadline_service import create_deadline
@@ -158,7 +156,7 @@ class PhaseBCIntegrationTests(unittest.TestCase):
         from app.agents.productivity_agent import ProductivityAgent
         from app.db.models import Topic, TopicMastery
 
-        habit = create_habit(self.db, self.student.id, "Review", "REVISION", 7)
+        create_habit(self.db, self.student.id, "Review", "REVISION", 7)
         topic = Topic(subject_id=self.subject.id, name="Graphs")
         self.db.add(topic)
         self.db.flush()

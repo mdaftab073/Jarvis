@@ -4,7 +4,7 @@
 
 Copy `.env.example` to `.env` and replace every `replace-with-...` value. Keep `.env` out of version control. Production requires PostgreSQL, a reachable Chroma service, a Groq API key, a Google OAuth client ID, a random JWT signing key of at least 32 bytes, and an admin metrics token.
 
-`REQUIRE_AUTHENTICATED_STUDENT` must be `true` in production. Docker Compose sets it to true; `backend/scripts/validate_deployment.py` fails if it is disabled. Local unit tests can run with the setting disabled, but that mode is not production-ready.
+`REQUIRE_AUTHENTICATED_STUDENT` defaults to `true`; production settings reject an explicit false value during configuration loading. Docker Compose also sets it to true. Local unit tests may patch the setting, but that mode is not production-ready.
 
 ## Google OAuth Setup
 
@@ -46,6 +46,8 @@ alembic upgrade head
 
 The graph must have exactly one head. Take a database backup before production upgrades. Compose automatically applies migrations at API startup; on an existing deployment, run `docker compose exec jarvis-api alembic upgrade head` during the release window and verify `/health/ready` afterward. The Google identity migration preserves existing student rows and leaves their Google identity unlinked until verified login.
 
+The current forward migration removes deprecated MIS persistence and `svnit_mis` connector rows. Inspect those tables and connector records in the target database before release; the migration does not preserve deleted MIS records for downgrade.
+
 ## Health Monitoring
 
 These endpoints are public and contain dependency status only, never credentials:
@@ -59,6 +61,8 @@ These endpoints are public and contain dependency status only, never credentials
 | `GET /system/health` | System status used by the Compose health check |
 
 Readiness covers database, ChromaDB, scheduler, tool registry, migrations, metrics, audit logging, and authentication configuration. Run `python backend/scripts/validate_deployment.py` after startup; it writes `deployment_report.md` and exits nonzero on failed checks.
+
+See [API_INVENTORY.md](./API_INVENTORY.md) for the registered routes, methods, authentication treatment, and OpenAPI request/response schemas.
 
 ## Authentication Routes
 
@@ -75,7 +79,15 @@ All other `/api` routes require a Bearer access token when production strict-aut
 
 For staging, obtain a short-lived Google ID token for a disposable test account and export it as `GOOGLE_ID_TOKEN`. Run `python backend/scripts/run_release_e2e.py`; the runner authenticates through Google and removes tracked run resources while retaining the test account. Audit events and some derived academic history can remain, so use a disposable account and database. Do not use a personal account for staging validation. The runner uses an in-process FastAPI test client against the configured database and vector store, so it validates real dependencies but is not a substitute for a browser-to-deployed-URL smoke test.
 
-The backend tests cover concurrent tool execution; run `python -m unittest discover -s tests -p "test*.py"` from `backend/`. For live staging concurrency, set `LOAD_TEST_ACCESS_TOKEN`, `LOAD_TEST_SUBJECT_ID`, and optionally `LOAD_TEST_BASE_URL` and `LOAD_TEST_CONCURRENCY` (1-8), then run `python backend/scripts/validate_load.py`. It concurrently probes identity, chat/session isolation, MIS job ownership, and PDF uploads, then checks metrics and readiness. It creates records and files, so use a disposable staging student and subject.
+Run unit tests in explicit test mode from `backend/`:
+
+```powershell
+$env:ENVIRONMENT = "test"
+$env:REQUIRE_AUTHENTICATED_STUDENT = "false"
+python -m unittest discover -s tests -p "test*.py"
+```
+
+For live staging concurrency, set `LOAD_TEST_ACCESS_TOKEN`, `LOAD_TEST_SUBJECT_ID`, and optionally `LOAD_TEST_BASE_URL` and `LOAD_TEST_CONCURRENCY` (1-8), then run `python backend/scripts/validate_load.py`. It concurrently probes identity, chat/session isolation, and PDF uploads, then checks metrics and readiness. It creates records and files, so use a disposable staging student and subject.
 
 ## Production Checklist
 

@@ -1,7 +1,6 @@
 import json
 import logging
 from contextlib import contextmanager
-from datetime import datetime
 
 from sqlalchemy.orm import Session
 from app.services.time_service import utc_now_naive

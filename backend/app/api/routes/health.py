@@ -9,8 +9,6 @@ from app.db.database import engine
 from app.jobs.scheduler import scheduler
 from app.core.metrics import metrics
 from app.services.system_health_service import _migration_state
-from app.services.mis.configuration import get_mis_site_configuration
-from app.services.mis.client import MISClientError
 from app.services.vector_service import get_collection
 from app.tools.registry import get_tool_registry
 
@@ -35,15 +33,12 @@ def dependency_status() -> dict:
         statuses["chromadb"] = "error"
     statuses["scheduler"] = "ok" if scheduler.running or not settings.BACKGROUND_JOBS_ENABLED else "error"
     try:
-        statuses["tool_registry"] = "ok" if len(get_tool_registry().list_tools()) >= 32 else "error"
+        tools = get_tool_registry().list_tools()
+        names = [tool["name"] for tool in tools]
+        statuses["tool_registry"] = "ok" if names and len(names) == len(set(names)) else "error"
     except Exception:
         logger.exception("Health tool registry check failed")
         statuses["tool_registry"] = "error"
-    try:
-        get_mis_site_configuration()
-        statuses["mis"] = "ok"
-    except MISClientError:
-        statuses["mis"] = "error"
     try:
         statuses["migrations"] = "ok" if _migration_state() == "up_to_date" else "pending"
     except Exception:
@@ -61,8 +56,9 @@ def dependency_status() -> dict:
         statuses["audit_logging"] = "error"
     statuses["authentication"] = (
         "ok"
-        if not settings.REQUIRE_AUTHENTICATED_STUDENT
-        or (settings.JWT_SECRET_KEY and settings.GOOGLE_CLIENT_ID)
+        if settings.REQUIRE_AUTHENTICATED_STUDENT
+        and settings.JWT_SECRET_KEY
+        and settings.GOOGLE_CLIENT_ID
         else "error"
     )
     return statuses

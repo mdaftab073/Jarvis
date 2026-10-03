@@ -9,9 +9,6 @@ from app.schemas.quiz import (
     QuizSessionCreate,
     QuizQuestionCreate,
     QuizAnswerCreate,
-    QuizSession as QuizSessionSchema,
-    QuizQuestion as QuizQuestionSchema,
-    QuizAnswer as QuizAnswerSchema,
 )
 
 class QuizService:

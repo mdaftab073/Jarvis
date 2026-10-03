@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from pydantic import model_validator
 from pydantic_settings import BaseSettings
 
 
@@ -18,17 +19,15 @@ class Settings(BaseSettings):
     VERSION: str = "1.0.0"
     CHROMA_PERSISTENT_DIRECTORY: str = "chroma_db"
     CONNECTOR_ENCRYPTION_KEY: str | None = None
-    SVNIT_MIS_BASE_URL: str = ""
-    SVNIT_MIS_CONFIGURATION_JSON: str = "{}"
     BACKGROUND_JOBS_ENABLED: bool = True
     REMINDER_JOB_INTERVAL_SECONDS: int = 3600
     ANALYTICS_JOB_INTERVAL_SECONDS: int = 21600
-    MIS_SYNC_JOB_INTERVAL_SECONDS: int = 900
     CHAT_RATE_LIMIT: str = "30/minute"
     RAG_RATE_LIMIT: str = "120/minute"
-    MIS_SYNC_RATE_LIMIT: str = "10/minute"
+    CONNECTOR_SYNC_RATE_LIMIT: str = "10/minute"
+    ALERT_GENERATION_RATE_LIMIT: str = "10/minute"
     UPLOAD_RATE_LIMIT: str = "10/minute"
-    REQUIRE_AUTHENTICATED_STUDENT: bool = False
+    REQUIRE_AUTHENTICATED_STUDENT: bool = True
     GOOGLE_CLIENT_ID: str | None = None
     JWT_SECRET_KEY: str | None = None
     JWT_ALGORITHM: str = "HS256"
@@ -42,6 +41,20 @@ class Settings(BaseSettings):
             BACKEND_ROOT / ".env",
         )
         extra = "ignore"
+
+    @model_validator(mode="after")
+    def require_authentication_in_production(self):
+        if (
+            self.ENVIRONMENT.casefold() == "production"
+            and not self.REQUIRE_AUTHENTICATED_STUDENT
+        ):
+            raise ValueError("REQUIRE_AUTHENTICATED_STUDENT must be true in production")
+        if self.ENVIRONMENT.casefold() == "production":
+            if not self.JWT_SECRET_KEY or len(self.JWT_SECRET_KEY.encode("utf-8")) < 32:
+                raise ValueError("JWT_SECRET_KEY must contain at least 32 bytes in production")
+            if not self.GOOGLE_CLIENT_ID:
+                raise ValueError("GOOGLE_CLIENT_ID is required in production")
+        return self
 
 
 settings = Settings()

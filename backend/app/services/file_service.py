@@ -35,3 +35,20 @@ def save_uploaded_file(
         buffer.write(file_bytes)
 
     return file_path.as_posix()
+
+
+def validate_uploaded_file_path(file_path: str) -> str:
+    path = Path(file_path)
+    if path.suffix.casefold() != ".pdf":
+        raise HTTPException(status_code=400, detail="Only PDF files are allowed")
+    try:
+        resolved_path = path.resolve(strict=True)
+        resolved_path.relative_to(UPLOAD_DIR.resolve())
+    except (OSError, ValueError) as error:
+        raise HTTPException(
+            status_code=400,
+            detail="Material files must be stored in the upload directory",
+        ) from error
+    if not resolved_path.is_file():
+        raise HTTPException(status_code=400, detail="Material file does not exist")
+    return path.as_posix()

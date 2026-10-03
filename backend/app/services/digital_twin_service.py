@@ -1,6 +1,6 @@
 ﻿"""Service layer for Phase 15: Student Digital Twin & Academic OS"""
 
-from datetime import datetime, timedelta
+from datetime import timedelta
 from typing import Any, Dict, List, Optional
 
 from sqlalchemy.orm import Session
@@ -26,7 +26,6 @@ from app.schemas.digital_twin import (
     StudyActivityLogCreate,
 )
 from app.services.ownership_service import student_id_for_profile, student_owned_query
-from app.services.grade_service import recalculate_profile_grades
 from app.services.attendance_service import (
     list_attendance as list_student_attendance,
     update_attendance_record,
@@ -85,7 +84,7 @@ def _compute_risk(profile: StudentAcademicProfile, attendance: List[AttendanceRe
 def _compute_study_streak(logs: List[StudyActivityLog]) -> int:
     if not logs:
         return 0
-    sorted_dates = sorted({l.logged_at.date() for l in logs}, reverse=True)
+    sorted_dates = sorted({log.logged_at.date() for log in logs}, reverse=True)
     streak = 0
     expected = utc_now_naive().date()
     for d in sorted_dates:

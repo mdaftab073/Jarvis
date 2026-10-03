@@ -9,7 +9,6 @@ from sqlalchemy.pool import StaticPool
 from app.db.database import Base
 from app.db.models import CalendarEvent, Course, Student, Subject
 from app.models import Topic
-from app.models.student_profile import MISStudentProfile
 from app.tools.exceptions import ToolOwnershipError
 from app.tools.registry import get_tool_registry, tool_registry
 
@@ -39,7 +38,7 @@ class ToolFamilyTests(unittest.TestCase):
             "academic_profile", "grades", "attendance_summary", "rag_search", "study_materials",
             "study_plan", "topic_mastery", "flashcards", "quizzes", "goals", "habits",
             "productivity_analytics", "calendar_events", "study_schedule", "deadlines",
-            "reminders", "mis_profile", "mis_attendance", "mis_results",
+            "reminders",
         }.issubset(names))
         self.assertIs(self.registry, get_tool_registry())
         self.assertTrue(all("input_schema" in item for item in self.registry.list_tools()))
@@ -57,7 +56,7 @@ class ToolFamilyTests(unittest.TestCase):
             result = self.call_tool("rag_search", question="Explain algorithms")
         self.assertEqual(result["answer"], "A")
 
-    def test_learning_productivity_calendar_and_mis_execution(self):
+    def test_learning_productivity_and_calendar_execution(self):
         topic = Topic(subject_id=self.subject.id, name="Sorting")
         self.db.add(topic)
         self.db.commit()
@@ -80,11 +79,6 @@ class ToolFamilyTests(unittest.TestCase):
         self.assertEqual(self.call_tool("study_schedule"), [])
         self.assertEqual(self.call_tool("deadlines"), [])
         self.assertEqual(self.call_tool("reminders"), [])
-        self.db.add(MISStudentProfile(student_id=self.student.id, roll_no="R100", raw_json={}, attendance_json=[{"percentage": 80}], results_json=[{"grade": "A"}], timetable_json=[]))
-        self.db.commit()
-        self.assertEqual(self.call_tool("mis_profile")["roll_no"], "R100")
-        self.assertEqual(self.call_tool("mis_attendance")[0]["percentage"], 80)
-        self.assertEqual(self.call_tool("mis_results")[0]["grade"], "A")
 
     def test_tools_reject_cross_student_subject_access(self):
         other = Student(name="Other Student", email="other-tool@example.com")

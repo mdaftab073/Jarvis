@@ -15,10 +15,10 @@ if str(BACKEND) not in sys.path:
     sys.path.insert(0, str(BACKEND))
 os.chdir(BACKEND)
 
-from app.agents.agent_registry import create_default_registry
-from app.db.database import Base
-import app.db.models  # noqa: F401
-from app.main import app
+from app.agents.agent_registry import create_default_registry  # noqa: E402
+from app.db.database import Base  # noqa: E402
+import app.db.models  # noqa: E402, F401
+from app.main import app  # noqa: E402
 
 
 def validate_migrations() -> None:

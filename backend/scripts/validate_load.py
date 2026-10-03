@@ -81,15 +81,6 @@ def run() -> dict:
             json={"message": f"Load check {index}: list my goals without changing any records."},
         )
 
-    def job_probe(_index: int):
-        return _request(
-            base_url,
-            token,
-            "POST",
-            f"/api/mis/jobs?student_id={student_id}",
-            json={"student_id": student_id, "resource": "profile"},
-        )
-
     def upload_probe(index: int):
         return _request(
             base_url,
@@ -102,7 +93,6 @@ def run() -> dict:
 
     for name, operation in (
         ("chat", chat_probe),
-        ("job_creation", job_probe),
         ("uploads", upload_probe),
     ):
         with ThreadPoolExecutor(max_workers=concurrency) as pool:

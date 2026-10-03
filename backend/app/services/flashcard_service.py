@@ -7,7 +7,7 @@ from typing import List, Optional
 
 from sqlalchemy.orm import Session
 
-from app.models import FlashcardDeck, Flashcard, Topic
+from app.models import FlashcardDeck, Flashcard
 from app.schemas.flashcard import FlashcardCreate, FlashcardDeckCreate
 
 class FlashcardService:

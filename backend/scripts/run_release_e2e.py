@@ -225,19 +225,6 @@ def run() -> dict:
         calendar_event_ids.append(event["id"])
         outcomes["student_os"] = {"goal_id": goal["id"], "habit_id": habit["id"], "reminder_id": reminder["id"], "calendar_event_id": event["id"]}
 
-        mis_job = call(
-            "post",
-            f"/api/mis/jobs?student_id={student_id}",
-            expected=202,
-            json={"student_id": student_id, "resource": "profile"},
-        ).json()
-        job_ids.append(mis_job["id"])
-        tracked_job = call(
-            "get",
-            f"/api/jobs/{mis_job['id']}",
-            params={"student_id": student_id},
-        ).json()
-        outcomes["mis_job_tracking"] = {"job_id": tracked_job["id"], "status": tracked_job["status"]}
         call("get", "/health/live")
 
         course = call(

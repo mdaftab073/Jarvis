@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 
 from app.core.material_types import MaterialType
 from app.db.database import SessionLocal
+from app.services.file_service import validate_uploaded_file_path
 from app.services.chunking_service import chunk_text
 from app.services.keyword_search_service import delete_material_chunks as delete_keyword_chunks
 from app.services.keyword_search_service import replace_material_chunks
@@ -30,7 +31,7 @@ def process_pdf_material(
         material = get_material(db, material_id)
         if material is None:
             raise ValueError("Material not found")
-        text = extract(material.file_path)
+        text = extract(validate_uploaded_file_path(material.file_path))
         if not text or not text.strip():
             raise ValueError("No text could be extracted from PDF")
         chunks = chunk(text)

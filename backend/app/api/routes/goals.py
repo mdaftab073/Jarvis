@@ -1,13 +1,10 @@
-from datetime import date
-from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Request
-from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from app.api.student_scope import require_record_owner, require_student_scope
 from app.db.database import get_db
-from app.db.models import GoalMilestone, GoalProgress
+from app.db.models import GoalMilestone
 from app.schemas.student_os import GoalCreateInput, GoalUpdateInput, MilestoneInput, ProgressInput
 from app.services.goals_service import (
     create_goal,

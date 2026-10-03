@@ -176,7 +176,6 @@ def get_tool_registry() -> ToolRegistry:
         from app.tools.calendar import tools as _calendar_tools  # noqa: F401
         from app.tools.dashboard import tools as _dashboard_tools  # noqa: F401
         from app.tools.learning import tools as _learning_tools  # noqa: F401
-        from app.tools.mis import tools as _mis_tools  # noqa: F401
         from app.tools.productivity import tools as _productivity_tools  # noqa: F401
         from app.tools.study import tools as _study_tools  # noqa: F401
 

@@ -7,7 +7,7 @@ from sqlalchemy.pool import StaticPool
 
 from app.db.database import Base, get_db
 from app.db.models import Course, Student, Subject
-from app.models import Topic, FlashcardDeck, Flashcard, TopicMastery, LearningSession
+from app.models import Topic, FlashcardDeck, Flashcard, TopicMastery
 from app.agents.director_agent import AcademicDirectorAgent, create_execution_plan
 from app.main import app
 

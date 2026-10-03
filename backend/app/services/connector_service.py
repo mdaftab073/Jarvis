@@ -134,7 +134,7 @@ def _resolve_course(db: Session, student_id: int, configuration: dict) -> Course
         return course
     course = db.query(Course).filter_by(student_id=student_id).order_by(Course.id).first()
     if course is None:
-        course = Course(name=str(configuration.get("default_course_name", "MIS Academics")), student_id=student_id)
+        course = Course(name=str(configuration.get("default_course_name", "Imported Academics")), student_id=student_id)
         db.add(course)
         db.flush()
     return course
@@ -184,7 +184,7 @@ def _persist_normalized_data(db: Session, connector: StudentConnector, data: dic
         attended = row["attended_classes"]
         total = row["total_classes"]
         if attended < 0 or total < 0 or attended > total:
-            raise ValueError("MIS attendance values are invalid")
+            raise ValueError("Attendance values are invalid")
         record.attended_classes = attended
         record.total_classes = total
         record.attendance_percentage = round(100 * attended / total, 2) if total else None
@@ -200,9 +200,9 @@ def _persist_normalized_data(db: Session, connector: StudentConnector, data: dic
         )}
         fields["max_marks"] = fields["max_marks"] or 100
         if fields["semester"] is None or fields["credits"] is None or fields["credits"] <= 0:
-            raise ValueError("MIS final grade requires semester and positive credits")
+            raise ValueError("Final grade requires a semester and positive credits")
         if fields["grade_points"] is None or not 0 <= fields["grade_points"] <= 10:
-            raise ValueError("MIS final grade points are invalid")
+            raise ValueError("Final grade points are invalid")
         grade = db.query(GradeRecord).filter_by(
             student_id=student_id,
             subject_id=subject.id,

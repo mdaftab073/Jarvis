@@ -18,7 +18,7 @@ from app.services import file_service
 
 
 def main():
-    required_jobs = {"process_pdf_material", "sync_mis_resource", "generate_reminders", "generate_student_alerts", "refresh_analytics"}
+    required_jobs = {"process_pdf_material", "generate_reminders", "generate_student_alerts", "refresh_analytics"}
     registered = {job["name"] for job in get_job_registry().list_jobs()}
     missing = required_jobs - registered
     if missing:

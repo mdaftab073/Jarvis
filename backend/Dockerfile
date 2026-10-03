@@ -28,6 +28,8 @@ FROM runtime-base AS test
 COPY --chown=jarvis:jarvis tests ./tests
 RUN DATABASE_URL=sqlite:////tmp/jarvis-tests.db \
     GROQ_API_KEY=ci-test-key-not-used-by-mocked-tests \
+    ENVIRONMENT=test \
+    REQUIRE_AUTHENTICATED_STUDENT=false \
     python -m unittest discover -s tests
 
 FROM runtime-base AS runtime
