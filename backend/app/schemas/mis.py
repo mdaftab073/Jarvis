@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class StudentProfileResponse(BaseModel):
@@ -18,6 +18,8 @@ class StudentProfileResponse(BaseModel):
     raw_json: dict
     created_at: datetime
     updated_at: datetime
+    synced_at: datetime | None = None
+    source_page: str | None = None
 
 
 class AttendanceRecord(BaseModel):
@@ -32,6 +34,9 @@ class AttendanceResponse(BaseModel):
     student_id: int
     records: list[AttendanceRecord]
     updated_at: datetime
+    synced_at: datetime | None = None
+    source_page: str | None = None
+    raw_json: list[dict] = Field(default_factory=list)
 
 
 class SemesterResult(BaseModel):
@@ -47,6 +52,9 @@ class ResultResponse(BaseModel):
     student_id: int
     records: list[SemesterResult]
     updated_at: datetime
+    synced_at: datetime | None = None
+    source_page: str | None = None
+    raw_json: list[dict] = Field(default_factory=list)
 
 
 class TimetableEntry(BaseModel):
@@ -63,6 +71,9 @@ class TimetableResponse(BaseModel):
     student_id: int
     entries: list[TimetableEntry]
     updated_at: datetime
+    synced_at: datetime | None = None
+    source_page: str | None = None
+    raw_json: list[dict] = Field(default_factory=list)
 
 
 class MISSyncResponse(BaseModel):

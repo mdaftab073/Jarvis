@@ -1146,6 +1146,38 @@ class StudentConnector(Base):
     history = relationship("SyncHistory", back_populates="connector", cascade="all, delete-orphan")
 
 
+class MISAccount(Base):
+    __tablename__ = "mis_accounts"
+    __table_args__ = (
+        UniqueConstraint("student_id", name="uq_mis_accounts_student"),
+        CheckConstraint(
+            "status IN ('READY', 'SYNCING', 'ERROR', 'DISABLED')",
+            name="ck_mis_accounts_status",
+        ),
+    )
+
+    id = Column(Integer, primary_key=True, index=True)
+    student_id = Column(Integer, ForeignKey("students.id", ondelete="CASCADE"), nullable=False, index=True)
+    endpoint_url = Column(String(500), nullable=False)
+    encrypted_credentials = Column(Text, nullable=False)
+    configuration = Column(JSON, nullable=True)
+    enabled = Column(Boolean, nullable=False, default=True, server_default="1")
+    sync_interval_minutes = Column(Integer, nullable=True)
+    status = Column(String(20), nullable=False, default="READY", server_default="READY")
+    last_sync_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class MISLoginSession(Base):
+    __tablename__ = "mis_login_sessions"
+
+    student_id = Column(Integer, ForeignKey("students.id", ondelete="CASCADE"), primary_key=True)
+    encrypted_state = Column(Text, nullable=False)
+    expires_at = Column(DateTime, nullable=False, index=True)
+    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
 class SyncJob(Base):
     __tablename__ = "sync_jobs"
     __table_args__ = (CheckConstraint("status IN ('QUEUED', 'RUNNING', 'SUCCEEDED', 'FAILED')", name="ck_sync_jobs_status"),)

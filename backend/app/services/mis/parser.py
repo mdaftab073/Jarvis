@@ -31,6 +31,11 @@ def _normalize(value: str) -> str:
 
 def _tables(html: str):
     soup = BeautifulSoup(html or "", "html.parser")
+    if not html or not soup.get_text(" ", strip=True):
+        raise MISParseError("MIS page did not contain parseable content")
+    lowered = html.casefold()
+    if "hdnrsamodulus" in lowered or 'name="username"' in lowered:
+        raise MISParseError("MIS returned a login page instead of the requested data")
     tables = []
     for table in soup.find_all("table"):
         rows = []
@@ -109,6 +114,8 @@ class MISParser:
 
     def parse_attendance(self, html: str) -> AttendanceData:
         _, tables = _tables(html)
+        if not tables:
+            raise MISParseError("MIS attendance page did not contain a data table")
         records = []
         for row in _records(tables):
             name = _value(row, "course_name", "subject_name", "course", "subject")
@@ -120,10 +127,12 @@ class MISParser:
                 percentage = round(attended * 100 / total, 2)
             if name or code or attended is not None or total is not None:
                 records.append(_typed(AttendanceRecord, course_code=code, course_name=name, attended_classes=attended, total_classes=total, percentage=percentage))
-            return _typed(AttendanceData, records=records)
+        return _typed(AttendanceData, records=records)
 
     def parse_results(self, html: str) -> ResultData:
         _, tables = _tables(html)
+        if not tables:
+            raise MISParseError("MIS results page did not contain a data table")
         records = []
         for row in _records(tables):
             semester = _integer(_value(row, "semester", "sem"))
@@ -134,10 +143,12 @@ class MISParser:
             points = _number(_value(row, "grade_points", "grade_point", "points", "cgpa"))
             if any((semester, course_name, course_code, grade, credits is not None, points is not None)):
                 records.append(_typed(SemesterResultData, semester=semester, course_code=course_code, course_name=course_name, credits=credits, grade=grade, grade_points=points))
-            return _typed(ResultData, records=records)
+        return _typed(ResultData, records=records)
 
     def parse_timetable(self, html: str) -> TimetableData:
         _, tables = _tables(html)
+        if not tables:
+            raise MISParseError("MIS timetable page did not contain a data table")
         entries = []
         for row in _records(tables):
             entry = _typed(TimetableEntryData,

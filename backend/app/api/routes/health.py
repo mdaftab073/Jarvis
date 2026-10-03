@@ -1,4 +1,3 @@
-import json
 import logging
 
 from fastapi import APIRouter
@@ -10,6 +9,8 @@ from app.db.database import engine
 from app.jobs.scheduler import scheduler
 from app.core.metrics import metrics
 from app.services.system_health_service import _migration_state
+from app.services.mis.configuration import get_mis_site_configuration
+from app.services.mis.client import MISClientError
 from app.services.vector_service import get_collection
 from app.tools.registry import get_tool_registry
 
@@ -39,9 +40,9 @@ def dependency_status() -> dict:
         logger.exception("Health tool registry check failed")
         statuses["tool_registry"] = "error"
     try:
-        connectors = json.loads(settings.CONNECTOR_ENDPOINTS_JSON)
-        statuses["mis"] = "ok" if isinstance(connectors, dict) else "error"
-    except (TypeError, ValueError):
+        get_mis_site_configuration()
+        statuses["mis"] = "ok"
+    except MISClientError:
         statuses["mis"] = "error"
     try:
         statuses["migrations"] = "ok" if _migration_state() == "up_to_date" else "pending"

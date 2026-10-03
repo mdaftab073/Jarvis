@@ -1,5 +1,3 @@
-from typing import Literal
-
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
@@ -19,7 +17,7 @@ from app.services.connector_service import (
     serialize_connector,
     serialize_job,
 )
-from app.services.mis_connectors import ConnectorConfigurationError
+from app.services.connector_adapters import ConnectorConfigurationError, has_connector_adapter
 from app.services.job_service import enqueue_job
 from app.api.rate_limit import limiter
 from app.core.config import settings
@@ -27,8 +25,16 @@ from app.core.config import settings
 router = APIRouter()
 
 
+def _get_registered_connector(db: Session, connector_id: int):
+    connector = get_connector(db, connector_id)
+    if connector is None or not has_connector_adapter(connector.connector_type):
+        return None
+    return connector
+
+
 class ConnectorCreateInput(BaseModel):
-    connector_type: Literal["svnit_mis"]
+    connector_type: str = Field(min_length=1, max_length=60)
+    endpoint_url: str = Field(min_length=1, max_length=500)
     credentials: dict[str, str]
     configuration: dict = Field(default_factory=dict)
     sync_interval_minutes: int | None = Field(None, ge=5)
@@ -42,7 +48,7 @@ class ConnectorCredentialsInput(BaseModel):
 def add_connector(student_id: int, payload: ConnectorCreateInput, request: Request, db: Session = Depends(get_db), _scope: int = Depends(require_student_scope)):
     try:
         connector = create_connector(
-            db, student_id, payload.connector_type, payload.credentials,
+            db, student_id, payload.connector_type, payload.endpoint_url, payload.credentials,
             payload.configuration, payload.sync_interval_minutes,
         )
     except ConnectorCredentialError as error:
@@ -59,7 +65,7 @@ def get_student_connectors(student_id: int, db: Session = Depends(get_db), _scop
 
 @router.put("/connectors/{connector_id}/credentials")
 def update_connector_credentials(connector_id: int, payload: ConnectorCredentialsInput, request: Request, db: Session = Depends(get_db)):
-    connector = get_connector(db, connector_id)
+    connector = _get_registered_connector(db, connector_id)
     if connector is None:
         raise HTTPException(status_code=404, detail="Connector not found")
     require_record_owner(request, connector.student_id)
@@ -73,7 +79,7 @@ def update_connector_credentials(connector_id: int, payload: ConnectorCredential
 @router.post("/connectors/{connector_id}/sync")
 @limiter.limit(settings.MIS_SYNC_RATE_LIMIT)
 def manual_sync(connector_id: int, background_tasks: BackgroundTasks, request: Request, db: Session = Depends(get_db)):
-    connector = get_connector(db, connector_id)
+    connector = _get_registered_connector(db, connector_id)
     if connector is None:
         raise HTTPException(status_code=404, detail="Connector not found")
     require_record_owner(request, connector.student_id)
@@ -93,7 +99,7 @@ def manual_sync(connector_id: int, background_tasks: BackgroundTasks, request: R
 
 @router.get("/connectors/{connector_id}/history")
 def connector_history(connector_id: int, request: Request, db: Session = Depends(get_db)):
-    connector = get_connector(db, connector_id)
+    connector = _get_registered_connector(db, connector_id)
     if connector is None:
         raise HTTPException(status_code=404, detail="Connector not found")
     require_record_owner(request, connector.student_id)

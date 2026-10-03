@@ -1,0 +1,2128 @@
+﻿Jarvis - Git-tracked project files (1874 files)
+Generated from git ls-files. Includes tracked backend/.venv dependency files.
+
+Jarvis/
+    |-- .env.example
+    |-- .github/
+    |   \-- workflows/
+    |       \-- ci.yml
+    |-- .gitignore
+    |-- backend/
+    |   |-- .dockerignore
+    |   |-- .venv/
+    |   |   |-- Include/
+    |   |   |   \-- site/
+    |   |   |       \-- python3.12/
+    |   |   |           \-- greenlet/
+    |   |   |               \-- greenlet.h
+    |   |   |-- Lib/
+    |   |   |   \-- site-packages/
+    |   |   |       |-- annotated_doc/
+    |   |   |       |   |-- __init__.py
+    |   |   |       |   |-- main.py
+    |   |   |       |   \-- py.typed
+    |   |   |       |-- annotated_doc-0.0.5.dist-info/
+    |   |   |       |   |-- entry_points.txt
+    |   |   |       |   |-- INSTALLER
+    |   |   |       |   |-- licenses/
+    |   |   |       |   |   \-- LICENSE
+    |   |   |       |   |-- METADATA
+    |   |   |       |   |-- RECORD
+    |   |   |       |   \-- WHEEL
+    |   |   |       |-- annotated_types/
+    |   |   |       |   |-- __init__.py
+    |   |   |       |   |-- py.typed
+    |   |   |       |   \-- test_cases.py
+    |   |   |       |-- annotated_types-0.8.0.dist-info/
+    |   |   |       |   |-- INSTALLER
+    |   |   |       |   |-- licenses/
+    |   |   |       |   |   \-- LICENSE
+    |   |   |       |   |-- METADATA
+    |   |   |       |   |-- RECORD
+    |   |   |       |   \-- WHEEL
+    |   |   |       |-- anyio/
+    |   |   |       |   |-- __init__.py
+    |   |   |       |   |-- _backends/
+    |   |   |       |   |   |-- __init__.py
+    |   |   |       |   |   |-- _asyncio.py
+    |   |   |       |   |   \-- _trio.py
+    |   |   |       |   |-- _core/
+    |   |   |       |   |   |-- __init__.py
+    |   |   |       |   |   |-- _asyncio_selector_thread.py
+    |   |   |       |   |   |-- _contextmanagers.py
+    |   |   |       |   |   |-- _eventloop.py
+    |   |   |       |   |   |-- _exceptions.py
+    |   |   |       |   |   |-- _fileio.py
+    |   |   |       |   |   |-- _resources.py
+    |   |   |       |   |   |-- _signals.py
+    |   |   |       |   |   |-- _sockets.py
+    |   |   |       |   |   |-- _streams.py
+    |   |   |       |   |   |-- _subprocesses.py
+    |   |   |       |   |   |-- _synchronization.py
+    |   |   |       |   |   |-- _tasks.py
+    |   |   |       |   |   |-- _tempfile.py
+    |   |   |       |   |   |-- _testing.py
+    |   |   |       |   |   \-- _typedattr.py
+    |   |   |       |   |-- abc/
+    |   |   |       |   |   |-- __init__.py
+    |   |   |       |   |   |-- _eventloop.py
+    |   |   |       |   |   |-- _resources.py
+    |   |   |       |   |   |-- _sockets.py
+    |   |   |       |   |   |-- _streams.py
+    |   |   |       |   |   |-- _subprocesses.py
+    |   |   |       |   |   |-- _tasks.py
+    |   |   |       |   |   \-- _testing.py
+    |   |   |       |   |-- from_thread.py
+    |   |   |       |   |-- functools.py
+    |   |   |       |   |-- itertools.py
+    |   |   |       |   |-- lowlevel.py
+    |   |   |       |   |-- py.typed
+    |   |   |       |   |-- pytest_plugin.py
+    |   |   |       |   |-- streams/
+    |   |   |       |   |   |-- __init__.py
+    |   |   |       |   |   |-- buffered.py
+    |   |   |       |   |   |-- file.py
+    |   |   |       |   |   |-- memory.py
+    |   |   |       |   |   |-- stapled.py
+    |   |   |       |   |   |-- text.py
+    |   |   |       |   |   \-- tls.py
+    |   |   |       |   |-- to_interpreter.py
+    |   |   |       |   |-- to_process.py
+    |   |   |       |   \-- to_thread.py
+    |   |   |       |-- anyio-4.14.2.dist-info/
+    |   |   |       |   |-- entry_points.txt
+    |   |   |       |   |-- INSTALLER
+    |   |   |       |   |-- licenses/
+    |   |   |       |   |   \-- LICENSE
+    |   |   |       |   |-- METADATA
+    |   |   |       |   |-- RECORD
+    |   |   |       |   |-- scm_file_list.json
+    |   |   |       |   |-- scm_version.json
+    |   |   |       |   |-- top_level.txt
+    |   |   |       |   \-- WHEEL
+    |   |   |       |-- click/
+    |   |   |       |   |-- __init__.py
+    |   |   |       |   |-- _compat.py
+    |   |   |       |   |-- _termui_impl.py
+    |   |   |       |   |-- _textwrap.py
+    |   |   |       |   |-- _utils.py
+    |   |   |       |   |-- _winconsole.py
+    |   |   |       |   |-- core.py
+    |   |   |       |   |-- decorators.py
+    |   |   |       |   |-- exceptions.py
+    |   |   |       |   |-- formatting.py
+    |   |   |       |   |-- globals.py
+    |   |   |       |   |-- parser.py
+    |   |   |       |   |-- py.typed
+    |   |   |       |   |-- shell_completion.py
+    |   |   |       |   |-- termui.py
+    |   |   |       |   |-- testing.py
+    |   |   |       |   |-- types.py
+    |   |   |       |   \-- utils.py
+    |   |   |       |-- click-8.4.2.dist-info/
+    |   |   |       |   |-- INSTALLER
+    |   |   |       |   |-- licenses/
+    |   |   |       |   |   \-- LICENSE.txt
+    |   |   |       |   |-- METADATA
+    |   |   |       |   |-- RECORD
+    |   |   |       |   \-- WHEEL
+    |   |   |       |-- colorama/
+    |   |   |       |   |-- __init__.py
+    |   |   |       |   |-- ansi.py
+    |   |   |       |   |-- ansitowin32.py
+    |   |   |       |   |-- initialise.py
+    |   |   |       |   |-- tests/
+    |   |   |       |   |   |-- __init__.py
+    |   |   |       |   |   |-- ansi_test.py
+    |   |   |       |   |   |-- ansitowin32_test.py
+    |   |   |       |   |   |-- initialise_test.py
+    |   |   |       |   |   |-- isatty_test.py
+    |   |   |       |   |   |-- utils.py
+    |   |   |       |   |   \-- winterm_test.py
+    |   |   |       |   |-- win32.py
+    |   |   |       |   \-- winterm.py
+    |   |   |       |-- colorama-0.4.6.dist-info/
+    |   |   |       |   |-- INSTALLER
+    |   |   |       |   |-- licenses/
+    |   |   |       |   |   \-- LICENSE.txt
+    |   |   |       |   |-- METADATA
+    |   |   |       |   |-- RECORD
+    |   |   |       |   \-- WHEEL
+    |   |   |       |-- dns/
+    |   |   |       |   |-- __init__.py
+    |   |   |       |   |-- _asyncbackend.py
+    |   |   |       |   |-- _asyncio_backend.py
+    |   |   |       |   |-- _ddr.py
+    |   |   |       |   |-- _features.py
+    |   |   |       |   |-- _immutable_ctx.py
+    |   |   |       |   |-- _no_ssl.py
+    |   |   |       |   |-- _tls_util.py
+    |   |   |       |   |-- _trio_backend.py
+    |   |   |       |   |-- asyncbackend.py
+    |   |   |       |   |-- asyncquery.py
+    |   |   |       |   |-- asyncresolver.py
+    |   |   |       |   |-- btree.py
+    |   |   |       |   |-- btreezone.py
+    |   |   |       |   |-- dnssec.py
+    |   |   |       |   |-- dnssecalgs/
+    |   |   |       |   |   |-- __init__.py
+    |   |   |       |   |   |-- base.py
+    |   |   |       |   |   |-- cryptography.py
+    |   |   |       |   |   |-- dsa.py
+    |   |   |       |   |   |-- ecdsa.py
+    |   |   |       |   |   |-- eddsa.py
+    |   |   |       |   |   \-- rsa.py
+    |   |   |       |   |-- dnssectypes.py
+    |   |   |       |   |-- e164.py
+    |   |   |       |   |-- edns.py
+    |   |   |       |   |-- entropy.py
+    |   |   |       |   |-- enum.py
+    |   |   |       |   |-- exception.py
+    |   |   |       |   |-- flags.py
+    |   |   |       |   |-- grange.py
+    |   |   |       |   |-- immutable.py
+    |   |   |       |   |-- inet.py
+    |   |   |       |   |-- ipv4.py
+    |   |   |       |   |-- ipv6.py
+    |   |   |       |   |-- message.py
+    |   |   |       |   |-- name.py
+    |   |   |       |   |-- namedict.py
+    |   |   |       |   |-- nameserver.py
+    |   |   |       |   |-- node.py
+    |   |   |       |   |-- opcode.py
+    |   |   |       |   |-- py.typed
+    |   |   |       |   |-- query.py
+    |   |   |       |   |-- quic/
+    |   |   |       |   |   |-- __init__.py
+    |   |   |       |   |   |-- _asyncio.py
+    |   |   |       |   |   |-- _common.py
+    |   |   |       |   |   |-- _sync.py
+    |   |   |       |   |   \-- _trio.py
+    |   |   |       |   |-- rcode.py
+    |   |   |       |   |-- rdata.py
+    |   |   |       |   |-- rdataclass.py
+    |   |   |       |   |-- rdataset.py
+    |   |   |       |   |-- rdatatype.py
+    |   |   |       |   |-- rdtypes/
+    |   |   |       |   |   |-- __init__.py
+    |   |   |       |   |   |-- ANY/
+    |   |   |       |   |   |   |-- __init__.py
+    |   |   |       |   |   |   |-- AFSDB.py
+    |   |   |       |   |   |   |-- AMTRELAY.py
+    |   |   |       |   |   |   |-- AVC.py
+    |   |   |       |   |   |   |-- CAA.py
+    |   |   |       |   |   |   |-- CDNSKEY.py
+    |   |   |       |   |   |   |-- CDS.py
+    |   |   |       |   |   |   |-- CERT.py
+    |   |   |       |   |   |   |-- CNAME.py
+    |   |   |       |   |   |   |-- CSYNC.py
+    |   |   |       |   |   |   |-- DLV.py
+    |   |   |       |   |   |   |-- DNAME.py
+    |   |   |       |   |   |   |-- DNSKEY.py
+    |   |   |       |   |   |   |-- DS.py
+    |   |   |       |   |   |   |-- DSYNC.py
+    |   |   |       |   |   |   |-- EUI48.py
+    |   |   |       |   |   |   |-- EUI64.py
+    |   |   |       |   |   |   |-- GPOS.py
+    |   |   |       |   |   |   |-- HINFO.py
+    |   |   |       |   |   |   |-- HIP.py
+    |   |   |       |   |   |   |-- ISDN.py
+    |   |   |       |   |   |   |-- L32.py
+    |   |   |       |   |   |   |-- L64.py
+    |   |   |       |   |   |   |-- LOC.py
+    |   |   |       |   |   |   |-- LP.py
+    |   |   |       |   |   |   |-- MX.py
+    |   |   |       |   |   |   |-- NID.py
+    |   |   |       |   |   |   |-- NINFO.py
+    |   |   |       |   |   |   |-- NS.py
+    |   |   |       |   |   |   |-- NSEC.py
+    |   |   |       |   |   |   |-- NSEC3.py
+    |   |   |       |   |   |   |-- NSEC3PARAM.py
+    |   |   |       |   |   |   |-- OPENPGPKEY.py
+    |   |   |       |   |   |   |-- OPT.py
+    |   |   |       |   |   |   |-- PTR.py
+    |   |   |       |   |   |   |-- RESINFO.py
+    |   |   |       |   |   |   |-- RP.py
+    |   |   |       |   |   |   |-- RRSIG.py
+    |   |   |       |   |   |   |-- RT.py
+    |   |   |       |   |   |   |-- SMIMEA.py
+    |   |   |       |   |   |   |-- SOA.py
+    |   |   |       |   |   |   |-- SPF.py
+    |   |   |       |   |   |   |-- SSHFP.py
+    |   |   |       |   |   |   |-- TKEY.py
+    |   |   |       |   |   |   |-- TLSA.py
+    |   |   |       |   |   |   |-- TSIG.py
+    |   |   |       |   |   |   |-- TXT.py
+    |   |   |       |   |   |   |-- URI.py
+    |   |   |       |   |   |   |-- WALLET.py
+    |   |   |       |   |   |   |-- X25.py
+    |   |   |       |   |   |   \-- ZONEMD.py
+    |   |   |       |   |   |-- CH/
+    |   |   |       |   |   |   |-- __init__.py
+    |   |   |       |   |   |   \-- A.py
+    |   |   |       |   |   |-- dnskeybase.py
+    |   |   |       |   |   |-- dsbase.py
+    |   |   |       |   |   |-- euibase.py
+    |   |   |       |   |   |-- IN/
+    |   |   |       |   |   |   |-- __init__.py
+    |   |   |       |   |   |   |-- A.py
+    |   |   |       |   |   |   |-- AAAA.py
+    |   |   |       |   |   |   |-- APL.py
+    |   |   |       |   |   |   |-- DHCID.py
+    |   |   |       |   |   |   |-- HTTPS.py
+    |   |   |       |   |   |   |-- IPSECKEY.py
+    |   |   |       |   |   |   |-- KX.py
+    |   |   |       |   |   |   |-- NAPTR.py
+    |   |   |       |   |   |   |-- NSAP.py
+    |   |   |       |   |   |   |-- NSAP_PTR.py
+    |   |   |       |   |   |   |-- PX.py
+    |   |   |       |   |   |   |-- SRV.py
+    |   |   |       |   |   |   |-- SVCB.py
+    |   |   |       |   |   |   \-- WKS.py
+    |   |   |       |   |   |-- mxbase.py
+    |   |   |       |   |   |-- nsbase.py
+    |   |   |       |   |   |-- svcbbase.py
+    |   |   |       |   |   |-- tlsabase.py
+    |   |   |       |   |   |-- txtbase.py
+    |   |   |       |   |   \-- util.py
+    |   |   |       |   |-- renderer.py
+    |   |   |       |   |-- resolver.py
+    |   |   |       |   |-- reversename.py
+    |   |   |       |   |-- rrset.py
+    |   |   |       |   |-- serial.py
+    |   |   |       |   |-- set.py
+    |   |   |       |   |-- tokenizer.py
+    |   |   |       |   |-- transaction.py
+    |   |   |       |   |-- tsig.py
+    |   |   |       |   |-- tsigkeyring.py
+    |   |   |       |   |-- ttl.py
+    |   |   |       |   |-- update.py
+    |   |   |       |   |-- version.py
+    |   |   |       |   |-- versioned.py
+    |   |   |       |   |-- win32util.py
+    |   |   |       |   |-- wire.py
+    |   |   |       |   |-- xfr.py
+    |   |   |       |   |-- zone.py
+    |   |   |       |   |-- zonefile.py
+    |   |   |       |   \-- zonetypes.py
+    |   |   |       |-- dnspython-2.8.0.dist-info/
+    |   |   |       |   |-- INSTALLER
+    |   |   |       |   |-- licenses/
+    |   |   |       |   |   \-- LICENSE
+    |   |   |       |   |-- METADATA
+    |   |   |       |   |-- RECORD
+    |   |   |       |   \-- WHEEL
+    |   |   |       |-- dotenv/
+    |   |   |       |   |-- __init__.py
+    |   |   |       |   |-- __main__.py
+    |   |   |       |   |-- cli.py
+    |   |   |       |   |-- ipython.py
+    |   |   |       |   |-- main.py
+    |   |   |       |   |-- parser.py
+    |   |   |       |   |-- py.typed
+    |   |   |       |   |-- variables.py
+    |   |   |       |   \-- version.py
+    |   |   |       |-- email_validator/
+    |   |   |       |   |-- __init__.py
+    |   |   |       |   |-- __main__.py
+    |   |   |       |   |-- deliverability.py
+    |   |   |       |   |-- exceptions.py
+    |   |   |       |   |-- py.typed
+    |   |   |       |   |-- rfc_constants.py
+    |   |   |       |   |-- syntax.py
+    |   |   |       |   |-- types.py
+    |   |   |       |   |-- validate_email.py
+    |   |   |       |   \-- version.py
+    |   |   |       |-- email_validator-2.3.0.dist-info/
+    |   |   |       |   |-- entry_points.txt
+    |   |   |       |   |-- INSTALLER
+    |   |   |       |   |-- licenses/
+    |   |   |       |   |   \-- LICENSE
+    |   |   |       |   |-- METADATA
+    |   |   |       |   |-- RECORD
+    |   |   |       |   |-- REQUESTED
+    |   |   |       |   |-- top_level.txt
+    |   |   |       |   \-- WHEEL
+    |   |   |       |-- fastapi/
+    |   |   |       |   |-- .agents/
+    |   |   |       |   |   \-- skills/
+    |   |   |       |   |       \-- fastapi/
+    |   |   |       |   |           |-- references/
+    |   |   |       |   |           |   |-- dependencies.md
+    |   |   |       |   |           |   |-- other-tools.md
+    |   |   |       |   |           |   |-- path-operations.md
+    |   |   |       |   |           |   |-- pydantic.md
+    |   |   |       |   |           |   |-- responses.md
+    |   |   |       |   |           |   \-- streaming.md
+    |   |   |       |   |           \-- SKILL.md
+    |   |   |       |   |-- __init__.py
+    |   |   |       |   |-- __main__.py
+    |   |   |       |   |-- _compat/
+    |   |   |       |   |   |-- __init__.py
+    |   |   |       |   |   |-- shared.py
+    |   |   |       |   |   \-- v2.py
+    |   |   |       |   |-- applications.py
+    |   |   |       |   |-- background.py
+    |   |   |       |   |-- cli.py
+    |   |   |       |   |-- concurrency.py
+    |   |   |       |   |-- datastructures.py
+    |   |   |       |   |-- dependencies/
+    |   |   |       |   |   |-- __init__.py
+    |   |   |       |   |   |-- models.py
+    |   |   |       |   |   \-- utils.py
+    |   |   |       |   |-- encoders.py
+    |   |   |       |   |-- exception_handlers.py
+    |   |   |       |   |-- exceptions.py
+    |   |   |       |   |-- logger.py
+    |   |   |       |   |-- middleware/
+    |   |   |       |   |   |-- __init__.py
+    |   |   |       |   |   |-- asyncexitstack.py
+    |   |   |       |   |   |-- cors.py
+    |   |   |       |   |   |-- gzip.py
+    |   |   |       |   |   |-- httpsredirect.py
+    |   |   |       |   |   |-- trustedhost.py
+    |   |   |       |   |   \-- wsgi.py
+    |   |   |       |   |-- openapi/
+    |   |   |       |   |   |-- __init__.py
+    |   |   |       |   |   |-- constants.py
+    |   |   |       |   |   |-- docs.py
+    |   |   |       |   |   |-- models.py
+    |   |   |       |   |   \-- utils.py
+    |   |   |       |   |-- param_functions.py
+    |   |   |       |   |-- params.py
+    |   |   |       |   |-- py.typed
+    |   |   |       |   |-- requests.py
+    |   |   |       |   |-- responses.py
+    |   |   |       |   |-- routing.py
+    |   |   |       |   |-- security/
+    |   |   |       |   |   |-- __init__.py
+    |   |   |       |   |   |-- api_key.py
+    |   |   |       |   |   |-- base.py
+    |   |   |       |   |   |-- http.py
+    |   |   |       |   |   |-- oauth2.py
+    |   |   |       |   |   |-- open_id_connect_url.py
+    |   |   |       |   |   \-- utils.py
+    |   |   |       |   |-- sse.py
+    |   |   |       |   |-- staticfiles.py
+    |   |   |       |   |-- templating.py
+    |   |   |       |   |-- testclient.py
+    |   |   |       |   |-- types.py
+    |   |   |       |   |-- utils.py
+    |   |   |       |   \-- websockets.py
+    |   |   |       |-- fastapi-0.141.1.dist-info/
+    |   |   |       |   |-- entry_points.txt
+    |   |   |       |   |-- INSTALLER
+    |   |   |       |   |-- licenses/
+    |   |   |       |   |   \-- LICENSE
+    |   |   |       |   |-- METADATA
+    |   |   |       |   |-- RECORD
+    |   |   |       |   |-- REQUESTED
+    |   |   |       |   \-- WHEEL
+    |   |   |       |-- greenlet/
+    |   |   |       |   |-- __init__.py
+    |   |   |       |   |-- _greenlet.cp312-win_amd64.pyd
+    |   |   |       |   |-- CObjects.cpp
+    |   |   |       |   |-- greenlet.cpp
+    |   |   |       |   |-- greenlet.h
+    |   |   |       |   |-- greenlet_allocator.hpp
+    |   |   |       |   |-- greenlet_compiler_compat.hpp
+    |   |   |       |   |-- greenlet_cpython_compat.hpp
+    |   |   |       |   |-- greenlet_exceptions.hpp
+    |   |   |       |   |-- greenlet_internal.hpp
+    |   |   |       |   |-- greenlet_msvc_compat.hpp
+    |   |   |       |   |-- greenlet_refs.hpp
+    |   |   |       |   |-- greenlet_slp_switch.hpp
+    |   |   |       |   |-- greenlet_thread_support.hpp
+    |   |   |       |   |-- platform/
+    |   |   |       |   |   |-- __init__.py
+    |   |   |       |   |   |-- setup_switch_x64_masm.cmd
+    |   |   |       |   |   |-- switch_aarch64_gcc.h
+    |   |   |       |   |   |-- switch_alpha_unix.h
+    |   |   |       |   |   |-- switch_amd64_unix.h
+    |   |   |       |   |   |-- switch_arm32_gcc.h
+    |   |   |       |   |   |-- switch_arm32_ios.h
+    |   |   |       |   |   |-- switch_arm64_masm.asm
+    |   |   |       |   |   |-- switch_arm64_masm.obj
+    |   |   |       |   |   |-- switch_arm64_msvc.h
+    |   |   |       |   |   |-- switch_csky_gcc.h
+    |   |   |       |   |   |-- switch_loongarch64_linux.h
+    |   |   |       |   |   |-- switch_m68k_gcc.h
+    |   |   |       |   |   |-- switch_mips_unix.h
+    |   |   |       |   |   |-- switch_ppc_aix.h
+    |   |   |       |   |   |-- switch_ppc_linux.h
+    |   |   |       |   |   |-- switch_ppc_macosx.h
+    |   |   |       |   |   |-- switch_ppc_unix.h
+    |   |   |       |   |   |-- switch_ppc64_aix.h
+    |   |   |       |   |   |-- switch_ppc64_linux.h
+    |   |   |       |   |   |-- switch_riscv_unix.h
+    |   |   |       |   |   |-- switch_s390_unix.h
+    |   |   |       |   |   |-- switch_sh_gcc.h
+    |   |   |       |   |   |-- switch_sparc_sun_gcc.h
+    |   |   |       |   |   |-- switch_x32_unix.h
+    |   |   |       |   |   |-- switch_x64_masm.asm
+    |   |   |       |   |   |-- switch_x64_masm.obj
+    |   |   |       |   |   |-- switch_x64_msvc.h
+    |   |   |       |   |   |-- switch_x86_msvc.h
+    |   |   |       |   |   \-- switch_x86_unix.h
+    |   |   |       |   |-- PyGreenlet.cpp
+    |   |   |       |   |-- PyGreenlet.hpp
+    |   |   |       |   |-- PyGreenletUnswitchable.cpp
+    |   |   |       |   |-- PyModule.cpp
+    |   |   |       |   |-- slp_platformselect.h
+    |   |   |       |   |-- TBrokenGreenlet.cpp
+    |   |   |       |   |-- tests/
+    |   |   |       |   |   |-- __init__.py
+    |   |   |       |   |   |-- _test_extension.c
+    |   |   |       |   |   |-- _test_extension.cp312-win_amd64.pyd
+    |   |   |       |   |   |-- _test_extension_cpp.cp312-win_amd64.pyd
+    |   |   |       |   |   |-- _test_extension_cpp.cpp
+    |   |   |       |   |   |-- fail_c_stack_refs_suspended_gc.py
+    |   |   |       |   |   |-- fail_clearing_run_switches.py
+    |   |   |       |   |   |-- fail_cpp_exception.py
+    |   |   |       |   |   |-- fail_initialstub_already_started.py
+    |   |   |       |   |   |-- fail_issue_515_freethread_gc.py
+    |   |   |       |   |   |-- fail_slp_switch.py
+    |   |   |       |   |   |-- fail_switch_critical_section.py
+    |   |   |       |   |   |-- fail_switch_three_greenlets.py
+    |   |   |       |   |   |-- fail_switch_three_greenlets2.py
+    |   |   |       |   |   |-- fail_switch_two_greenlets.py
+    |   |   |       |   |   |-- leakcheck.py
+    |   |   |       |   |   |-- test_contextvars.py
+    |   |   |       |   |   |-- test_cpp.py
+    |   |   |       |   |   |-- test_extension_interface.py
+    |   |   |       |   |   |-- test_gc.py
+    |   |   |       |   |   |-- test_generator.py
+    |   |   |       |   |   |-- test_generator_nested.py
+    |   |   |       |   |   |-- test_greenlet.py
+    |   |   |       |   |   |-- test_greenlet_trash.py
+    |   |   |       |   |   |-- test_interpreter_shutdown.py
+    |   |   |       |   |   |-- test_leaks.py
+    |   |   |       |   |   |-- test_stack_saved.py
+    |   |   |       |   |   |-- test_throw.py
+    |   |   |       |   |   |-- test_tracing.py
+    |   |   |       |   |   |-- test_version.py
+    |   |   |       |   |   \-- test_weakref.py
+    |   |   |       |   |-- TExceptionState.cpp
+    |   |   |       |   |-- TGreenlet.cpp
+    |   |   |       |   |-- TGreenlet.hpp
+    |   |   |       |   |-- TGreenletGlobals.cpp
+    |   |   |       |   |-- TMainGreenlet.cpp
+    |   |   |       |   |-- TPythonState.cpp
+    |   |   |       |   |-- TStackState.cpp
+    |   |   |       |   |-- TThreadState.hpp
+    |   |   |       |   |-- TThreadStateCreator.hpp
+    |   |   |       |   |-- TThreadStateDestroy.cpp
+    |   |   |       |   \-- TUserGreenlet.cpp
+    |   |   |       |-- greenlet-3.5.5.dist-info/
+    |   |   |       |   |-- INSTALLER
+    |   |   |       |   |-- licenses/
+    |   |   |       |   |   |-- LICENSE
+    |   |   |       |   |   \-- LICENSE.PSF
+    |   |   |       |   |-- METADATA
+    |   |   |       |   |-- RECORD
+    |   |   |       |   |-- top_level.txt
+    |   |   |       |   \-- WHEEL
+    |   |   |       |-- h11/
+    |   |   |       |   |-- __init__.py
+    |   |   |       |   |-- _abnf.py
+    |   |   |       |   |-- _connection.py
+    |   |   |       |   |-- _events.py
+    |   |   |       |   |-- _headers.py
+    |   |   |       |   |-- _readers.py
+    |   |   |       |   |-- _receivebuffer.py
+    |   |   |       |   |-- _state.py
+    |   |   |       |   |-- _util.py
+    |   |   |       |   |-- _version.py
+    |   |   |       |   |-- _writers.py
+    |   |   |       |   \-- py.typed
+    |   |   |       |-- h11-0.16.0.dist-info/
+    |   |   |       |   |-- INSTALLER
+    |   |   |       |   |-- licenses/
+    |   |   |       |   |   \-- LICENSE.txt
+    |   |   |       |   |-- METADATA
+    |   |   |       |   |-- RECORD
+    |   |   |       |   |-- top_level.txt
+    |   |   |       |   \-- WHEEL
+    |   |   |       |-- idna/
+    |   |   |       |   |-- __init__.py
+    |   |   |       |   |-- __main__.py
+    |   |   |       |   |-- cli.py
+    |   |   |       |   |-- codec.py
+    |   |   |       |   |-- compat.py
+    |   |   |       |   |-- core.py
+    |   |   |       |   |-- idnadata.py
+    |   |   |       |   |-- intranges.py
+    |   |   |       |   |-- package_data.py
+    |   |   |       |   |-- py.typed
+    |   |   |       |   \-- uts46data.py
+    |   |   |       |-- idna-3.18.dist-info/
+    |   |   |       |   |-- entry_points.txt
+    |   |   |       |   |-- INSTALLER
+    |   |   |       |   |-- licenses/
+    |   |   |       |   |   \-- LICENSE.md
+    |   |   |       |   |-- METADATA
+    |   |   |       |   |-- RECORD
+    |   |   |       |   \-- WHEEL
+    |   |   |       |-- pip/
+    |   |   |       |   |-- __init__.py
+    |   |   |       |   |-- __main__.py
+    |   |   |       |   |-- __pip-runner__.py
+    |   |   |       |   |-- _internal/
+    |   |   |       |   |   |-- __init__.py
+    |   |   |       |   |   |-- build_env/
+    |   |   |       |   |   |   |-- __init__.py
+    |   |   |       |   |   |   |-- base.py
+    |   |   |       |   |   |   |-- installer.py
+    |   |   |       |   |   |   |-- noop.py
+    |   |   |       |   |   |   |-- venv.py
+    |   |   |       |   |   |   \-- virtual.py
+    |   |   |       |   |   |-- cache.py
+    |   |   |       |   |   |-- cli/
+    |   |   |       |   |   |   |-- __init__.py
+    |   |   |       |   |   |   |-- autocompletion.py
+    |   |   |       |   |   |   |-- base_command.py
+    |   |   |       |   |   |   |-- cmdoptions.py
+    |   |   |       |   |   |   |-- command_context.py
+    |   |   |       |   |   |   |-- index_command.py
+    |   |   |       |   |   |   |-- main.py
+    |   |   |       |   |   |   |-- main_parser.py
+    |   |   |       |   |   |   |-- parser.py
+    |   |   |       |   |   |   |-- progress_bars.py
+    |   |   |       |   |   |   |-- req_command.py
+    |   |   |       |   |   |   |-- spinners.py
+    |   |   |       |   |   |   \-- status_codes.py
+    |   |   |       |   |   |-- commands/
+    |   |   |       |   |   |   |-- __init__.py
+    |   |   |       |   |   |   |-- cache.py
+    |   |   |       |   |   |   |-- check.py
+    |   |   |       |   |   |   |-- completion.py
+    |   |   |       |   |   |   |-- configuration.py
+    |   |   |       |   |   |   |-- debug.py
+    |   |   |       |   |   |   |-- download.py
+    |   |   |       |   |   |   |-- freeze.py
+    |   |   |       |   |   |   |-- hash.py
+    |   |   |       |   |   |   |-- help.py
+    |   |   |       |   |   |   |-- index.py
+    |   |   |       |   |   |   |-- inspect.py
+    |   |   |       |   |   |   |-- install.py
+    |   |   |       |   |   |   |-- list.py
+    |   |   |       |   |   |   |-- lock.py
+    |   |   |       |   |   |   |-- search.py
+    |   |   |       |   |   |   |-- show.py
+    |   |   |       |   |   |   |-- uninstall.py
+    |   |   |       |   |   |   \-- wheel.py
+    |   |   |       |   |   |-- configuration.py
+    |   |   |       |   |   |-- distributions/
+    |   |   |       |   |   |   |-- __init__.py
+    |   |   |       |   |   |   |-- base.py
+    |   |   |       |   |   |   |-- installed.py
+    |   |   |       |   |   |   |-- sdist.py
+    |   |   |       |   |   |   \-- wheel.py
+    |   |   |       |   |   |-- exceptions.py
+    |   |   |       |   |   |-- index/
+    |   |   |       |   |   |   |-- __init__.py
+    |   |   |       |   |   |   |-- collector.py
+    |   |   |       |   |   |   |-- package_finder.py
+    |   |   |       |   |   |   \-- sources.py
+    |   |   |       |   |   |-- locations/
+    |   |   |       |   |   |   |-- __init__.py
+    |   |   |       |   |   |   |-- _distutils.py
+    |   |   |       |   |   |   |-- _sysconfig.py
+    |   |   |       |   |   |   \-- base.py
+    |   |   |       |   |   |-- main.py
+    |   |   |       |   |   |-- metadata/
+    |   |   |       |   |   |   |-- __init__.py
+    |   |   |       |   |   |   |-- _json.py
+    |   |   |       |   |   |   |-- base.py
+    |   |   |       |   |   |   |-- importlib/
+    |   |   |       |   |   |   |   |-- __init__.py
+    |   |   |       |   |   |   |   |-- _compat.py
+    |   |   |       |   |   |   |   |-- _dists.py
+    |   |   |       |   |   |   |   \-- _envs.py
+    |   |   |       |   |   |   \-- pkg_resources.py
+    |   |   |       |   |   |-- models/
+    |   |   |       |   |   |   |-- __init__.py
+    |   |   |       |   |   |   |-- candidate.py
+    |   |   |       |   |   |   |-- direct_url.py
+    |   |   |       |   |   |   |-- format_control.py
+    |   |   |       |   |   |   |-- index.py
+    |   |   |       |   |   |   |-- installation_report.py
+    |   |   |       |   |   |   |-- link.py
+    |   |   |       |   |   |   |-- release_control.py
+    |   |   |       |   |   |   |-- scheme.py
+    |   |   |       |   |   |   |-- search_scope.py
+    |   |   |       |   |   |   |-- selection_prefs.py
+    |   |   |       |   |   |   |-- target_python.py
+    |   |   |       |   |   |   \-- wheel.py
+    |   |   |       |   |   |-- network/
+    |   |   |       |   |   |   |-- __init__.py
+    |   |   |       |   |   |   |-- auth.py
+    |   |   |       |   |   |   |-- cache.py
+    |   |   |       |   |   |   |-- download.py
+    |   |   |       |   |   |   |-- lazy_wheel.py
+    |   |   |       |   |   |   |-- session.py
+    |   |   |       |   |   |   |-- utils.py
+    |   |   |       |   |   |   \-- xmlrpc.py
+    |   |   |       |   |   |-- operations/
+    |   |   |       |   |   |   |-- __init__.py
+    |   |   |       |   |   |   |-- build/
+    |   |   |       |   |   |   |   |-- __init__.py
+    |   |   |       |   |   |   |   |-- build_tracker.py
+    |   |   |       |   |   |   |   |-- metadata.py
+    |   |   |       |   |   |   |   |-- metadata_editable.py
+    |   |   |       |   |   |   |   |-- wheel.py
+    |   |   |       |   |   |   |   \-- wheel_editable.py
+    |   |   |       |   |   |   |-- check.py
+    |   |   |       |   |   |   |-- freeze.py
+    |   |   |       |   |   |   |-- install/
+    |   |   |       |   |   |   |   |-- __init__.py
+    |   |   |       |   |   |   |   \-- wheel.py
+    |   |   |       |   |   |   \-- prepare.py
+    |   |   |       |   |   |-- pyproject.py
+    |   |   |       |   |   |-- req/
+    |   |   |       |   |   |   |-- __init__.py
+    |   |   |       |   |   |   |-- constructors.py
+    |   |   |       |   |   |   |-- pep723.py
+    |   |   |       |   |   |   |-- req_dependency_group.py
+    |   |   |       |   |   |   |-- req_file.py
+    |   |   |       |   |   |   |-- req_install.py
+    |   |   |       |   |   |   |-- req_set.py
+    |   |   |       |   |   |   \-- req_uninstall.py
+    |   |   |       |   |   |-- resolution/
+    |   |   |       |   |   |   |-- __init__.py
+    |   |   |       |   |   |   |-- base.py
+    |   |   |       |   |   |   |-- legacy/
+    |   |   |       |   |   |   |   |-- __init__.py
+    |   |   |       |   |   |   |   \-- resolver.py
+    |   |   |       |   |   |   \-- resolvelib/
+    |   |   |       |   |   |       |-- __init__.py
+    |   |   |       |   |   |       |-- base.py
+    |   |   |       |   |   |       |-- candidates.py
+    |   |   |       |   |   |       |-- factory.py
+    |   |   |       |   |   |       |-- found_candidates.py
+    |   |   |       |   |   |       |-- provider.py
+    |   |   |       |   |   |       |-- reporter.py
+    |   |   |       |   |   |       |-- requirements.py
+    |   |   |       |   |   |       \-- resolver.py
+    |   |   |       |   |   |-- self_outdated_check.py
+    |   |   |       |   |   |-- utils/
+    |   |   |       |   |   |   |-- __init__.py
+    |   |   |       |   |   |   |-- _jaraco_text.py
+    |   |   |       |   |   |   |-- _log.py
+    |   |   |       |   |   |   |-- appdirs.py
+    |   |   |       |   |   |   |-- compat.py
+    |   |   |       |   |   |   |-- compatibility_tags.py
+    |   |   |       |   |   |   |-- datetime.py
+    |   |   |       |   |   |   |-- deprecation.py
+    |   |   |       |   |   |   |-- direct_url_helpers.py
+    |   |   |       |   |   |   |-- egg_link.py
+    |   |   |       |   |   |   |-- entrypoints.py
+    |   |   |       |   |   |   |-- filesystem.py
+    |   |   |       |   |   |   |-- filetypes.py
+    |   |   |       |   |   |   |-- glibc.py
+    |   |   |       |   |   |   |-- hashes.py
+    |   |   |       |   |   |   |-- logging.py
+    |   |   |       |   |   |   |-- misc.py
+    |   |   |       |   |   |   |-- packaging.py
+    |   |   |       |   |   |   |-- pylock.py
+    |   |   |       |   |   |   |-- retry.py
+    |   |   |       |   |   |   |-- subprocess.py
+    |   |   |       |   |   |   |-- temp_dir.py
+    |   |   |       |   |   |   |-- unpacking.py
+    |   |   |       |   |   |   |-- urls.py
+    |   |   |       |   |   |   |-- virtualenv.py
+    |   |   |       |   |   |   \-- wheel.py
+    |   |   |       |   |   |-- vcs/
+    |   |   |       |   |   |   |-- __init__.py
+    |   |   |       |   |   |   |-- bazaar.py
+    |   |   |       |   |   |   |-- git.py
+    |   |   |       |   |   |   |-- mercurial.py
+    |   |   |       |   |   |   |-- subversion.py
+    |   |   |       |   |   |   \-- versioncontrol.py
+    |   |   |       |   |   \-- wheel_builder.py
+    |   |   |       |   |-- _vendor/
+    |   |   |       |   |   |-- __init__.py
+    |   |   |       |   |   |-- bom.cdx.json
+    |   |   |       |   |   |-- cachecontrol/
+    |   |   |       |   |   |   |-- __init__.py
+    |   |   |       |   |   |   |-- _cmd.py
+    |   |   |       |   |   |   |-- adapter.py
+    |   |   |       |   |   |   |-- cache.py
+    |   |   |       |   |   |   |-- caches/
+    |   |   |       |   |   |   |   |-- __init__.py
+    |   |   |       |   |   |   |   |-- file_cache.py
+    |   |   |       |   |   |   |   \-- redis_cache.py
+    |   |   |       |   |   |   |-- controller.py
+    |   |   |       |   |   |   |-- filewrapper.py
+    |   |   |       |   |   |   |-- heuristics.py
+    |   |   |       |   |   |   |-- LICENSE.txt
+    |   |   |       |   |   |   |-- py.typed
+    |   |   |       |   |   |   |-- serialize.py
+    |   |   |       |   |   |   \-- wrapper.py
+    |   |   |       |   |   |-- certifi/
+    |   |   |       |   |   |   |-- __init__.py
+    |   |   |       |   |   |   |-- __main__.py
+    |   |   |       |   |   |   |-- cacert.pem
+    |   |   |       |   |   |   |-- core.py
+    |   |   |       |   |   |   |-- LICENSE
+    |   |   |       |   |   |   \-- py.typed
+    |   |   |       |   |   |-- distlib/
+    |   |   |       |   |   |   |-- __init__.py
+    |   |   |       |   |   |   |-- compat.py
+    |   |   |       |   |   |   |-- LICENSE.txt
+    |   |   |       |   |   |   |-- resources.py
+    |   |   |       |   |   |   |-- scripts.py
+    |   |   |       |   |   |   |-- t32.exe
+    |   |   |       |   |   |   |-- t64.exe
+    |   |   |       |   |   |   |-- t64-arm.exe
+    |   |   |       |   |   |   |-- util.py
+    |   |   |       |   |   |   |-- w32.exe
+    |   |   |       |   |   |   |-- w64.exe
+    |   |   |       |   |   |   \-- w64-arm.exe
+    |   |   |       |   |   |-- distro/
+    |   |   |       |   |   |   |-- __init__.py
+    |   |   |       |   |   |   |-- __main__.py
+    |   |   |       |   |   |   |-- distro.py
+    |   |   |       |   |   |   |-- LICENSE
+    |   |   |       |   |   |   \-- py.typed
+    |   |   |       |   |   |-- idna/
+    |   |   |       |   |   |   |-- __init__.py
+    |   |   |       |   |   |   |-- __main__.py
+    |   |   |       |   |   |   |-- cli.py
+    |   |   |       |   |   |   |-- codec.py
+    |   |   |       |   |   |   |-- compat.py
+    |   |   |       |   |   |   |-- core.py
+    |   |   |       |   |   |   |-- idnadata.py
+    |   |   |       |   |   |   |-- intranges.py
+    |   |   |       |   |   |   |-- LICENSE.md
+    |   |   |       |   |   |   |-- package_data.py
+    |   |   |       |   |   |   |-- py.typed
+    |   |   |       |   |   |   \-- uts46data.py
+    |   |   |       |   |   |-- msgpack/
+    |   |   |       |   |   |   |-- __init__.py
+    |   |   |       |   |   |   |-- COPYING
+    |   |   |       |   |   |   |-- exceptions.py
+    |   |   |       |   |   |   |-- ext.py
+    |   |   |       |   |   |   \-- fallback.py
+    |   |   |       |   |   |-- packaging/
+    |   |   |       |   |   |   |-- __init__.py
+    |   |   |       |   |   |   |-- _elffile.py
+    |   |   |       |   |   |   |-- _manylinux.py
+    |   |   |       |   |   |   |-- _musllinux.py
+    |   |   |       |   |   |   |-- _parser.py
+    |   |   |       |   |   |   |-- _structures.py
+    |   |   |       |   |   |   |-- _tokenizer.py
+    |   |   |       |   |   |   |-- dependency_groups.py
+    |   |   |       |   |   |   |-- direct_url.py
+    |   |   |       |   |   |   |-- errors.py
+    |   |   |       |   |   |   |-- LICENSE
+    |   |   |       |   |   |   |-- LICENSE.APACHE
+    |   |   |       |   |   |   |-- LICENSE.BSD
+    |   |   |       |   |   |   |-- licenses/
+    |   |   |       |   |   |   |   |-- __init__.py
+    |   |   |       |   |   |   |   \-- _spdx.py
+    |   |   |       |   |   |   |-- markers.py
+    |   |   |       |   |   |   |-- metadata.py
+    |   |   |       |   |   |   |-- py.typed
+    |   |   |       |   |   |   |-- pylock.py
+    |   |   |       |   |   |   |-- requirements.py
+    |   |   |       |   |   |   |-- specifiers.py
+    |   |   |       |   |   |   |-- tags.py
+    |   |   |       |   |   |   |-- utils.py
+    |   |   |       |   |   |   \-- version.py
+    |   |   |       |   |   |-- pkg_resources/
+    |   |   |       |   |   |   |-- __init__.py
+    |   |   |       |   |   |   \-- LICENSE
+    |   |   |       |   |   |-- platformdirs/
+    |   |   |       |   |   |   |-- __init__.py
+    |   |   |       |   |   |   |-- __main__.py
+    |   |   |       |   |   |   |-- _xdg.py
+    |   |   |       |   |   |   |-- android.py
+    |   |   |       |   |   |   |-- api.py
+    |   |   |       |   |   |   |-- LICENSE
+    |   |   |       |   |   |   |-- macos.py
+    |   |   |       |   |   |   |-- py.typed
+    |   |   |       |   |   |   |-- unix.py
+    |   |   |       |   |   |   |-- version.py
+    |   |   |       |   |   |   \-- windows.py
+    |   |   |       |   |   |-- pygments/
+    |   |   |       |   |   |   |-- __init__.py
+    |   |   |       |   |   |   |-- __main__.py
+    |   |   |       |   |   |   |-- console.py
+    |   |   |       |   |   |   |-- filter.py
+    |   |   |       |   |   |   |-- filters/
+    |   |   |       |   |   |   |   \-- __init__.py
+    |   |   |       |   |   |   |-- formatter.py
+    |   |   |       |   |   |   |-- formatters/
+    |   |   |       |   |   |   |   |-- __init__.py
+    |   |   |       |   |   |   |   \-- _mapping.py
+    |   |   |       |   |   |   |-- lexer.py
+    |   |   |       |   |   |   |-- lexers/
+    |   |   |       |   |   |   |   |-- __init__.py
+    |   |   |       |   |   |   |   |-- _mapping.py
+    |   |   |       |   |   |   |   \-- python.py
+    |   |   |       |   |   |   |-- LICENSE
+    |   |   |       |   |   |   |-- modeline.py
+    |   |   |       |   |   |   |-- plugin.py
+    |   |   |       |   |   |   |-- regexopt.py
+    |   |   |       |   |   |   |-- scanner.py
+    |   |   |       |   |   |   |-- sphinxext.py
+    |   |   |       |   |   |   |-- style.py
+    |   |   |       |   |   |   |-- styles/
+    |   |   |       |   |   |   |   |-- __init__.py
+    |   |   |       |   |   |   |   \-- _mapping.py
+    |   |   |       |   |   |   |-- token.py
+    |   |   |       |   |   |   |-- unistring.py
+    |   |   |       |   |   |   \-- util.py
+    |   |   |       |   |   |-- pyproject_hooks/
+    |   |   |       |   |   |   |-- __init__.py
+    |   |   |       |   |   |   |-- _impl.py
+    |   |   |       |   |   |   |-- _in_process/
+    |   |   |       |   |   |   |   |-- __init__.py
+    |   |   |       |   |   |   |   \-- _in_process.py
+    |   |   |       |   |   |   |-- LICENSE
+    |   |   |       |   |   |   \-- py.typed
+    |   |   |       |   |   |-- README.rst
+    |   |   |       |   |   |-- requests/
+    |   |   |       |   |   |   |-- __init__.py
+    |   |   |       |   |   |   |-- __version__.py
+    |   |   |       |   |   |   |-- _internal_utils.py
+    |   |   |       |   |   |   |-- _types.py
+    |   |   |       |   |   |   |-- adapters.py
+    |   |   |       |   |   |   |-- api.py
+    |   |   |       |   |   |   |-- auth.py
+    |   |   |       |   |   |   |-- certs.py
+    |   |   |       |   |   |   |-- compat.py
+    |   |   |       |   |   |   |-- cookies.py
+    |   |   |       |   |   |   |-- exceptions.py
+    |   |   |       |   |   |   |-- help.py
+    |   |   |       |   |   |   |-- hooks.py
+    |   |   |       |   |   |   |-- LICENSE
+    |   |   |       |   |   |   |-- models.py
+    |   |   |       |   |   |   |-- packages.py
+    |   |   |       |   |   |   |-- py.typed
+    |   |   |       |   |   |   |-- sessions.py
+    |   |   |       |   |   |   |-- status_codes.py
+    |   |   |       |   |   |   |-- structures.py
+    |   |   |       |   |   |   \-- utils.py
+    |   |   |       |   |   |-- resolvelib/
+    |   |   |       |   |   |   |-- __init__.py
+    |   |   |       |   |   |   |-- LICENSE
+    |   |   |       |   |   |   |-- providers.py
+    |   |   |       |   |   |   |-- py.typed
+    |   |   |       |   |   |   |-- reporters.py
+    |   |   |       |   |   |   |-- resolvers/
+    |   |   |       |   |   |   |   |-- __init__.py
+    |   |   |       |   |   |   |   |-- abstract.py
+    |   |   |       |   |   |   |   |-- criterion.py
+    |   |   |       |   |   |   |   |-- exceptions.py
+    |   |   |       |   |   |   |   \-- resolution.py
+    |   |   |       |   |   |   \-- structs.py
+    |   |   |       |   |   |-- rich/
+    |   |   |       |   |   |   |-- __init__.py
+    |   |   |       |   |   |   |-- __main__.py
+    |   |   |       |   |   |   |-- _cell_widths.py
+    |   |   |       |   |   |   |-- _emoji_codes.py
+    |   |   |       |   |   |   |-- _emoji_replace.py
+    |   |   |       |   |   |   |-- _export_format.py
+    |   |   |       |   |   |   |-- _extension.py
+    |   |   |       |   |   |   |-- _fileno.py
+    |   |   |       |   |   |   |-- _inspect.py
+    |   |   |       |   |   |   |-- _log_render.py
+    |   |   |       |   |   |   |-- _loop.py
+    |   |   |       |   |   |   |-- _null_file.py
+    |   |   |       |   |   |   |-- _palettes.py
+    |   |   |       |   |   |   |-- _pick.py
+    |   |   |       |   |   |   |-- _ratio.py
+    |   |   |       |   |   |   |-- _spinners.py
+    |   |   |       |   |   |   |-- _stack.py
+    |   |   |       |   |   |   |-- _timer.py
+    |   |   |       |   |   |   |-- _win32_console.py
+    |   |   |       |   |   |   |-- _windows.py
+    |   |   |       |   |   |   |-- _windows_renderer.py
+    |   |   |       |   |   |   |-- _wrap.py
+    |   |   |       |   |   |   |-- abc.py
+    |   |   |       |   |   |   |-- align.py
+    |   |   |       |   |   |   |-- ansi.py
+    |   |   |       |   |   |   |-- bar.py
+    |   |   |       |   |   |   |-- box.py
+    |   |   |       |   |   |   |-- cells.py
+    |   |   |       |   |   |   |-- color.py
+    |   |   |       |   |   |   |-- color_triplet.py
+    |   |   |       |   |   |   |-- columns.py
+    |   |   |       |   |   |   |-- console.py
+    |   |   |       |   |   |   |-- constrain.py
+    |   |   |       |   |   |   |-- containers.py
+    |   |   |       |   |   |   |-- control.py
+    |   |   |       |   |   |   |-- default_styles.py
+    |   |   |       |   |   |   |-- diagnose.py
+    |   |   |       |   |   |   |-- emoji.py
+    |   |   |       |   |   |   |-- errors.py
+    |   |   |       |   |   |   |-- file_proxy.py
+    |   |   |       |   |   |   |-- filesize.py
+    |   |   |       |   |   |   |-- highlighter.py
+    |   |   |       |   |   |   |-- json.py
+    |   |   |       |   |   |   |-- jupyter.py
+    |   |   |       |   |   |   |-- layout.py
+    |   |   |       |   |   |   |-- LICENSE
+    |   |   |       |   |   |   |-- live.py
+    |   |   |       |   |   |   |-- live_render.py
+    |   |   |       |   |   |   |-- logging.py
+    |   |   |       |   |   |   |-- markup.py
+    |   |   |       |   |   |   |-- measure.py
+    |   |   |       |   |   |   |-- padding.py
+    |   |   |       |   |   |   |-- pager.py
+    |   |   |       |   |   |   |-- palette.py
+    |   |   |       |   |   |   |-- panel.py
+    |   |   |       |   |   |   |-- pretty.py
+    |   |   |       |   |   |   |-- progress.py
+    |   |   |       |   |   |   |-- progress_bar.py
+    |   |   |       |   |   |   |-- prompt.py
+    |   |   |       |   |   |   |-- protocol.py
+    |   |   |       |   |   |   |-- py.typed
+    |   |   |       |   |   |   |-- region.py
+    |   |   |       |   |   |   |-- repr.py
+    |   |   |       |   |   |   |-- rule.py
+    |   |   |       |   |   |   |-- scope.py
+    |   |   |       |   |   |   |-- screen.py
+    |   |   |       |   |   |   |-- segment.py
+    |   |   |       |   |   |   |-- spinner.py
+    |   |   |       |   |   |   |-- status.py
+    |   |   |       |   |   |   |-- style.py
+    |   |   |       |   |   |   |-- styled.py
+    |   |   |       |   |   |   |-- syntax.py
+    |   |   |       |   |   |   |-- table.py
+    |   |   |       |   |   |   |-- terminal_theme.py
+    |   |   |       |   |   |   |-- text.py
+    |   |   |       |   |   |   |-- theme.py
+    |   |   |       |   |   |   |-- themes.py
+    |   |   |       |   |   |   |-- traceback.py
+    |   |   |       |   |   |   \-- tree.py
+    |   |   |       |   |   |-- tomli/
+    |   |   |       |   |   |   |-- __init__.py
+    |   |   |       |   |   |   |-- _parser.py
+    |   |   |       |   |   |   |-- _re.py
+    |   |   |       |   |   |   |-- _types.py
+    |   |   |       |   |   |   |-- LICENSE
+    |   |   |       |   |   |   \-- py.typed
+    |   |   |       |   |   |-- tomli_w/
+    |   |   |       |   |   |   |-- __init__.py
+    |   |   |       |   |   |   |-- _writer.py
+    |   |   |       |   |   |   |-- LICENSE
+    |   |   |       |   |   |   \-- py.typed
+    |   |   |       |   |   |-- truststore/
+    |   |   |       |   |   |   |-- __init__.py
+    |   |   |       |   |   |   |-- _api.py
+    |   |   |       |   |   |   |-- _macos.py
+    |   |   |       |   |   |   |-- _openssl.py
+    |   |   |       |   |   |   |-- _ssl_constants.py
+    |   |   |       |   |   |   |-- _windows.py
+    |   |   |       |   |   |   |-- LICENSE
+    |   |   |       |   |   |   \-- py.typed
+    |   |   |       |   |   |-- urllib3/
+    |   |   |       |   |   |   |-- __init__.py
+    |   |   |       |   |   |   |-- _base_connection.py
+    |   |   |       |   |   |   |-- _collections.py
+    |   |   |       |   |   |   |-- _request_methods.py
+    |   |   |       |   |   |   |-- _version.py
+    |   |   |       |   |   |   |-- connection.py
+    |   |   |       |   |   |   |-- connectionpool.py
+    |   |   |       |   |   |   |-- contrib/
+    |   |   |       |   |   |   |   |-- __init__.py
+    |   |   |       |   |   |   |   |-- emscripten/
+    |   |   |       |   |   |   |   |   |-- __init__.py
+    |   |   |       |   |   |   |   |   |-- connection.py
+    |   |   |       |   |   |   |   |   |-- emscripten_fetch_worker.js
+    |   |   |       |   |   |   |   |   |-- fetch.py
+    |   |   |       |   |   |   |   |   |-- request.py
+    |   |   |       |   |   |   |   |   \-- response.py
+    |   |   |       |   |   |   |   |-- pyopenssl.py
+    |   |   |       |   |   |   |   \-- socks.py
+    |   |   |       |   |   |   |-- exceptions.py
+    |   |   |       |   |   |   |-- fields.py
+    |   |   |       |   |   |   |-- filepost.py
+    |   |   |       |   |   |   |-- http2/
+    |   |   |       |   |   |   |   |-- __init__.py
+    |   |   |       |   |   |   |   |-- connection.py
+    |   |   |       |   |   |   |   \-- probe.py
+    |   |   |       |   |   |   |-- LICENSE.txt
+    |   |   |       |   |   |   |-- poolmanager.py
+    |   |   |       |   |   |   |-- py.typed
+    |   |   |       |   |   |   |-- response.py
+    |   |   |       |   |   |   \-- util/
+    |   |   |       |   |   |       |-- __init__.py
+    |   |   |       |   |   |       |-- connection.py
+    |   |   |       |   |   |       |-- proxy.py
+    |   |   |       |   |   |       |-- request.py
+    |   |   |       |   |   |       |-- response.py
+    |   |   |       |   |   |       |-- retry.py
+    |   |   |       |   |   |       |-- ssl_.py
+    |   |   |       |   |   |       |-- ssl_match_hostname.py
+    |   |   |       |   |   |       |-- ssltransport.py
+    |   |   |       |   |   |       |-- timeout.py
+    |   |   |       |   |   |       |-- url.py
+    |   |   |       |   |   |       |-- util.py
+    |   |   |       |   |   |       \-- wait.py
+    |   |   |       |   |   \-- vendor.txt
+    |   |   |       |   \-- py.typed
+    |   |   |       |-- pip-26.2.1.dist-info/
+    |   |   |       |   |-- entry_points.txt
+    |   |   |       |   |-- INSTALLER
+    |   |   |       |   |-- licenses/
+    |   |   |       |   |   |-- AUTHORS.txt
+    |   |   |       |   |   |-- LICENSE.txt
+    |   |   |       |   |   \-- src/
+    |   |   |       |   |       \-- pip/
+    |   |   |       |   |           \-- _vendor/
+    |   |   |       |   |               |-- cachecontrol/
+    |   |   |       |   |               |   \-- LICENSE.txt
+    |   |   |       |   |               |-- certifi/
+    |   |   |       |   |               |   \-- LICENSE
+    |   |   |       |   |               |-- distlib/
+    |   |   |       |   |               |   \-- LICENSE.txt
+    |   |   |       |   |               |-- distro/
+    |   |   |       |   |               |   \-- LICENSE
+    |   |   |       |   |               |-- idna/
+    |   |   |       |   |               |   \-- LICENSE.md
+    |   |   |       |   |               |-- msgpack/
+    |   |   |       |   |               |   \-- COPYING
+    |   |   |       |   |               |-- packaging/
+    |   |   |       |   |               |   |-- LICENSE
+    |   |   |       |   |               |   |-- LICENSE.APACHE
+    |   |   |       |   |               |   \-- LICENSE.BSD
+    |   |   |       |   |               |-- pkg_resources/
+    |   |   |       |   |               |   \-- LICENSE
+    |   |   |       |   |               |-- platformdirs/
+    |   |   |       |   |               |   \-- LICENSE
+    |   |   |       |   |               |-- pygments/
+    |   |   |       |   |               |   \-- LICENSE
+    |   |   |       |   |               |-- pyproject_hooks/
+    |   |   |       |   |               |   \-- LICENSE
+    |   |   |       |   |               |-- requests/
+    |   |   |       |   |               |   \-- LICENSE
+    |   |   |       |   |               |-- resolvelib/
+    |   |   |       |   |               |   \-- LICENSE
+    |   |   |       |   |               |-- rich/
+    |   |   |       |   |               |   \-- LICENSE
+    |   |   |       |   |               |-- tomli/
+    |   |   |       |   |               |   \-- LICENSE
+    |   |   |       |   |               |-- tomli_w/
+    |   |   |       |   |               |   \-- LICENSE
+    |   |   |       |   |               |-- truststore/
+    |   |   |       |   |               |   \-- LICENSE
+    |   |   |       |   |               \-- urllib3/
+    |   |   |       |   |                   \-- LICENSE.txt
+    |   |   |       |   |-- METADATA
+    |   |   |       |   |-- RECORD
+    |   |   |       |   |-- REQUESTED
+    |   |   |       |   \-- WHEEL
+    |   |   |       |-- psycopg2/
+    |   |   |       |   |-- __init__.py
+    |   |   |       |   |-- _ipaddress.py
+    |   |   |       |   |-- _json.py
+    |   |   |       |   |-- _psycopg.cp312-win_amd64.pyd
+    |   |   |       |   |-- _range.py
+    |   |   |       |   |-- errorcodes.py
+    |   |   |       |   |-- errors.py
+    |   |   |       |   |-- extensions.py
+    |   |   |       |   |-- extras.py
+    |   |   |       |   |-- pool.py
+    |   |   |       |   |-- sql.py
+    |   |   |       |   \-- tz.py
+    |   |   |       |-- psycopg2_binary.libs/
+    |   |   |       |   |-- libcrypto-3-x64-00fd260ae72c744ee1352e64a568f454.dll
+    |   |   |       |   |-- libpq-59fb91041b8033400b68b6f333423fb2.dll
+    |   |   |       |   \-- libssl-3-x64-42d016cedaa8505e1c2f3866222613c3.dll
+    |   |   |       |-- psycopg2_binary-2.9.12.dist-info/
+    |   |   |       |   |-- DELVEWHEEL
+    |   |   |       |   |-- INSTALLER
+    |   |   |       |   |-- licenses/
+    |   |   |       |   |   \-- LICENSE
+    |   |   |       |   |-- METADATA
+    |   |   |       |   |-- RECORD
+    |   |   |       |   |-- REQUESTED
+    |   |   |       |   |-- top_level.txt
+    |   |   |       |   \-- WHEEL
+    |   |   |       |-- pydantic/
+    |   |   |       |   |-- __init__.py
+    |   |   |       |   |-- _internal/
+    |   |   |       |   |   |-- __init__.py
+    |   |   |       |   |   |-- _config.py
+    |   |   |       |   |   |-- _core_metadata.py
+    |   |   |       |   |   |-- _core_utils.py
+    |   |   |       |   |   |-- _dataclasses.py
+    |   |   |       |   |   |-- _decorators.py
+    |   |   |       |   |   |-- _decorators_v1.py
+    |   |   |       |   |   |-- _discriminated_union.py
+    |   |   |       |   |   |-- _docs_extraction.py
+    |   |   |       |   |   |-- _fields.py
+    |   |   |       |   |   |-- _forward_ref.py
+    |   |   |       |   |   |-- _generate_schema.py
+    |   |   |       |   |   |-- _generics.py
+    |   |   |       |   |   |-- _git.py
+    |   |   |       |   |   |-- _import_utils.py
+    |   |   |       |   |   |-- _internal_dataclass.py
+    |   |   |       |   |   |-- _known_annotated_metadata.py
+    |   |   |       |   |   |-- _mock_val_ser.py
+    |   |   |       |   |   |-- _model_construction.py
+    |   |   |       |   |   |-- _namespace_utils.py
+    |   |   |       |   |   |-- _repr.py
+    |   |   |       |   |   |-- _schema_gather.py
+    |   |   |       |   |   |-- _schema_generation_shared.py
+    |   |   |       |   |   |-- _serializers.py
+    |   |   |       |   |   |-- _signature.py
+    |   |   |       |   |   |-- _typing_extra.py
+    |   |   |       |   |   |-- _utils.py
+    |   |   |       |   |   |-- _validate_call.py
+    |   |   |       |   |   \-- _validators.py
+    |   |   |       |   |-- _migration.py
+    |   |   |       |   |-- alias_generators.py
+    |   |   |       |   |-- aliases.py
+    |   |   |       |   |-- annotated_handlers.py
+    |   |   |       |   |-- class_validators.py
+    |   |   |       |   |-- color.py
+    |   |   |       |   |-- config.py
+    |   |   |       |   |-- dataclasses.py
+    |   |   |       |   |-- datetime_parse.py
+    |   |   |       |   |-- decorator.py
+    |   |   |       |   |-- deprecated/
+    |   |   |       |   |   |-- __init__.py
+    |   |   |       |   |   |-- class_validators.py
+    |   |   |       |   |   |-- config.py
+    |   |   |       |   |   |-- copy_internals.py
+    |   |   |       |   |   |-- decorator.py
+    |   |   |       |   |   |-- json.py
+    |   |   |       |   |   |-- parse.py
+    |   |   |       |   |   \-- tools.py
+    |   |   |       |   |-- env_settings.py
+    |   |   |       |   |-- error_wrappers.py
+    |   |   |       |   |-- errors.py
+    |   |   |       |   |-- experimental/
+    |   |   |       |   |   |-- __init__.py
+    |   |   |       |   |   |-- arguments_schema.py
+    |   |   |       |   |   |-- missing_sentinel.py
+    |   |   |       |   |   \-- pipeline.py
+    |   |   |       |   |-- fields.py
+    |   |   |       |   |-- functional_serializers.py
+    |   |   |       |   |-- functional_validators.py
+    |   |   |       |   |-- generics.py
+    |   |   |       |   |-- json.py
+    |   |   |       |   |-- json_schema.py
+    |   |   |       |   |-- main.py
+    |   |   |       |   |-- mypy.py
+    |   |   |       |   |-- networks.py
+    |   |   |       |   |-- parse.py
+    |   |   |       |   |-- plugin/
+    |   |   |       |   |   |-- __init__.py
+    |   |   |       |   |   |-- _loader.py
+    |   |   |       |   |   \-- _schema_validator.py
+    |   |   |       |   |-- py.typed
+    |   |   |       |   |-- root_model.py
+    |   |   |       |   |-- schema.py
+    |   |   |       |   |-- tools.py
+    |   |   |       |   |-- type_adapter.py
+    |   |   |       |   |-- types.py
+    |   |   |       |   |-- typing.py
+    |   |   |       |   |-- utils.py
+    |   |   |       |   |-- v1/
+    |   |   |       |   |   |-- __init__.py
+    |   |   |       |   |   |-- _hypothesis_plugin.py
+    |   |   |       |   |   |-- annotated_types.py
+    |   |   |       |   |   |-- class_validators.py
+    |   |   |       |   |   |-- color.py
+    |   |   |       |   |   |-- config.py
+    |   |   |       |   |   |-- dataclasses.py
+    |   |   |       |   |   |-- datetime_parse.py
+    |   |   |       |   |   |-- decorator.py
+    |   |   |       |   |   |-- env_settings.py
+    |   |   |       |   |   |-- error_wrappers.py
+    |   |   |       |   |   |-- errors.py
+    |   |   |       |   |   |-- fields.py
+    |   |   |       |   |   |-- generics.py
+    |   |   |       |   |   |-- json.py
+    |   |   |       |   |   |-- main.py
+    |   |   |       |   |   |-- mypy.py
+    |   |   |       |   |   |-- networks.py
+    |   |   |       |   |   |-- parse.py
+    |   |   |       |   |   |-- py.typed
+    |   |   |       |   |   |-- schema.py
+    |   |   |       |   |   |-- tools.py
+    |   |   |       |   |   |-- types.py
+    |   |   |       |   |   |-- typing.py
+    |   |   |       |   |   |-- utils.py
+    |   |   |       |   |   |-- validators.py
+    |   |   |       |   |   \-- version.py
+    |   |   |       |   |-- validate_call_decorator.py
+    |   |   |       |   |-- validators.py
+    |   |   |       |   |-- version.py
+    |   |   |       |   \-- warnings.py
+    |   |   |       |-- pydantic_core/
+    |   |   |       |   |-- __init__.py
+    |   |   |       |   |-- _pydantic_core.cp312-win_amd64.pyd
+    |   |   |       |   |-- _pydantic_core.pyi
+    |   |   |       |   |-- core_schema.py
+    |   |   |       |   \-- py.typed
+    |   |   |       |-- pydantic_core-2.46.4.dist-info/
+    |   |   |       |   |-- INSTALLER
+    |   |   |       |   |-- licenses/
+    |   |   |       |   |   \-- LICENSE
+    |   |   |       |   |-- METADATA
+    |   |   |       |   |-- RECORD
+    |   |   |       |   |-- sboms/
+    |   |   |       |   |   \-- pydantic-core.cyclonedx.json
+    |   |   |       |   \-- WHEEL
+    |   |   |       |-- pydantic_settings/
+    |   |   |       |   |-- __init__.py
+    |   |   |       |   |-- exceptions.py
+    |   |   |       |   |-- main.py
+    |   |   |       |   |-- py.typed
+    |   |   |       |   |-- sources/
+    |   |   |       |   |   |-- __init__.py
+    |   |   |       |   |   |-- base.py
+    |   |   |       |   |   |-- providers/
+    |   |   |       |   |   |   |-- __init__.py
+    |   |   |       |   |   |   |-- aws.py
+    |   |   |       |   |   |   |-- azure.py
+    |   |   |       |   |   |   |-- cli.py
+    |   |   |       |   |   |   |-- dotenv.py
+    |   |   |       |   |   |   |-- env.py
+    |   |   |       |   |   |   |-- gcp.py
+    |   |   |       |   |   |   |-- json.py
+    |   |   |       |   |   |   |-- nested_secrets.py
+    |   |   |       |   |   |   |-- pyproject.py
+    |   |   |       |   |   |   |-- secrets.py
+    |   |   |       |   |   |   |-- toml.py
+    |   |   |       |   |   |   \-- yaml.py
+    |   |   |       |   |   |-- types.py
+    |   |   |       |   |   \-- utils.py
+    |   |   |       |   |-- utils.py
+    |   |   |       |   \-- version.py
+    |   |   |       |-- pydantic_settings-2.15.0.dist-info/
+    |   |   |       |   |-- INSTALLER
+    |   |   |       |   |-- licenses/
+    |   |   |       |   |   \-- LICENSE
+    |   |   |       |   |-- METADATA
+    |   |   |       |   |-- RECORD
+    |   |   |       |   |-- REQUESTED
+    |   |   |       |   \-- WHEEL
+    |   |   |       |-- pydantic-2.13.4.dist-info/
+    |   |   |       |   |-- INSTALLER
+    |   |   |       |   |-- licenses/
+    |   |   |       |   |   \-- LICENSE
+    |   |   |       |   |-- METADATA
+    |   |   |       |   |-- RECORD
+    |   |   |       |   \-- WHEEL
+    |   |   |       |-- python_dotenv-1.2.3.dist-info/
+    |   |   |       |   |-- entry_points.txt
+    |   |   |       |   |-- INSTALLER
+    |   |   |       |   |-- licenses/
+    |   |   |       |   |   \-- LICENSE
+    |   |   |       |   |-- METADATA
+    |   |   |       |   |-- RECORD
+    |   |   |       |   |-- REQUESTED
+    |   |   |       |   |-- top_level.txt
+    |   |   |       |   \-- WHEEL
+    |   |   |       |-- sqlalchemy/
+    |   |   |       |   |-- __init__.py
+    |   |   |       |   |-- connectors/
+    |   |   |       |   |   |-- __init__.py
+    |   |   |       |   |   |-- aioodbc.py
+    |   |   |       |   |   |-- asyncio.py
+    |   |   |       |   |   \-- pyodbc.py
+    |   |   |       |   |-- cyextension/
+    |   |   |       |   |   |-- __init__.py
+    |   |   |       |   |   |-- collections.cp312-win_amd64.pyd
+    |   |   |       |   |   |-- collections.pyx
+    |   |   |       |   |   |-- immutabledict.cp312-win_amd64.pyd
+    |   |   |       |   |   |-- immutabledict.pxd
+    |   |   |       |   |   |-- immutabledict.pyx
+    |   |   |       |   |   |-- processors.cp312-win_amd64.pyd
+    |   |   |       |   |   |-- processors.pyx
+    |   |   |       |   |   |-- resultproxy.cp312-win_amd64.pyd
+    |   |   |       |   |   |-- resultproxy.pyx
+    |   |   |       |   |   |-- util.cp312-win_amd64.pyd
+    |   |   |       |   |   \-- util.pyx
+    |   |   |       |   |-- dialects/
+    |   |   |       |   |   |-- __init__.py
+    |   |   |       |   |   |-- _typing.py
+    |   |   |       |   |   |-- mssql/
+    |   |   |       |   |   |   |-- __init__.py
+    |   |   |       |   |   |   |-- aioodbc.py
+    |   |   |       |   |   |   |-- base.py
+    |   |   |       |   |   |   |-- information_schema.py
+    |   |   |       |   |   |   |-- json.py
+    |   |   |       |   |   |   |-- provision.py
+    |   |   |       |   |   |   |-- pymssql.py
+    |   |   |       |   |   |   \-- pyodbc.py
+    |   |   |       |   |   |-- mysql/
+    |   |   |       |   |   |   |-- __init__.py
+    |   |   |       |   |   |   |-- aiomysql.py
+    |   |   |       |   |   |   |-- asyncmy.py
+    |   |   |       |   |   |   |-- base.py
+    |   |   |       |   |   |   |-- cymysql.py
+    |   |   |       |   |   |   |-- dml.py
+    |   |   |       |   |   |   |-- enumerated.py
+    |   |   |       |   |   |   |-- expression.py
+    |   |   |       |   |   |   |-- json.py
+    |   |   |       |   |   |   |-- mariadb.py
+    |   |   |       |   |   |   |-- mariadbconnector.py
+    |   |   |       |   |   |   |-- mysqlconnector.py
+    |   |   |       |   |   |   |-- mysqldb.py
+    |   |   |       |   |   |   |-- provision.py
+    |   |   |       |   |   |   |-- pymysql.py
+    |   |   |       |   |   |   |-- pyodbc.py
+    |   |   |       |   |   |   |-- reflection.py
+    |   |   |       |   |   |   |-- reserved_words.py
+    |   |   |       |   |   |   \-- types.py
+    |   |   |       |   |   |-- oracle/
+    |   |   |       |   |   |   |-- __init__.py
+    |   |   |       |   |   |   |-- base.py
+    |   |   |       |   |   |   |-- cx_oracle.py
+    |   |   |       |   |   |   |-- dictionary.py
+    |   |   |       |   |   |   |-- oracledb.py
+    |   |   |       |   |   |   |-- provision.py
+    |   |   |       |   |   |   |-- types.py
+    |   |   |       |   |   |   \-- vector.py
+    |   |   |       |   |   |-- postgresql/
+    |   |   |       |   |   |   |-- __init__.py
+    |   |   |       |   |   |   |-- _psycopg_common.py
+    |   |   |       |   |   |   |-- array.py
+    |   |   |       |   |   |   |-- asyncpg.py
+    |   |   |       |   |   |   |-- base.py
+    |   |   |       |   |   |   |-- dml.py
+    |   |   |       |   |   |   |-- ext.py
+    |   |   |       |   |   |   |-- hstore.py
+    |   |   |       |   |   |   |-- json.py
+    |   |   |       |   |   |   |-- named_types.py
+    |   |   |       |   |   |   |-- operators.py
+    |   |   |       |   |   |   |-- pg_catalog.py
+    |   |   |       |   |   |   |-- pg8000.py
+    |   |   |       |   |   |   |-- provision.py
+    |   |   |       |   |   |   |-- psycopg.py
+    |   |   |       |   |   |   |-- psycopg2.py
+    |   |   |       |   |   |   |-- psycopg2cffi.py
+    |   |   |       |   |   |   |-- ranges.py
+    |   |   |       |   |   |   \-- types.py
+    |   |   |       |   |   |-- sqlite/
+    |   |   |       |   |   |   |-- __init__.py
+    |   |   |       |   |   |   |-- aiosqlite.py
+    |   |   |       |   |   |   |-- base.py
+    |   |   |       |   |   |   |-- dml.py
+    |   |   |       |   |   |   |-- json.py
+    |   |   |       |   |   |   |-- provision.py
+    |   |   |       |   |   |   |-- pysqlcipher.py
+    |   |   |       |   |   |   \-- pysqlite.py
+    |   |   |       |   |   \-- type_migration_guidelines.txt
+    |   |   |       |   |-- engine/
+    |   |   |       |   |   |-- __init__.py
+    |   |   |       |   |   |-- _py_processors.py
+    |   |   |       |   |   |-- _py_row.py
+    |   |   |       |   |   |-- _py_util.py
+    |   |   |       |   |   |-- base.py
+    |   |   |       |   |   |-- characteristics.py
+    |   |   |       |   |   |-- create.py
+    |   |   |       |   |   |-- cursor.py
+    |   |   |       |   |   |-- default.py
+    |   |   |       |   |   |-- events.py
+    |   |   |       |   |   |-- interfaces.py
+    |   |   |       |   |   |-- mock.py
+    |   |   |       |   |   |-- processors.py
+    |   |   |       |   |   |-- reflection.py
+    |   |   |       |   |   |-- result.py
+    |   |   |       |   |   |-- row.py
+    |   |   |       |   |   |-- strategies.py
+    |   |   |       |   |   |-- url.py
+    |   |   |       |   |   \-- util.py
+    |   |   |       |   |-- event/
+    |   |   |       |   |   |-- __init__.py
+    |   |   |       |   |   |-- api.py
+    |   |   |       |   |   |-- attr.py
+    |   |   |       |   |   |-- base.py
+    |   |   |       |   |   |-- legacy.py
+    |   |   |       |   |   \-- registry.py
+    |   |   |       |   |-- events.py
+    |   |   |       |   |-- exc.py
+    |   |   |       |   |-- ext/
+    |   |   |       |   |   |-- __init__.py
+    |   |   |       |   |   |-- associationproxy.py
+    |   |   |       |   |   |-- asyncio/
+    |   |   |       |   |   |   |-- __init__.py
+    |   |   |       |   |   |   |-- base.py
+    |   |   |       |   |   |   |-- engine.py
+    |   |   |       |   |   |   |-- exc.py
+    |   |   |       |   |   |   |-- result.py
+    |   |   |       |   |   |   |-- scoping.py
+    |   |   |       |   |   |   \-- session.py
+    |   |   |       |   |   |-- automap.py
+    |   |   |       |   |   |-- baked.py
+    |   |   |       |   |   |-- compiler.py
+    |   |   |       |   |   |-- declarative/
+    |   |   |       |   |   |   |-- __init__.py
+    |   |   |       |   |   |   \-- extensions.py
+    |   |   |       |   |   |-- horizontal_shard.py
+    |   |   |       |   |   |-- hybrid.py
+    |   |   |       |   |   |-- indexable.py
+    |   |   |       |   |   |-- instrumentation.py
+    |   |   |       |   |   |-- mutable.py
+    |   |   |       |   |   |-- mypy/
+    |   |   |       |   |   |   |-- __init__.py
+    |   |   |       |   |   |   |-- apply.py
+    |   |   |       |   |   |   |-- decl_class.py
+    |   |   |       |   |   |   |-- infer.py
+    |   |   |       |   |   |   |-- names.py
+    |   |   |       |   |   |   |-- plugin.py
+    |   |   |       |   |   |   \-- util.py
+    |   |   |       |   |   |-- orderinglist.py
+    |   |   |       |   |   \-- serializer.py
+    |   |   |       |   |-- future/
+    |   |   |       |   |   |-- __init__.py
+    |   |   |       |   |   \-- engine.py
+    |   |   |       |   |-- inspection.py
+    |   |   |       |   |-- log.py
+    |   |   |       |   |-- orm/
+    |   |   |       |   |   |-- __init__.py
+    |   |   |       |   |   |-- _orm_constructors.py
+    |   |   |       |   |   |-- _typing.py
+    |   |   |       |   |   |-- attributes.py
+    |   |   |       |   |   |-- base.py
+    |   |   |       |   |   |-- bulk_persistence.py
+    |   |   |       |   |   |-- clsregistry.py
+    |   |   |       |   |   |-- collections.py
+    |   |   |       |   |   |-- context.py
+    |   |   |       |   |   |-- decl_api.py
+    |   |   |       |   |   |-- decl_base.py
+    |   |   |       |   |   |-- dependency.py
+    |   |   |       |   |   |-- descriptor_props.py
+    |   |   |       |   |   |-- dynamic.py
+    |   |   |       |   |   |-- evaluator.py
+    |   |   |       |   |   |-- events.py
+    |   |   |       |   |   |-- exc.py
+    |   |   |       |   |   |-- identity.py
+    |   |   |       |   |   |-- instrumentation.py
+    |   |   |       |   |   |-- interfaces.py
+    |   |   |       |   |   |-- loading.py
+    |   |   |       |   |   |-- mapped_collection.py
+    |   |   |       |   |   |-- mapper.py
+    |   |   |       |   |   |-- path_registry.py
+    |   |   |       |   |   |-- persistence.py
+    |   |   |       |   |   |-- properties.py
+    |   |   |       |   |   |-- query.py
+    |   |   |       |   |   |-- relationships.py
+    |   |   |       |   |   |-- scoping.py
+    |   |   |       |   |   |-- session.py
+    |   |   |       |   |   |-- state.py
+    |   |   |       |   |   |-- state_changes.py
+    |   |   |       |   |   |-- strategies.py
+    |   |   |       |   |   |-- strategy_options.py
+    |   |   |       |   |   |-- sync.py
+    |   |   |       |   |   |-- unitofwork.py
+    |   |   |       |   |   |-- util.py
+    |   |   |       |   |   \-- writeonly.py
+    |   |   |       |   |-- pool/
+    |   |   |       |   |   |-- __init__.py
+    |   |   |       |   |   |-- base.py
+    |   |   |       |   |   |-- events.py
+    |   |   |       |   |   \-- impl.py
+    |   |   |       |   |-- py.typed
+    |   |   |       |   |-- schema.py
+    |   |   |       |   |-- sql/
+    |   |   |       |   |   |-- __init__.py
+    |   |   |       |   |   |-- _dml_constructors.py
+    |   |   |       |   |   |-- _elements_constructors.py
+    |   |   |       |   |   |-- _orm_types.py
+    |   |   |       |   |   |-- _py_util.py
+    |   |   |       |   |   |-- _selectable_constructors.py
+    |   |   |       |   |   |-- _typing.py
+    |   |   |       |   |   |-- annotation.py
+    |   |   |       |   |   |-- base.py
+    |   |   |       |   |   |-- cache_key.py
+    |   |   |       |   |   |-- coercions.py
+    |   |   |       |   |   |-- compiler.py
+    |   |   |       |   |   |-- crud.py
+    |   |   |       |   |   |-- ddl.py
+    |   |   |       |   |   |-- default_comparator.py
+    |   |   |       |   |   |-- dml.py
+    |   |   |       |   |   |-- elements.py
+    |   |   |       |   |   |-- events.py
+    |   |   |       |   |   |-- expression.py
+    |   |   |       |   |   |-- functions.py
+    |   |   |       |   |   |-- lambdas.py
+    |   |   |       |   |   |-- naming.py
+    |   |   |       |   |   |-- operators.py
+    |   |   |       |   |   |-- roles.py
+    |   |   |       |   |   |-- schema.py
+    |   |   |       |   |   |-- selectable.py
+    |   |   |       |   |   |-- sqltypes.py
+    |   |   |       |   |   |-- traversals.py
+    |   |   |       |   |   |-- type_api.py
+    |   |   |       |   |   |-- util.py
+    |   |   |       |   |   \-- visitors.py
+    |   |   |       |   |-- testing/
+    |   |   |       |   |   |-- __init__.py
+    |   |   |       |   |   |-- assertions.py
+    |   |   |       |   |   |-- assertsql.py
+    |   |   |       |   |   |-- asyncio.py
+    |   |   |       |   |   |-- config.py
+    |   |   |       |   |   |-- engines.py
+    |   |   |       |   |   |-- entities.py
+    |   |   |       |   |   |-- exclusions.py
+    |   |   |       |   |   |-- fixtures/
+    |   |   |       |   |   |   |-- __init__.py
+    |   |   |       |   |   |   |-- base.py
+    |   |   |       |   |   |   |-- mypy.py
+    |   |   |       |   |   |   |-- orm.py
+    |   |   |       |   |   |   \-- sql.py
+    |   |   |       |   |   |-- pickleable.py
+    |   |   |       |   |   |-- plugin/
+    |   |   |       |   |   |   |-- __init__.py
+    |   |   |       |   |   |   |-- bootstrap.py
+    |   |   |       |   |   |   |-- plugin_base.py
+    |   |   |       |   |   |   \-- pytestplugin.py
+    |   |   |       |   |   |-- profiling.py
+    |   |   |       |   |   |-- provision.py
+    |   |   |       |   |   |-- requirements.py
+    |   |   |       |   |   |-- schema.py
+    |   |   |       |   |   |-- suite/
+    |   |   |       |   |   |   |-- __init__.py
+    |   |   |       |   |   |   |-- test_cte.py
+    |   |   |       |   |   |   |-- test_ddl.py
+    |   |   |       |   |   |   |-- test_deprecations.py
+    |   |   |       |   |   |   |-- test_dialect.py
+    |   |   |       |   |   |   |-- test_insert.py
+    |   |   |       |   |   |   |-- test_reflection.py
+    |   |   |       |   |   |   |-- test_results.py
+    |   |   |       |   |   |   |-- test_rowcount.py
+    |   |   |       |   |   |   |-- test_select.py
+    |   |   |       |   |   |   |-- test_sequence.py
+    |   |   |       |   |   |   |-- test_types.py
+    |   |   |       |   |   |   |-- test_unicode_ddl.py
+    |   |   |       |   |   |   \-- test_update_delete.py
+    |   |   |       |   |   |-- util.py
+    |   |   |       |   |   \-- warnings.py
+    |   |   |       |   |-- types.py
+    |   |   |       |   \-- util/
+    |   |   |       |       |-- __init__.py
+    |   |   |       |       |-- _collections.py
+    |   |   |       |       |-- _concurrency_py3k.py
+    |   |   |       |       |-- _has_cy.py
+    |   |   |       |       |-- _py_collections.py
+    |   |   |       |       |-- compat.py
+    |   |   |       |       |-- concurrency.py
+    |   |   |       |       |-- deprecations.py
+    |   |   |       |       |-- langhelpers.py
+    |   |   |       |       |-- preloaded.py
+    |   |   |       |       |-- queue.py
+    |   |   |       |       |-- tool_support.py
+    |   |   |       |       |-- topological.py
+    |   |   |       |       \-- typing.py
+    |   |   |       |-- sqlalchemy-2.0.52.dist-info/
+    |   |   |       |   |-- INSTALLER
+    |   |   |       |   |-- licenses/
+    |   |   |       |   |   \-- LICENSE
+    |   |   |       |   |-- METADATA
+    |   |   |       |   |-- RECORD
+    |   |   |       |   |-- REQUESTED
+    |   |   |       |   |-- top_level.txt
+    |   |   |       |   \-- WHEEL
+    |   |   |       |-- starlette/
+    |   |   |       |   |-- __init__.py
+    |   |   |       |   |-- _exception_handler.py
+    |   |   |       |   |-- _utils.py
+    |   |   |       |   |-- applications.py
+    |   |   |       |   |-- authentication.py
+    |   |   |       |   |-- background.py
+    |   |   |       |   |-- concurrency.py
+    |   |   |       |   |-- config.py
+    |   |   |       |   |-- convertors.py
+    |   |   |       |   |-- datastructures.py
+    |   |   |       |   |-- endpoints.py
+    |   |   |       |   |-- exceptions.py
+    |   |   |       |   |-- formparsers.py
+    |   |   |       |   |-- middleware/
+    |   |   |       |   |   |-- __init__.py
+    |   |   |       |   |   |-- authentication.py
+    |   |   |       |   |   |-- base.py
+    |   |   |       |   |   |-- body_limit.py
+    |   |   |       |   |   |-- cors.py
+    |   |   |       |   |   |-- errors.py
+    |   |   |       |   |   |-- exceptions.py
+    |   |   |       |   |   |-- gzip.py
+    |   |   |       |   |   |-- httpsredirect.py
+    |   |   |       |   |   |-- sessions.py
+    |   |   |       |   |   |-- trustedhost.py
+    |   |   |       |   |   \-- wsgi.py
+    |   |   |       |   |-- py.typed
+    |   |   |       |   |-- requests.py
+    |   |   |       |   |-- responses.py
+    |   |   |       |   |-- routing.py
+    |   |   |       |   |-- schemas.py
+    |   |   |       |   |-- staticfiles.py
+    |   |   |       |   |-- status.py
+    |   |   |       |   |-- templating.py
+    |   |   |       |   |-- testclient.py
+    |   |   |       |   |-- types.py
+    |   |   |       |   \-- websockets.py
+    |   |   |       |-- starlette-1.6.0.dist-info/
+    |   |   |       |   |-- INSTALLER
+    |   |   |       |   |-- licenses/
+    |   |   |       |   |   \-- LICENSE.md
+    |   |   |       |   |-- METADATA
+    |   |   |       |   |-- RECORD
+    |   |   |       |   \-- WHEEL
+    |   |   |       |-- typing_extensions.py
+    |   |   |       |-- typing_extensions-4.16.0.dist-info/
+    |   |   |       |   |-- INSTALLER
+    |   |   |       |   |-- licenses/
+    |   |   |       |   |   \-- LICENSE
+    |   |   |       |   |-- METADATA
+    |   |   |       |   |-- RECORD
+    |   |   |       |   \-- WHEEL
+    |   |   |       |-- typing_inspection/
+    |   |   |       |   |-- __init__.py
+    |   |   |       |   |-- introspection.py
+    |   |   |       |   |-- py.typed
+    |   |   |       |   |-- typing_objects.py
+    |   |   |       |   \-- typing_objects.pyi
+    |   |   |       |-- typing_inspection-0.4.4.dist-info/
+    |   |   |       |   |-- INSTALLER
+    |   |   |       |   |-- licenses/
+    |   |   |       |   |   \-- LICENSE
+    |   |   |       |   |-- METADATA
+    |   |   |       |   |-- RECORD
+    |   |   |       |   \-- WHEEL
+    |   |   |       |-- uvicorn/
+    |   |   |       |   |-- __init__.py
+    |   |   |       |   |-- __main__.py
+    |   |   |       |   |-- _ansi.py
+    |   |   |       |   |-- _compat.py
+    |   |   |       |   |-- _subprocess.py
+    |   |   |       |   |-- _types.py
+    |   |   |       |   |-- config.py
+    |   |   |       |   |-- importer.py
+    |   |   |       |   |-- lifespan/
+    |   |   |       |   |   |-- __init__.py
+    |   |   |       |   |   |-- off.py
+    |   |   |       |   |   \-- on.py
+    |   |   |       |   |-- logging.py
+    |   |   |       |   |-- loops/
+    |   |   |       |   |   |-- __init__.py
+    |   |   |       |   |   |-- asyncio.py
+    |   |   |       |   |   |-- auto.py
+    |   |   |       |   |   \-- uvloop.py
+    |   |   |       |   |-- main.py
+    |   |   |       |   |-- middleware/
+    |   |   |       |   |   |-- __init__.py
+    |   |   |       |   |   |-- asgi2.py
+    |   |   |       |   |   |-- message_logger.py
+    |   |   |       |   |   |-- proxy_headers.py
+    |   |   |       |   |   \-- wsgi.py
+    |   |   |       |   |-- protocols/
+    |   |   |       |   |   |-- __init__.py
+    |   |   |       |   |   |-- http/
+    |   |   |       |   |   |   |-- __init__.py
+    |   |   |       |   |   |   |-- auto.py
+    |   |   |       |   |   |   |-- flow_control.py
+    |   |   |       |   |   |   |-- h11_impl.py
+    |   |   |       |   |   |   |-- httptools_impl.py
+    |   |   |       |   |   |   \-- zttp_impl.py
+    |   |   |       |   |   |-- utils.py
+    |   |   |       |   |   \-- websockets/
+    |   |   |       |   |       |-- __init__.py
+    |   |   |       |   |       |-- auto.py
+    |   |   |       |   |       |-- websockets_impl.py
+    |   |   |       |   |       |-- websockets_sansio_impl.py
+    |   |   |       |   |       \-- wsproto_impl.py
+    |   |   |       |   |-- py.typed
+    |   |   |       |   |-- server.py
+    |   |   |       |   |-- supervisors/
+    |   |   |       |   |   |-- __init__.py
+    |   |   |       |   |   |-- basereload.py
+    |   |   |       |   |   |-- multiprocess.py
+    |   |   |       |   |   |-- statreload.py
+    |   |   |       |   |   \-- watchfilesreload.py
+    |   |   |       |   \-- workers.py
+    |   |   |       \-- uvicorn-0.52.3.dist-info/
+    |   |   |           |-- entry_points.txt
+    |   |   |           |-- INSTALLER
+    |   |   |           |-- licenses/
+    |   |   |           |   \-- LICENSE.md
+    |   |   |           |-- METADATA
+    |   |   |           |-- RECORD
+    |   |   |           |-- REQUESTED
+    |   |   |           \-- WHEEL
+    |   |   |-- pyvenv.cfg
+    |   |   \-- Scripts/
+    |   |       |-- activate
+    |   |       |-- activate.bat
+    |   |       |-- Activate.ps1
+    |   |       |-- deactivate.bat
+    |   |       |-- dotenv.exe
+    |   |       |-- email_validator.exe
+    |   |       |-- fastapi.exe
+    |   |       |-- idna.exe
+    |   |       |-- pip.exe
+    |   |       |-- pip3.12.exe
+    |   |       |-- pip3.exe
+    |   |       |-- python.exe
+    |   |       |-- pythonw.exe
+    |   |       \-- uvicorn.exe
+    |   |-- alembic/
+    |   |   |-- env.py
+    |   |   |-- README
+    |   |   |-- script.py.mako
+    |   |   \-- versions/
+    |   |       |-- 5ba515897df3_create_courses_table.py
+    |   |       |-- 6731776024af_create_study_materials_table.py
+    |   |       |-- 7c8d9e0f1a2b_add_embedding_status_to_study_materials.py
+    |   |       |-- 8d2f4a6c1b90_add_pyq_intelligence.py
+    |   |       |-- a14b8c9d2e10_add_learning_intelligence.py
+    |   |       |-- a524b6f55ef8_create_subjects_table.py
+    |   |       |-- b25c9e1f3a40_add_digital_twin.py
+    |   |       |-- b9d72e4c1a63_add_google_auth_identity.py
+    |   |       |-- c31e7a9b4d20_add_study_plans.py
+    |   |       |-- c82d4e6f1a30_student_operating_system.py
+    |   |       |-- c8e2f14a9d30_add_chat_sessions_and_messages.py
+    |   |       |-- d14e6f2a9b31_stabilize_student_ownership_and_grades.py
+    |   |       |-- d2f6a4b8c910_add_job_executions.py
+    |   |       |-- d43f9b1c6e20_add_learning_analytics.py
+    |   |       |-- e6b2d8a4c913_phase_b_c_student_intelligence.py
+    |   |       |-- e91a7c2d4f60_add_student_memory.py
+    |   |       |-- f2c8a4d1b709_add_semester_copilot.py
+    |   |       |-- f4a9c2d7e610_add_audit_logs.py
+    |   |       |-- f7c3a1d9b620_add_mis_student_snapshots.py
+    |   |       \-- fa8adcf42dc6_create_students_table.py
+    |   |-- alembic.ini
+    |   |-- app/
+    |   |   |-- __init
+    |   |   |-- __init__.py
+    |   |   |-- agents/
+    |   |   |   |-- __init__.py
+    |   |   |   |-- academic_profile_agent.py
+    |   |   |   |-- agent_registry.py
+    |   |   |   |-- analytics_agent.py
+    |   |   |   |-- attendance_agent.py
+    |   |   |   |-- base.py
+    |   |   |   |-- calendar_agent.py
+    |   |   |   |-- deadline_agent.py
+    |   |   |   |-- director_agent.py
+    |   |   |   |-- learning_agent.py
+    |   |   |   |-- memory_agent.py
+    |   |   |   |-- notification_agent.py
+    |   |   |   |-- productivity_agent.py
+    |   |   |   |-- pyq_agent.py
+    |   |   |   |-- reminder_agent.py
+    |   |   |   |-- retrieval_agent.py
+    |   |   |   |-- scheduler_agent.py
+    |   |   |   |-- semester_agent.py
+    |   |   |   |-- semester_copilot_agent.py
+    |   |   |   |-- student_os_agents.py
+    |   |   |   \-- study_agent.py
+    |   |   |-- api/
+    |   |   |   |-- __init__.py
+    |   |   |   |-- rate_limit.py
+    |   |   |   |-- routes/
+    |   |   |   |   |-- __init__.py
+    |   |   |   |   |-- academic_agent.py
+    |   |   |   |   |-- academic_profile.py
+    |   |   |   |   |-- analytics.py
+    |   |   |   |   |-- attendance.py
+    |   |   |   |   |-- auth.py
+    |   |   |   |   |-- calendar.py
+    |   |   |   |   |-- chat.py
+    |   |   |   |   |-- connectors.py
+    |   |   |   |   |-- courses.py
+    |   |   |   |   |-- dashboard.py
+    |   |   |   |   |-- db_health.py
+    |   |   |   |   |-- deadlines.py
+    |   |   |   |   |-- director.py
+    |   |   |   |   |-- flashcards.py
+    |   |   |   |   |-- goals.py
+    |   |   |   |   |-- grades.py
+    |   |   |   |   |-- habits.py
+    |   |   |   |   |-- health.py
+    |   |   |   |   |-- jobs.py
+    |   |   |   |   |-- learning.py
+    |   |   |   |   |-- mastery.py
+    |   |   |   |   |-- metrics.py
+    |   |   |   |   |-- mis.py
+    |   |   |   |   |-- notifications.py
+    |   |   |   |   |-- profile.py
+    |   |   |   |   |-- pyq.py
+    |   |   |   |   |-- quizzes.py
+    |   |   |   |   |-- rag.py
+    |   |   |   |   |-- reminders.py
+    |   |   |   |   |-- schedule.py
+    |   |   |   |   |-- semester.py
+    |   |   |   |   |-- students.py
+    |   |   |   |   |-- study_materials.py
+    |   |   |   |   |-- study_plans.py
+    |   |   |   |   |-- subjects.py
+    |   |   |   |   |-- system.py
+    |   |   |   |   \-- topics.py
+    |   |   |   \-- student_scope.py
+    |   |   |-- core/
+    |   |   |   |-- __init__.py
+    |   |   |   |-- auth_middleware.py
+    |   |   |   |-- config.py
+    |   |   |   |-- hybrid_config.py
+    |   |   |   |-- logging.py
+    |   |   |   |-- material_types.py
+    |   |   |   |-- metrics.py
+    |   |   |   |-- middleware.py
+    |   |   |   |-- rag_config.py
+    |   |   |   \-- study_plan_types.py
+    |   |   |-- db/
+    |   |   |   |-- __init__.py
+    |   |   |   |-- base_class.py
+    |   |   |   |-- database.py
+    |   |   |   \-- models.py
+    |   |   |-- jobs/
+    |   |   |   |-- __init__.py
+    |   |   |   |-- base.py
+    |   |   |   |-- registry.py
+    |   |   |   |-- scheduler.py
+    |   |   |   \-- tasks/
+    |   |   |       |-- analytics.py
+    |   |   |       |-- mis_sync.py
+    |   |   |       |-- pdf_processing.py
+    |   |   |       \-- reminders.py
+    |   |   |-- main.py
+    |   |   |-- models/
+    |   |   |   |-- __init__.py
+    |   |   |   |-- audit_log.py
+    |   |   |   |-- chat_message.py
+    |   |   |   |-- chat_session.py
+    |   |   |   |-- flashcard.py
+    |   |   |   |-- flashcard_deck.py
+    |   |   |   |-- job_execution.py
+    |   |   |   |-- learning_session.py
+    |   |   |   |-- quiz_answer.py
+    |   |   |   |-- quiz_question.py
+    |   |   |   |-- quiz_session.py
+    |   |   |   |-- student_profile.py
+    |   |   |   |-- topic.py
+    |   |   |   \-- topic_mastery.py
+    |   |   |-- schemas/
+    |   |   |   |-- __init__.py
+    |   |   |   |-- academic_agent.py
+    |   |   |   |-- analytics.py
+    |   |   |   |-- chat.py
+    |   |   |   |-- course.py
+    |   |   |   |-- digital_twin.py
+    |   |   |   |-- director.py
+    |   |   |   |-- flashcard.py
+    |   |   |   |-- jobs.py
+    |   |   |   |-- mastery_learning.py
+    |   |   |   |-- mis.py
+    |   |   |   |-- profile.py
+    |   |   |   |-- pyq.py
+    |   |   |   |-- quiz.py
+    |   |   |   |-- rag.py
+    |   |   |   |-- semester.py
+    |   |   |   |-- student.py
+    |   |   |   |-- student_os.py
+    |   |   |   |-- study_material.py
+    |   |   |   |-- study_plan.py
+    |   |   |   |-- subject.py
+    |   |   |   \-- topic.py
+    |   |   |-- services/
+    |   |   |   |-- __init__.py
+    |   |   |   |-- academic_agent_service.py
+    |   |   |   |-- academic_profile_service.py
+    |   |   |   |-- analytics_service.py
+    |   |   |   |-- attendance_service.py
+    |   |   |   |-- audit_log_service.py
+    |   |   |   |-- auth/
+    |   |   |   |   |-- __init__.py
+    |   |   |   |   |-- auth_service.py
+    |   |   |   |   |-- google_auth.py
+    |   |   |   |   \-- jwt_service.py
+    |   |   |   |-- calendar_service.py
+    |   |   |   |-- chat_service.py
+    |   |   |   |-- chunking_service.py
+    |   |   |   |-- connector_crypto_service.py
+    |   |   |   |-- connector_service.py
+    |   |   |   |-- copilot_service.py
+    |   |   |   |-- course_service.py
+    |   |   |   |-- dashboard_service.py
+    |   |   |   |-- deadline_service.py
+    |   |   |   |-- digital_twin_service.py
+    |   |   |   |-- file_service.py
+    |   |   |   |-- flashcard_generation_service.py
+    |   |   |   |-- flashcard_service.py
+    |   |   |   |-- goals_service.py
+    |   |   |   |-- grade_service.py
+    |   |   |   |-- habit_service.py
+    |   |   |   |-- hybrid_retrieval_service.py
+    |   |   |   |-- job_service.py
+    |   |   |   |-- keyword_search_service.py
+    |   |   |   |-- learning_session_service.py
+    |   |   |   |-- llm_service.py
+    |   |   |   |-- mastery_service.py
+    |   |   |   |-- memory_service.py
+    |   |   |   |-- metrics_service.py
+    |   |   |   |-- mis/
+    |   |   |   |   |-- __init__.py
+    |   |   |   |   |-- auth.py
+    |   |   |   |   |-- client.py
+    |   |   |   |   |-- models.py
+    |   |   |   |   \-- parser.py
+    |   |   |   |-- connector_adapters.py
+    |   |   |   |-- mis_sync_service.py
+    |   |   |   |-- notification_service.py
+    |   |   |   |-- ownership_service.py
+    |   |   |   |-- pdf_service.py
+    |   |   |   |-- performance_service.py
+    |   |   |   |-- productivity_service.py
+    |   |   |   |-- pyq_service.py
+    |   |   |   |-- quiz_service.py
+    |   |   |   |-- rag_service.py
+    |   |   |   |-- reminder_service.py
+    |   |   |   |-- scheduler_service.py
+    |   |   |   |-- semester_service.py
+    |   |   |   |-- student_service.py
+    |   |   |   |-- study_material_processing.py
+    |   |   |   |-- study_material_service.py
+    |   |   |   |-- study_plan_service.py
+    |   |   |   |-- subject_service.py
+    |   |   |   |-- system_health_service.py
+    |   |   |   |-- time_service.py
+    |   |   |   |-- topic_extraction_service.py
+    |   |   |   |-- topic_service.py
+    |   |   |   \-- vector_service.py
+    |   |   \-- tools/
+    |   |       |-- __init__.py
+    |   |       |-- academic/
+    |   |       |   |-- __init__.py
+    |   |       |   \-- tools.py
+    |   |       |-- base.py
+    |   |       |-- calendar/
+    |   |       |   |-- __init__.py
+    |   |       |   \-- tools.py
+    |   |       |-- common.py
+    |   |       |-- dashboard/
+    |   |       |   |-- __init__.py
+    |   |       |   \-- tools.py
+    |   |       |-- exceptions.py
+    |   |       |-- learning/
+    |   |       |   |-- __init__.py
+    |   |       |   \-- tools.py
+    |   |       |-- mis/
+    |   |       |   |-- __init__.py
+    |   |       |   \-- tools.py
+    |   |       |-- productivity/
+    |   |       |   |-- __init__.py
+    |   |       |   \-- tools.py
+    |   |       |-- registry.py
+    |   |       |-- schemas.py
+    |   |       \-- study/
+    |   |           |-- __init__.py
+    |   |           \-- tools.py
+    |   |-- chroma_db/
+    |   |   |-- 5063b2c8-a25a-41ab-9a82-dadc9de9adf5/
+    |   |   |   |-- data_level0.bin
+    |   |   |   |-- header.bin
+    |   |   |   |-- length.bin
+    |   |   |   \-- link_lists.bin
+    |   |   \-- chroma.sqlite3
+    |   |-- Dockerfile
+    |   |-- logs/
+    |   |   \-- jarvis.log
+    |   |-- pyproject.toml
+    |   |-- requirements.txt
+    |   |-- requirements-dev.txt
+    |   |-- scripts/
+    |   |   |-- backup.py
+    |   |   |-- production_readiness_check.py
+    |   |   |-- restore.py
+    |   |   |-- run_release_e2e.py
+    |   |   |-- run_scheduled_sync.py
+    |   |   |-- validate_chat.py
+    |   |   |-- validate_deployment.py
+    |   |   |-- validate_load.py
+    |   |   |-- validate_phase_f.py
+    |   |   |-- validate_phase14.py
+    |   |   |-- validate_phaseA.py
+    |   |   |-- validate_phaseB.py
+    |   |   |-- validate_phaseC.py
+    |   |   |-- validate_production.py
+    |   |   |-- validate_stabilization.py
+    |   |   |-- validate_system.py
+    |   |   \-- validate_tools.py
+    |   |-- STABILIZATION_REPORT.md
+    |   |-- tests/
+    |   |   |-- __init__.py
+    |   |   |-- api/
+    |   |   |   |-- __init__.py
+    |   |   |   \-- test_api_contracts.py
+    |   |   |-- database/
+    |   |   |   |-- __init__.py
+    |   |   |   \-- test_integrity_and_migrations.py
+    |   |   |-- e2e/
+    |   |   |   |-- __init__.py
+    |   |   |   \-- test_academic_workflows.py
+    |   |   |-- integration/
+    |   |   |   |-- __init__.py
+    |   |   |   \-- test_director_delegation.py
+    |   |   |-- performance/
+    |   |   |   |-- __init__.py
+    |   |   |   |-- performance_test.py
+    |   |   |   \-- test_endpoint_load.py
+    |   |   |-- regression/
+    |   |   |   |-- __init__.py
+    |   |   |   \-- test_phase_regressions.py
+    |   |   |-- schema_validation/
+    |   |   |   |-- __init__.py
+    |   |   |   \-- test_response_schemas.py
+    |   |   |-- test_academic_agent.py
+    |   |   |-- test_audit_log_service.py
+    |   |   |-- test_auth.py
+    |   |   |-- test_chat.py
+    |   |   |-- test_deployment_validation.py
+    |   |   |-- test_director_agent.py
+    |   |   |-- test_hybrid_retrieval.py
+    |   |   |-- test_learning_analytics.py
+    |   |   |-- test_memory_service.py
+    |   |   |-- test_mis_integration.py
+    |   |   |-- test_phase_f.py
+    |   |   |-- test_phase_g.py
+    |   |   |-- test_phase14_api.py
+    |   |   |-- test_phase14_integration.py
+    |   |   |-- test_phase14_learning_agent.py
+    |   |   |-- test_phase14_models.py
+    |   |   |-- test_phase14_services.py
+    |   |   |-- test_phaseA_student_os.py
+    |   |   |-- test_phaseB_C.py
+    |   |   |-- test_pyq_intelligence.py
+    |   |   |-- test_rag_retrieval.py
+    |   |   |-- test_semester_service.py
+    |   |   |-- test_study_plan.py
+    |   |   |-- test_tool_families.py
+    |   |   |-- test_tool_framework.py
+    |   |   \-- validation/
+    |   |       |-- __init__.py
+    |   |       \-- test_system_health.py
+    |   \-- uploads/
+    |       \-- subject_1/
+    |           |-- DBMS_Unit1.pdf
+    |           \-- Md_Aftab_Siddiqui_ML_GenAI_Cover_Letter.pdf
+    |-- BACKUP_GUIDE.md
+    |-- DEPLOYMENT_GUIDE.md
+    |-- deployment_report.md
+    |-- DOCKER_SETUP.md
+    |-- docker-compose.yml
+    |-- docs/
+    |   |-- API_SUMMARY.md
+    |   |-- ARCHITECTURE.md
+    |   \-- deployment/
+    |       \-- README.md
+    |-- END_TO_END_REPORT.md
+    |-- PHASE_A_IMPLEMENTATION_REPORT.md
+    |-- PHASE14_IMPLEMENTATION_REPORT.md
+    |-- PROJECT_STATE_REPORT.md
+    |-- README.md
+    |-- RELEASE_CANDIDATE_v1.0.md
+    |-- RELEASE_NOTES_v1.0.md
+    |-- RELEASE_SANITY_AUDIT.md
+    |-- timepass.txt
+    \-- VALIDATION_REPORT_v1.0.md

@@ -16,6 +16,8 @@ from app.jobs.registry import get_job_registry
 from app.jobs.scheduler import scheduler, start_scheduler, stop_scheduler
 from app.services.system_health_service import _migration_details
 from app.services.vector_service import get_collection
+from app.services.mis.configuration import get_mis_site_configuration
+from app.services.mis.client import MISClientError
 from app.tools.registry import get_tool_registry
 
 
@@ -89,11 +91,9 @@ def run_validation() -> dict[str, dict[str, object]]:
         if not settings.METRICS_ADMIN_TOKEN:
             missing.append("METRICS_ADMIN_TOKEN")
         try:
-            connectors = json.loads(settings.CONNECTOR_ENDPOINTS_JSON)
-            if not isinstance(connectors, dict):
-                missing.append("CONNECTOR_ENDPOINTS_JSON must be an object")
-        except ValueError:
-            missing.append("CONNECTOR_ENDPOINTS_JSON is invalid JSON")
+            get_mis_site_configuration()
+        except MISClientError:
+            missing.append("SVNIT_MIS_BASE_URL and valid SVNIT_MIS_CONFIGURATION_JSON")
         return not missing, "configured" if not missing else ", ".join(missing)
 
     def check_storage():

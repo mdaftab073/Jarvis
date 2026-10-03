@@ -2,12 +2,14 @@ from datetime import datetime, timedelta
 
 from sqlalchemy.orm import Session
 
-from app.core.config import settings
 from app.db.database import SessionLocal
 from app.db.models import AttendanceRecord, Course, GradeRecord, Student, StudentAcademicProfile, StudentConnector, Subject, SyncHistory, SyncJob
 from app.services.connector_crypto_service import decrypt_credentials, encrypt_credentials
 from app.services.grade_service import recalculate_profile_grades
-from app.services.mis_connectors import ConnectorConfigurationError, connector_configuration, create_connector_adapter
+from app.services.connector_adapters import (
+    create_connector_adapter,
+    has_connector_adapter,
+)
 from app.services.time_service import utc_now_naive
 
 
@@ -42,14 +44,18 @@ def serialize_job(job: SyncJob) -> dict:
     }
 
 
-def create_connector(db: Session, student_id: int, connector_type: str, credentials: dict, configuration: dict | None = None, sync_interval_minutes: int | None = None) -> StudentConnector:
+def create_connector(
+    db: Session,
+    student_id: int,
+    connector_type: str,
+    endpoint_url: str,
+    credentials: dict,
+    configuration: dict | None = None,
+    sync_interval_minutes: int | None = None,
+) -> StudentConnector:
     if db.query(Student.id).filter_by(id=student_id).first() is None:
         raise ValueError("Student not found")
-    if connector_type != "svnit_mis":
-        raise ConnectorConfigurationError(f"Unsupported connector type: {connector_type}")
-    endpoint_url, default_resources = connector_configuration(connector_type)
     configuration = dict(configuration or {})
-    configuration.setdefault("resources", default_resources)
     create_connector_adapter(connector_type, endpoint_url, configuration)
     if sync_interval_minutes is not None and sync_interval_minutes < 5:
         raise ValueError("sync_interval_minutes must be at least 5")
@@ -73,7 +79,11 @@ def create_connector(db: Session, student_id: int, connector_type: str, credenti
 
 def list_connectors(db: Session, student_id: int) -> list[dict]:
     connectors = db.query(StudentConnector).filter_by(student_id=student_id).order_by(StudentConnector.id).all()
-    return [serialize_connector(connector) for connector in connectors]
+    return [
+        serialize_connector(connector)
+        for connector in connectors
+        if has_connector_adapter(connector.connector_type)
+    ]
 
 
 def get_connector(db: Session, connector_id: int) -> StudentConnector | None:
@@ -97,6 +107,11 @@ def enqueue_sync(db: Session, student_id: int, connector_id: int) -> SyncJob:
         raise ConnectorOwnershipError("Connector not found for student")
     if not connector.enabled:
         raise ValueError("Connector is disabled")
+    create_connector_adapter(
+        connector.connector_type,
+        connector.endpoint_url,
+        connector.configuration or {},
+    )
     active = db.query(SyncJob.id).filter(
         SyncJob.connector_id == connector_id,
         SyncJob.status.in_(("QUEUED", "RUNNING")),
@@ -277,6 +292,8 @@ def queue_due_sync_jobs(db: Session, now: datetime | None = None) -> list[int]:
     ).all()
     job_ids = []
     for connector in connectors:
+        if not has_connector_adapter(connector.connector_type):
+            continue
         last_sync = connector.last_sync_at or connector.created_at
         due_at = last_sync + timedelta(minutes=connector.sync_interval_minutes)
         if due_at > now:

@@ -1,4 +1,10 @@
+from pathlib import Path
+
 from pydantic_settings import BaseSettings
+
+
+REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
+BACKEND_ROOT = Path(__file__).resolve().parents[2]
 
 
 class Settings(BaseSettings):
@@ -12,8 +18,8 @@ class Settings(BaseSettings):
     VERSION: str = "1.0.0"
     CHROMA_PERSISTENT_DIRECTORY: str = "chroma_db"
     CONNECTOR_ENCRYPTION_KEY: str | None = None
-    CONNECTOR_ENDPOINTS_JSON: str = "{}"
-    CONNECTOR_HTTP_TIMEOUT_SECONDS: int = 15
+    SVNIT_MIS_BASE_URL: str = ""
+    SVNIT_MIS_CONFIGURATION_JSON: str = "{}"
     BACKGROUND_JOBS_ENABLED: bool = True
     REMINDER_JOB_INTERVAL_SECONDS: int = 3600
     ANALYTICS_JOB_INTERVAL_SECONDS: int = 21600
@@ -31,9 +37,11 @@ class Settings(BaseSettings):
     METRICS_ADMIN_TOKEN: str | None = None
 
     class Config:
-        env_file = ".env"
+        env_file = (
+            REPOSITORY_ROOT / ".env",
+            BACKEND_ROOT / ".env",
+        )
         extra = "ignore"
 
 
 settings = Settings()
-

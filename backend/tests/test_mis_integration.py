@@ -10,7 +10,7 @@ from sqlalchemy.pool import StaticPool
 
 from app.api.student_scope import require_student_scope
 from app.db.database import Base, get_db
-from app.db.models import Student, StudentConnector
+from app.db.models import MISAccount, Student
 from app.main import app
 from app.models.student_profile import MISStudentProfile
 from app.services.mis.auth import MISAuth
@@ -54,7 +54,11 @@ class MISClientTests(unittest.TestCase):
         login_html = '<form><input type="hidden" name="hdnRsaModulus" value="m"><input type="hidden" name="hdnRsaExponent" value="e"></form>'
         login_response = SimpleNamespace(text=login_html, url="https://mis.example/login", raise_for_status=Mock())
         post_response = SimpleNamespace(text="Welcome", raise_for_status=Mock())
-        page_response = SimpleNamespace(text="<table></table>", raise_for_status=Mock())
+        page_response = SimpleNamespace(
+            text="<table></table>",
+            url="https://mis.example/protected/attendance",
+            raise_for_status=Mock(),
+        )
         session = Mock()
         session.get.side_effect = [login_response, page_response]
         session.post.return_value = post_response
@@ -119,9 +123,8 @@ class MISSyncAndAPITests(unittest.TestCase):
         self.student = Student(name="MIS Student", email="mis@example.com")
         self.db.add(self.student)
         self.db.flush()
-        self.db.add(StudentConnector(
+        self.db.add(MISAccount(
             student_id=self.student.id,
-            connector_type="svnit_mis",
             endpoint_url="https://mis.example",
             encrypted_credentials="ciphertext",
             configuration={"resources": {"profile": "/student", "attendance": "/attendance", "results": "/results"}},

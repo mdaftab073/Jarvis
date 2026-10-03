@@ -1,7 +1,7 @@
 from datetime import timedelta
 
 from app.db.database import SessionLocal
-from app.db.models import StudentConnector
+from app.db.models import MISAccount
 from app.jobs.registry import register_job
 from app.services.mis_sync_service import sync_attendance, sync_profile, sync_results, sync_timetable
 from app.services.connector_service import run_sync_job
@@ -23,43 +23,36 @@ def sync_mis_resource(payload: dict) -> dict:
     try:
         with SessionLocal() as db:
             profile, count = dispatch[resource](db, student_id)
-            connector = db.query(StudentConnector).filter_by(
-                student_id=student_id,
-                connector_type="svnit_mis",
-            ).first()
-            if connector is not None:
-                connector.last_sync_at = utc_now_naive()
-                connector.status = "READY"
+            account = db.query(MISAccount).filter_by(student_id=student_id).first()
+            if account is not None:
+                account.last_sync_at = utc_now_naive()
+                account.status = "READY"
                 db.commit()
             return {"student_id": student_id, "resource": resource, "records_processed": count, "updated_at": profile.updated_at.isoformat()}
     except Exception:
         with SessionLocal() as db:
-            connector = db.query(StudentConnector).filter_by(
-                student_id=student_id,
-                connector_type="svnit_mis",
-            ).first()
-            if connector is not None:
-                connector.status = "ERROR"
+            account = db.query(MISAccount).filter_by(student_id=student_id).first()
+            if account is not None:
+                account.status = "ERROR"
                 db.commit()
         raise
 
 
-@register_job("scheduled_mis_sync", "Run scheduled profile, attendance, and result synchronization for enabled MIS connectors.")
+@register_job("scheduled_mis_sync", "Run scheduled profile, attendance, and result synchronization for enabled MIS accounts.")
 def scheduled_mis_sync(_payload: dict) -> dict:
     from app.jobs.registry import execute_registered_job, get_job_registry
 
     now = utc_now_naive()
     with SessionLocal() as db:
-        connectors = db.query(StudentConnector).filter(
-            StudentConnector.enabled.is_(True),
-            StudentConnector.connector_type == "svnit_mis",
-            StudentConnector.sync_interval_minutes.is_not(None),
+        accounts = db.query(MISAccount).filter(
+            MISAccount.enabled.is_(True),
+            MISAccount.sync_interval_minutes.is_not(None),
         ).all()
         due_students = {
-            connector.student_id
-            for connector in connectors
-            if (connector.last_sync_at or connector.created_at)
-            + timedelta(minutes=connector.sync_interval_minutes)
+            account.student_id
+            for account in accounts
+            if (account.last_sync_at or account.created_at)
+            + timedelta(minutes=account.sync_interval_minutes)
             <= now
         }
         student_ids = sorted(due_students)

@@ -1,19 +1,14 @@
 import unittest
 from datetime import date, datetime, timedelta
-from unittest.mock import patch
-
-from cryptography.fernet import Fernet
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.orm import Session
 from sqlalchemy.pool import StaticPool
 
-from app.core.config import settings
 from app.db.database import Base, get_db
 from app.db.models import CalendarEvent, Course, DigitalTwinSnapshot, Semester, SemesterSubject, Student, Subject
 from app.main import app
 from app.services.calendar_service import get_agenda
-from app.services.connector_service import create_connector, enqueue_sync, run_sync_job
 from app.services.goals_service import create_goal, create_milestone, record_progress, serialize_goal
 from app.services.habit_service import create_habit, log_habit
 from app.services.notification_service import generate_alerts
@@ -177,52 +172,6 @@ class PhaseBCIntegrationTests(unittest.TestCase):
         self.assertTrue(any(item.title == "Weak topic" for item in alerts))
         self.assertTrue(any(item.title == "Missed habit" for item in alerts))
         self.assertEqual(generate_alerts(self.db, self.student.id), [])
-
-    def test_connector_sync_is_mockable_idempotent_and_never_returns_credentials(self):
-        from app.db.models import AttendanceRecord, GradeRecord, StudentAcademicProfile
-        from app.services.connector_service import list_connectors
-
-        key = Fernet.generate_key().decode("ascii")
-        config = {"svnit_mis": {"base_url": "https://mis.example.test", "resources": {}}}
-        with (
-            patch.object(settings, "CONNECTOR_ENCRYPTION_KEY", key),
-            patch.object(settings, "CONNECTOR_ENDPOINTS_JSON", __import__("json").dumps(config)),
-        ):
-            connector = create_connector(
-                self.db,
-                self.student.id,
-                "svnit_mis",
-                {"username": "student", "password": "do-not-return"},
-            )
-        public = list_connectors(self.db, self.student.id)[0]
-        self.assertNotIn("encrypted_credentials", public)
-        self.assertNotIn("do-not-return", str(public))
-        job = enqueue_sync(self.db, self.student.id, connector.id)
-        factory = sessionmaker(bind=self.engine)
-        payload = {
-            "profile": {"semester": 2, "branch": "CS", "current_cpi": 8.0},
-            "subjects": [{"external_id": "OS-1", "code": "OS-1", "name": "Operating Systems"}],
-            "attendance": [{"subject_external_id": "OS-1", "attended_classes": 8, "total_classes": 10}],
-            "grades": [{"subject_external_id": "OS-1", "semester": 2, "credits": 3, "grade": "A", "grade_points": 8}],
-        }
-
-        class FakeAdapter:
-            def fetch(self, _credentials):
-                return payload
-
-        with (
-            patch("app.services.connector_service.SessionLocal", factory),
-            patch("app.services.connector_service.create_connector_adapter", return_value=FakeAdapter()),
-            patch.object(settings, "CONNECTOR_ENCRYPTION_KEY", key),
-        ):
-            outcome = run_sync_job(job.id)
-            outcome_again = run_sync_job(job.id)
-        self.assertEqual(outcome["status"], "SUCCEEDED", outcome)
-        self.assertEqual(outcome_again["status"], "SUCCEEDED", outcome_again)
-        self.assertEqual(self.db.query(StudentAcademicProfile).filter_by(student_id=self.student.id).count(), 1)
-        self.assertEqual(self.db.query(AttendanceRecord).filter_by(student_id=self.student.id).count(), 1)
-        self.assertEqual(self.db.query(GradeRecord).filter_by(student_id=self.student.id, grade_type="FINAL").count(), 1)
-
 
 if __name__ == "__main__":
     unittest.main()

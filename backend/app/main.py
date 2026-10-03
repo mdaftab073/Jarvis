@@ -57,6 +57,10 @@ app.add_middleware(StudentIdentityMiddleware)
 
 @app.on_event("startup")
 def sync_keyword_index():
+    logger.info(
+        "SVNIT MIS configured: %s",
+        bool(settings.SVNIT_MIS_BASE_URL),
+    )
     try:
         sync_keyword_index_from_chroma()
     except Exception:
@@ -205,7 +209,7 @@ for router, tag in (
     (reminders.router, "Reminders"),
     (goals.router, "Goals"),
     (habits.router, "Habits"),
-    (connectors.router, "MIS Connectors"),
+    (connectors.router, "Connectors"),
     (mis.router, "SVNIT MIS"),
     (chat.router, "Chat"),
     (jobs.router, "Background Jobs"),

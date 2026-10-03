@@ -60,3 +60,9 @@ class TimetableEntryData(MISDataModel):
 
 class TimetableData(MISDataModel):
     entries: list[TimetableEntryData] = Field(default_factory=list)
+
+
+StudentProfile = StudentProfileData
+AttendanceRecords = AttendanceData
+SemesterResults = ResultData
+TimetableEntries = TimetableData
