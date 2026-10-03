@@ -41,9 +41,18 @@ class SystemHealthTests(unittest.TestCase):
 
             def get_indexes(self, table_name):
                 return [
-                    {"name": index.name}
+                    {
+                        "name": index.name,
+                        "column_names": [column.name for column in index.columns],
+                    }
                     for index in system_health_service.models.Base.metadata.tables[table_name].indexes
+                    if tuple(column.name for column in index.columns)
+                    != tuple(self.get_pk_constraint(table_name)["constrained_columns"])
                 ]
+
+            def get_pk_constraint(self, table_name):
+                primary_key = system_health_service.models.Base.metadata.tables[table_name].primary_key
+                return {"constrained_columns": [column.name for column in primary_key.columns]}
 
             def get_foreign_keys(self, table_name):
                 return [

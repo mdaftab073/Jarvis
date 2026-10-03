@@ -186,15 +186,26 @@ def validate_system() -> dict:
         for table_name, table in models.Base.metadata.tables.items():
             if table_name not in existing_tables:
                 continue
-            database_indexes = {
-                item["name"] for item in inspector.get_indexes(table_name)
+            database_indexes = inspector.get_indexes(table_name)
+            database_index_names = {
+                item["name"] for item in database_indexes
             }
-            expected_index_count += len(table.indexes)
-            verified_index_count += sum(
-                index.name in database_indexes for index in table.indexes
+            database_index_columns = {
+                tuple(item.get("column_names") or ()) for item in database_indexes
+            }
+            primary_key_columns = tuple(
+                inspector.get_pk_constraint(table_name).get("constrained_columns") or ()
             )
+            expected_index_count += len(table.indexes)
             for index in table.indexes:
-                if index.name not in database_indexes:
+                index_columns = tuple(column.name for column in index.columns)
+                present = (
+                    index.name in database_index_names
+                    or index_columns in database_index_columns
+                    or index_columns == primary_key_columns
+                )
+                verified_index_count += present
+                if not present:
                     missing_indexes.append(f"{table_name}.{index.name}")
             actual = inspector.get_foreign_keys(table_name)
             actual_foreign_keys[table_name] = actual

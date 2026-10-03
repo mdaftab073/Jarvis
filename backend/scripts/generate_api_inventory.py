@@ -35,15 +35,23 @@ def _schema_name(schema: dict[str, Any] | None) -> str:
 
 
 def _request(operation: dict[str, Any]) -> str:
-    parameters = [
-        f"{item['name']} ({item['in']})"
-        for item in operation.get("parameters", [])
-    ]
+    parameters = []
+    for item in operation.get("parameters", []):
+        schema = item.get("schema", {})
+        details = [
+            item["in"],
+            _schema_name(schema),
+            "required" if item.get("required") else "optional",
+        ]
+        if "default" in schema:
+            details.append(f"default={schema['default']}")
+        parameters.append(f"{item['name']} ({', '.join(details)})")
     body = operation.get("requestBody", {}).get("content", {})
-    if body:
-        content_type, content = next(iter(body.items()))
+    for content_type, content in body.items():
         parameters.append(
-            f"{content_type}: {_schema_name(content.get('schema'))}"
+            f"{content_type}"
+            f"{' (required)' if operation['requestBody'].get('required') else ' (optional)'}"
+            f": {_schema_name(content.get('schema'))}"
         )
     return ", ".join(parameters) if parameters else "None"
 
@@ -52,8 +60,75 @@ def _response(operation: dict[str, Any]) -> str:
     for code, response in operation.get("responses", {}).items():
         if code.startswith("2"):
             content = response.get("content", {}).get("application/json", {})
-            return f"{code}: {_schema_name(content.get('schema'))}"
+            schema = _schema_name(content.get("schema"))
+            return f"{code}: {schema or 'No JSON body'}"
     return "Not declared"
+
+
+def _errors(operation: dict[str, Any]) -> str:
+    codes = sorted(
+        code
+        for code in operation.get("responses", {})
+        if code[:1] in {"4", "5"}
+    )
+    return ", ".join(codes) if codes else "None documented"
+
+
+def generate_frontend_reference() -> str:
+    schema = app.openapi()
+    operations = []
+    for path, path_item in schema["paths"].items():
+        for method, operation in path_item.items():
+            if method not in {"get", "post", "put", "patch", "delete", "options"}:
+                continue
+            auth = (
+                "Public"
+                if not path.startswith("/api/") or path in PUBLIC_API_PATHS
+                else "Bearer access token"
+            )
+            if path == "/api/metrics/summary":
+                auth += " + `X-Admin-Token`"
+            operations.append(
+                (
+                    method.upper(),
+                    path,
+                    auth,
+                    _request(operation),
+                    _response(operation),
+                    _errors(operation),
+                )
+            )
+
+    lines = [
+        "# Frontend API Reference",
+        "",
+        "Generated from the registered FastAPI OpenAPI schema by "
+        "`backend/scripts/generate_api_inventory.py`.",
+        "",
+        f"- OpenAPI version: {schema['openapi']}",
+        f"- Paths: {len(schema['paths'])}",
+        f"- Operations: {len(operations)}",
+        "- Success envelope: `{ \"success\": true, \"data\": ... }`.",
+        "- Error envelope: `{ \"success\": false, \"error\": "
+        "{ \"code\": \"...\", \"message\": \"...\" } }`.",
+        "- Authentication is derived from backend middleware; the OpenAPI "
+        "schema currently has no `securitySchemes` declaration.",
+        "- All `/api/*` operations require a bearer access token except the "
+        "listed public authentication and health operations. "
+        "`GET /api/metrics/summary` also requires `X-Admin-Token`.",
+        "- Browser clients must use an origin included in `ALLOWED_ORIGINS`.",
+        "- Follow request/response component names in `/openapi.json` for "
+        "field-level schemas. An `Any` response leaves the inner `data` "
+        "payload unspecified.",
+        "",
+        "| Method | Route | Auth | Request body / parameters | Success response | Common error statuses |",
+        "|---|---|---|---|---|---|",
+    ]
+    for method, path, auth, request, response, errors in sorted(operations):
+        lines.append(
+            f"| {method} | `{path}` | {auth} | {request} | {response} | {errors} |"
+        )
+    return "\n".join(lines) + "\n"
 
 
 def generate_inventory() -> str:
@@ -96,9 +171,13 @@ def generate_inventory() -> str:
 
 
 def main() -> None:
-    output = REPOSITORY_ROOT / "docs" / "API_INVENTORY.md"
-    output.write_text(generate_inventory(), encoding="utf-8")
-    print(f"Wrote {output.relative_to(REPOSITORY_ROOT)}")
+    outputs = {
+        REPOSITORY_ROOT / "docs" / "API_INVENTORY.md": generate_inventory(),
+        REPOSITORY_ROOT / "docs" / "FRONTEND_API_REFERENCE.md": generate_frontend_reference(),
+    }
+    for output, contents in outputs.items():
+        output.write_text(contents, encoding="utf-8")
+        print(f"Wrote {output.relative_to(REPOSITORY_ROOT)}")
 
 
 if __name__ == "__main__":

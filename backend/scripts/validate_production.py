@@ -31,13 +31,20 @@ def validate_endpoint(base_url: str, path: str) -> tuple[bool, str]:
     try:
         with urlopen(f"{base_url.rstrip('/')}{path}", timeout=5) as response:
             payload = json.loads(response.read())
+        if (
+            not isinstance(payload, dict)
+            or payload.get("success") is not True
+            or not isinstance(payload.get("data"), dict)
+        ):
+            return False, "Invalid health response envelope"
+        health = payload["data"]
         if path.endswith("/ready"):
-            healthy = payload.get("ready") is True
+            healthy = health.get("ready") is True
         elif path.endswith("/dependencies") or path == "/health":
-            healthy = payload.get("status") == "healthy"
+            healthy = health.get("status") == "healthy"
         else:
-            healthy = payload.get("status") == "alive"
-        return response.status == 200 and healthy, str(payload.get("status", "missing status"))
+            healthy = health.get("status") == "alive"
+        return response.status == 200 and healthy, str(health.get("status", "missing status"))
     except (OSError, URLError, ValueError) as error:
         return False, str(error)
 

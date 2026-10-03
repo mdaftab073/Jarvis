@@ -62,9 +62,11 @@ These endpoints are public and contain dependency status only, never credentials
 | `GET /health/dependencies` | Per-dependency status |
 | `GET /system/health` | System status used by the Compose health check |
 
-Readiness covers database, ChromaDB, scheduler, tool registry, migrations, metrics, audit logging, and authentication configuration. Run `python backend/scripts/validate_deployment.py` after startup; it writes `deployment_report.md` and exits nonzero on failed checks.
+Readiness covers database, ChromaDB, scheduler, tool registry, migrations, metrics, audit logging, and authentication configuration. Use the root [DEPLOYMENT_CHECKLIST.md](../../DEPLOYMENT_CHECKLIST.md) for exact Compose startup, migration, health, and CORS checks. Health data is nested under the standard response envelope's `data` property.
 
 See [API_INVENTORY.md](./API_INVENTORY.md) for the registered routes, methods, authentication treatment, and OpenAPI request/response schemas.
+
+Use the root [FRONTEND_API_GUIDE.md](../../FRONTEND_API_GUIDE.md) for frontend request/response contracts, including request bodies and auth requirements.
 
 All successful API responses use `{ "success": true, "data": ... }`; errors use `{ "success": false, "error": { "code": "...", "message": "..." } }`. Regenerate the route inventory with `python backend/scripts/generate_api_inventory.py` after API changes.
 

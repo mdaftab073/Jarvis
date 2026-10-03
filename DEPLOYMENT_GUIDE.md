@@ -1,117 +1,108 @@
-# Deployment Guide for Jarvis
+# Jarvis Backend Deployment Guide
 
-## 1. Local Development
+Audit date: 2026-10-03
 
-### Prerequisites
-- Python 3.12
-- Docker & Docker Compose
-- PostgreSQL (Docker service will start one automatically)
-- ChromaDB (Docker service will start one automatically)
+## Requirements
 
-### Steps
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/your-org/jarvis.git
-   cd jarvis
+- Python 3.12 for a direct host deployment, or Docker with the Linux engine and Compose for container deployment.
+- PostgreSQL and ChromaDB with persistent storage.
+- Real production values for Groq, Google OAuth, JWT signing, connector encryption, metrics administration, and allowed browser origins.
+- Persistent storage and tested backups for PostgreSQL, ChromaDB, uploaded files, and the Hugging Face model cache.
+
+Do not deploy `.env.example` placeholders. Production settings reject missing/template credentials, require a JWT key of at least 32 bytes, validate the Fernet connector key, require an explicit CORS origin, and require authenticated-student mode.
+
+## Local host setup
+
+1. Copy `.env.example` to `.env` at the repository root and replace all placeholders.
+2. For a direct host run, set `DATABASE_URL` to the local PostgreSQL database URL; Compose constructs this value automatically for its API container. Set `ENVIRONMENT=development`, `REQUIRE_AUTHENTICATED_STUDENT=true`, and configure Chroma for the intended local persistent directory or host.
+3. Create and activate a Python 3.12 virtual environment, then install the backend dependencies:
+
+   ```powershell
+   cd backend
+   python -m pip install -r requirements.txt
    ```
-2. **Create a `.env` file** (copy from `.env.example` and adjust values if needed). The file should contain:
+
+4. Confirm PostgreSQL is reachable and Chroma storage is writable. Apply schema changes and start the service:
+
+   ```powershell
+   python -m alembic upgrade head
+   python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
    ```
-   POSTGRES_DB=jarvis
-   POSTGRES_USER=jarvis
-   POSTGRES_PASSWORD=<your_password>
-   GROQ_API_KEY=<your_groq_key>
-   JARVIS_PORT=8000
+
+5. Check `http://127.0.0.1:8000/health/ready` and open `http://127.0.0.1:8000/docs`.
+
+Production startup checks PostgreSQL and Chroma initialization and fails with a clear dependency-specific error. Non-production environments report dependency failures through readiness endpoints without the production startup gate.
+
+## Docker Compose setup
+
+1. From the repository root, copy and complete the environment file:
+
+   ```powershell
+   Copy-Item .env.example .env
    ```
-3. **Run the stack**
-   ```bash
+
+   Set real values for `POSTGRES_PASSWORD`, `GROQ_API_KEY`, `CONNECTOR_ENCRYPTION_KEY`, `METRICS_ADMIN_TOKEN`, `GOOGLE_CLIENT_ID`, `JWT_SECRET_KEY`, and `ALLOWED_ORIGINS`. `POSTGRES_DB`, `POSTGRES_USER`, and `JARVIS_PORT` have defaults. Keep `.env` private.
+
+2. Validate interpolation and start the services:
+
+   ```powershell
+   docker compose config -q
    docker compose up --build -d
-   ```
-   This starts PostgreSQL, ChromaDB, and the API container. The image applies Alembic migrations before starting FastAPI.
-4. **Verify readiness and production configuration**
-   ```bash
-   curl http://localhost:8000/health/live
-   curl http://localhost:8000/health/ready
-   cd backend
-   python -m scripts.validate_production
-   ```
-   Readiness should report `ready: true`; the validator also checks dependencies, migrations, storage, tools, jobs, audit logging, and rate limits.
-5. **Run the test suite**
-   ```bash
-   cd backend
-   python -m unittest discover -s tests
+   docker compose ps
    ```
 
-## 2. Docker (Production) Deployment
+   Compose waits for PostgreSQL and Chroma healthchecks. The API container applies Alembic migrations before launching Uvicorn. Persistent named volumes hold PostgreSQL data, Chroma data, uploads, and the model cache.
 
-### Build the Runtime Image
-```bash
-docker build --target runtime -t jarvis-api:latest -f backend/Dockerfile backend
-```
-### Run the Container
-```bash
-docker run -d \
-  --name jarvis-api \
-  -p 8000:8000 \
-  --env-file .env \
-  jarvis-api:latest
-```
-### Environment Variables
-| Variable | Description |
-|---|---|
-| `POSTGRES_DB` | Database name |
-| `POSTGRES_USER` | Database user |
-| `POSTGRES_PASSWORD` | Database password |
-| `GROQ_API_KEY` | API key for Groq |
-| `JARVIS_PORT` | Port for the API (default 8000) |
-| `CHROMA_PERSISTENT_DIRECTORY` | Path to the persistent Chroma store (default `chroma_db`) |
+3. Verify the service:
 
-## 3. Backup Process
-
-1. **Create a backup**
-   ```bash
-   python backend/scripts/backup.py
+   ```powershell
+   Invoke-RestMethod http://localhost:8000/health/live
+   Invoke-RestMethod http://localhost:8000/health/ready
+   Invoke-RestMethod http://localhost:8000/system/health
    ```
-   The script generates `backend/backups/jarvis_backup_<timestamp>.zip`.
-2. **Store the backup** in a safe location (object storage, external drive, etc.).
 
-## 4. Restore Process
+   A healthy `/health/ready` response has `data.ready` set to `true`; `/system/health` must report `data.overall` as `healthy`. The API container uses the latter condition for its Docker healthcheck.
 
-1. **Copy the backup archive** to the server.
-2. **Run the restore script**
-   ```bash
-   python backend/scripts/restore.py /path/to/jarvis_backup_20230928T150000Z.zip
-   ```
-   This will restore the PostgreSQL database, Chroma directory, and uploaded files.
+`docker compose down` stops services and preserves named volumes. Do not use `docker compose down -v` unless intentional deletion of all named data volumes has been approved.
 
-## 5. Health Checks & Monitoring
+## Migration procedure
 
-- **Liveness**: `GET /health/live`
-- **Readiness**: `GET /health/ready`
-- **Dependencies**: `GET /health/dependencies`
-- **Legacy system health**: `GET /system/health`
-- **Readiness**: `GET /api/system/readiness`
-- **Process metrics**: `GET /api/system/metrics`
-- **Administrative metrics summary**: `GET /api/metrics/summary` with `X-Admin-Token` set to `METRICS_ADMIN_TOKEN`
-  - Provides request counts, error rates, latency stats, and agent execution counters.
+For a direct host deployment, set `DATABASE_URL` explicitly to the intended database. From `backend/`:
 
-For an isolated clean-stack check, use a dedicated Compose project name so existing volumes are not reused:
-
-```bash
-docker compose -p jarvis-phase-g up --build -d
-docker compose -p jarvis-phase-g ps
-docker compose -p jarvis-phase-g down -v
+```powershell
+python -m alembic heads
+python -m alembic current
+python -m alembic upgrade head
+python -m alembic current
 ```
 
-The final command removes only the isolated Phase G project volumes; do not use it with your regular project name if its data must be retained.
+The release head is `f0b1c3d5e709`. Before upgrading an existing database, take and verify backups and review [MIGRATION_AUDIT.md](./MIGRATION_AUDIT.md). Migration `e7b4c1d9a260` removes legacy MIS data and tables; downgrading past it does not restore deleted data.
 
-## 6. Troubleshooting
+## Backups and restore
 
-| Symptom | Possible Cause | Fix |
-|---|---|---|
-| API returns 500 on start | Missing env variables | Ensure `.env` contains all required keys (`POSTGRES_*`, `GROQ_API_KEY`, etc.) |
-| Database connections fail | PostgreSQL not reachable | Verify Docker service `jarvis-postgres-1` is healthy (`docker ps`) |
-| Chroma errors | Persistent volume missing | Set `CHROMA_PERSISTENT_DIRECTORY` correctly and ensure the directory exists |
-| Uploads rejected | File size or MIME type exceeds limits | Adjust `MAX_UPLOAD_SIZE_BYTES` or `ALLOWED_UPLOAD_MIME_TYPES` in `config.py` |
+The host utility `backend/scripts/backup.py` assumes PostgreSQL is reachable at `localhost` and Chroma/uploads are local paths. It is suitable only when those assumptions match the deployment. For Compose or managed infrastructure, use database-native backups and snapshots/copies of the persistent Chroma and uploads volumes coordinated with the database backup.
 
----
-*Generated by Antigravity on 2026‑09‑28*
+Example PostgreSQL dump from Compose (run from a shell that supports the command):
+
+```sh
+mkdir -p backups
+docker compose exec -T postgres sh -c \
+  'PGPASSWORD="$POSTGRES_PASSWORD" pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Fc' \
+  > backups/jarvis-postgres.dump
+```
+
+Also snapshot the Chroma and uploads volumes and retain the matching deployment configuration and encryption keys. Test restore procedures in an isolated environment before relying on the backup. `backend/scripts/restore.py` is destructive and assumes a compatible ZIP archive, local PostgreSQL at `localhost`, and local Chroma/uploads paths; it is not a drop-in Compose restore utility.
+
+## Monitoring
+
+- Liveness: `GET /health/live`
+- Readiness/dependencies: `GET /health/ready`, `GET /health/dependencies`
+- Detailed system status: `GET /system/health`
+- API metrics: `GET /api/system/metrics`
+- Administrative metrics summary: `GET /api/metrics/summary` with both normal API authentication and `X-Admin-Token`
+
+Readiness checks cover the database, Chroma, scheduler, tools, migration state, metrics, audit table, and authentication configuration. Monitor health transitions and application logs; do not expose admin tokens or connection strings in monitoring output.
+
+## Release-specific follow-up
+
+The migration cycle was verified against an empty temporary PostgreSQL database, but the configured local database was deliberately left at `4c8ef6d1a203`. Docker image build/startup could not be verified because the Docker daemon was unavailable during this audit. Before production traffic, rehearse on a restored staging backup, verify OAuth and CORS from the deployed frontend origin, and build/start the Compose stack on a Docker-enabled host.

@@ -52,7 +52,7 @@ Swagger UI: `http://localhost:8000/docs`.
 
 `.env.example` contains placeholders only. Never commit `.env`; rotate credentials before external deployment.
 
-See [docs/deployment/README.md](docs/deployment/README.md) for the auth flow, migration process, health endpoints, and production checklist. Run `python backend/scripts/validate_deployment.py` after startup; it writes `deployment_report.md` and returns a failing exit code when production checks do not pass.
+See [docs/deployment/README.md](docs/deployment/README.md) for the auth flow and migration process. Follow [DEPLOYMENT_CHECKLIST.md](DEPLOYMENT_CHECKLIST.md) for the production deployment steps and live health/CORS checks.
 
 ## Operations
 

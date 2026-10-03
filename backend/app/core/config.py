@@ -1,5 +1,5 @@
 from pathlib import Path
-
+from cryptography.fernet import Fernet
 from pydantic import model_validator
 from pydantic_settings import BaseSettings
 
@@ -47,6 +47,27 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def require_authentication_in_production(self):
+        if self.ENVIRONMENT.casefold() == "production":
+            required_production_values = {
+                "DATABASE_URL": self.DATABASE_URL,
+                "GROQ_API_KEY": self.GROQ_API_KEY,
+                "CONNECTOR_ENCRYPTION_KEY": self.CONNECTOR_ENCRYPTION_KEY,
+                "METRICS_ADMIN_TOKEN": self.METRICS_ADMIN_TOKEN,
+                "GOOGLE_CLIENT_ID": self.GOOGLE_CLIENT_ID,
+                "JWT_SECRET_KEY": self.JWT_SECRET_KEY,
+                "ALLOWED_ORIGINS": self.ALLOWED_ORIGINS,
+            }
+            for name, value in required_production_values.items():
+                if not value or "replace-with-" in value.casefold():
+                    raise ValueError(
+                        f"{name} must be configured with a real production value"
+                    )
+            try:
+                Fernet(self.CONNECTOR_ENCRYPTION_KEY.encode("utf-8"))
+            except (TypeError, ValueError) as error:
+                raise ValueError(
+                    "CONNECTOR_ENCRYPTION_KEY must be a valid Fernet key in production"
+                ) from error
         if (
             self.ENVIRONMENT.casefold() == "production"
             and not self.REQUIRE_AUTHENTICATED_STUDENT
@@ -57,6 +78,8 @@ class Settings(BaseSettings):
                 raise ValueError("JWT_SECRET_KEY must contain at least 32 bytes in production")
             if not self.GOOGLE_CLIENT_ID:
                 raise ValueError("GOOGLE_CLIENT_ID is required in production")
+            if not self.allowed_origins:
+                raise ValueError("ALLOWED_ORIGINS must include a frontend origin in production")
             if "*" in self.allowed_origins:
                 raise ValueError("ALLOWED_ORIGINS cannot contain '*' in production")
         return self

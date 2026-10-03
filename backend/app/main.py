@@ -2,6 +2,7 @@ import logging
 
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
+from sqlalchemy import text
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
@@ -17,6 +18,7 @@ from app.core.config import settings
 from app.core.cors import add_cors_middleware
 from app.core.logging import setup_logging
 from app.core.middleware import RequestTrackingMiddleware
+from app.db.database import engine
 from app.jobs.scheduler import start_scheduler, stop_scheduler
 from app.api.routes.health import router as health_router
 from app.api.routes.metrics import router as metrics_router
@@ -48,10 +50,34 @@ from app.api.routes import chat, connectors, jobs
 from app.api.routes import auth
 from app.core.auth_middleware import StudentIdentityMiddleware
 from app.services.keyword_search_service import sync_keyword_index_from_chroma
+from app.services.vector_service import get_collection
 
 
 setup_logging(log_level=settings.LOG_LEVEL, log_dir=settings.LOG_DIR, enable_json=True)
 logger = logging.getLogger(__name__)
+
+
+def validate_startup_dependencies() -> None:
+    if settings.ENVIRONMENT.casefold() != "production":
+        return
+
+    try:
+        with engine.connect() as connection:
+            connection.execute(text("SELECT 1"))
+    except Exception as error:
+        logger.exception("Production startup blocked: PostgreSQL is unavailable")
+        raise RuntimeError(
+            "Production startup failed: PostgreSQL connectivity check failed"
+        ) from error
+
+    try:
+        get_collection().count()
+    except Exception as error:
+        logger.exception("Production startup blocked: ChromaDB is unavailable")
+        raise RuntimeError(
+            "Production startup failed: ChromaDB initialization check failed"
+        ) from error
+
 
 app = FastAPI(
     title="Jarvis",
@@ -69,6 +95,7 @@ app.add_middleware(StudentIdentityMiddleware)
 
 @app.on_event("startup")
 def sync_keyword_index():
+    validate_startup_dependencies()
     try:
         sync_keyword_index_from_chroma()
     except Exception:

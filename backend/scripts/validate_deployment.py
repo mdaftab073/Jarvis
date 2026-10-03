@@ -61,20 +61,27 @@ def health_status(base_url: str, path: str) -> tuple[bool, str]:
     try:
         with urlopen(f"{base_url.rstrip('/')}{path}", timeout=8) as response:
             payload = json.loads(response.read())
+        if (
+            not isinstance(payload, dict)
+            or payload.get("success") is not True
+            or not isinstance(payload.get("data"), dict)
+        ):
+            return False, "Invalid health response envelope"
+        health = payload["data"]
         if path.endswith("/live"):
-            passed = payload.get("status") == "alive"
+            passed = health.get("status") == "alive"
         elif path.endswith("/ready"):
-            passed = payload.get("ready") is True
+            passed = health.get("ready") is True
         elif path == "/system/health":
-            passed = payload.get("overall") == "healthy"
+            passed = health.get("overall") == "healthy"
         else:
-            passed = payload.get("status") == "healthy"
+            passed = health.get("status") == "healthy"
         details = ", ".join(
             f"{name}={value}"
-            for name, value in payload.items()
+            for name, value in health.items()
             if name not in {"status", "ready"}
         )
-        return response.status == 200 and passed, details or str(payload.get("status"))
+        return response.status == 200 and passed, details or str(health.get("status"))
     except (OSError, URLError, ValueError) as error:
         return False, f"{type(error).__name__}: endpoint unavailable or returned invalid health data"
 

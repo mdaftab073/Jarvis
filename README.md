@@ -45,6 +45,9 @@ The runner writes [END_TO_END_REPORT.md](END_TO_END_REPORT.md). The latest schem
 
 ## Documentation
 
+- [Frontend API guide](FRONTEND_API_GUIDE.md)
+- [Deployment checklist](DEPLOYMENT_CHECKLIST.md)
+- [Backend freeze report](BACKEND_FREEZE_REPORT.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [API summary](docs/API_SUMMARY.md)
 - [Release notes](RELEASE_NOTES_v1.0.md)
