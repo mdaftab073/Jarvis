@@ -16,6 +16,29 @@ _JOB_HANDLERS: dict[str, JobDefinition] = {}
 job_registry: "JobRegistry"
 _tasks_loaded = False
 
+_PUBLIC_PDF_PROCESSING_ERRORS = {
+    "Material not found": "The uploaded material could not be found.",
+    "No text could be extracted from PDF": (
+        "No readable text could be extracted from this PDF, even after OCR."
+    ),
+    "No chunks could be created from PDF": (
+        "The extracted PDF text was too short to index."
+    ),
+    "OCR for scanned PDFs requires PyMuPDF and Tesseract.": (
+        "OCR is not configured for scanned PDFs. Install PyMuPDF and Tesseract."
+    ),
+    (
+        "OCR failed for scanned PDF pages. Verify Tesseract and its "
+        "English language data are installed."
+    ): "OCR failed. Verify that Tesseract and its English language data are installed.",
+}
+
+
+def _job_error_message(job_name: str, error: Exception) -> str:
+    if job_name == "process_pdf_material":
+        return _PUBLIC_PDF_PROCESSING_ERRORS.get(str(error), type(error).__name__)
+    return type(error).__name__
+
 
 def register_job(name: str, description: str = ""):
     def decorator(handler: Callable[[dict[str, Any]], Any]):
@@ -122,7 +145,7 @@ class JobRegistry:
                 if execution is None:
                     raise
                 execution.status = "FAILED"
-                execution.error_message = type(error).__name__
+                execution.error_message = _job_error_message(job_name, error)
                 execution.completed_at = datetime.utcnow()
                 execution.duration_seconds = round(time.perf_counter() - started, 4)
                 execution.error_details = {"type": type(error).__name__, "message": str(error)[:500]}

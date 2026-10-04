@@ -6,7 +6,12 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     HF_HOME=/opt/huggingface
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends ca-certificates libgomp1 libpq5 \
+    && apt-get install -y --no-install-recommends \
+        ca-certificates \
+        libgomp1 \
+        libpq5 \
+        tesseract-ocr \
+        tesseract-ocr-eng \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app

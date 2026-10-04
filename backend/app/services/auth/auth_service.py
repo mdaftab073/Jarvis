@@ -9,7 +9,11 @@ from app.db.models import AuthRefreshToken, Student
 from app.services.audit_log_service import AuditLogService
 from app.services.auth.google_auth import GoogleAuthService
 from app.services.auth.jwt_service import JWTService, JWTTokenError
-
+from app.db.models import (
+    AuthRefreshToken,
+    Student,
+    StudentAcademicProfile,
+)
 
 class AuthService:
     def __init__(self, db: Session):
@@ -30,6 +34,27 @@ class AuthService:
             "profile_picture": student.profile_picture,
             "is_verified": student.is_verified,
         }
+        
+    def _ensure_academic_profile(self, student_id: int) -> None:
+        """
+        Create a blank academic profile if one does not already exist.
+        """
+
+        profile = (
+            self.db.query(StudentAcademicProfile)
+            .filter_by(student_id=student_id)
+            .first()
+        )
+
+        if profile is None:
+            self.db.add(
+                StudentAcademicProfile(
+                    student_id=student_id,
+                    academic_status="ACTIVE",
+                    total_credits=0,
+                    earned_credits=0,
+                )
+            )        
 
     def _issue_tokens(self, student: Student) -> dict:
         access_token = self.jwt.create_access_token(student.id)
@@ -63,24 +88,64 @@ class AuthService:
         return {"student": self.student_data(student), "tokens": tokens}
 
     def login_with_google(self, google_id_token: str) -> dict:
-        claims = self.google_auth.verify_google_token(google_id_token)
-        profile = self.google_auth.extract_profile(claims)
-        google_student = self.db.query(Student).filter_by(google_id=profile["google_id"]).first()
-        email_student = self.db.query(Student).filter(
-            func.lower(Student.email) == profile["email"]
-        ).first()
+        claims = self.google_auth.verify_google_token(
+            google_id_token
+        )
+
+        profile = self.google_auth.extract_profile(
+            claims
+        )
+
+        google_student = (
+            self.db.query(Student)
+            .filter_by(
+                google_id=profile["google_id"]
+            )
+            .first()
+        )
+
+        email_student = (
+            self.db.query(Student)
+            .filter(
+                func.lower(Student.email)
+                == profile["email"]
+            )
+            .first()
+        )
+
         if (
             google_student is not None
             and email_student is not None
             and google_student.id != email_student.id
         ):
-            raise HTTPException(status_code=409, detail="Google identity and email belong to different accounts")
+            raise HTTPException(
+                status_code=409,
+                detail=(
+                    "Google identity and email belong "
+                    "to different accounts"
+                ),
+            )
+
         if (
             email_student is not None
-            and email_student.google_id not in (None, profile["google_id"])
+            and email_student.google_id
+            not in (
+                None,
+                profile["google_id"],
+            )
         ):
-            raise HTTPException(status_code=409, detail="Google identity is already linked to another account")
+            raise HTTPException(
+                status_code=409,
+                detail=(
+                    "Google identity is already linked "
+                    "to another account"
+                ),
+            )
+
         student = google_student or email_student
+
+        is_new_student = False
+
         if student is None:
             student = Student(
                 name=profile["full_name"],
@@ -91,18 +156,37 @@ class AuthService:
                 is_verified=True,
                 is_active=True,
             )
+
             self.db.add(student)
+
+            is_new_student = True
+
         else:
             student.google_id = profile["google_id"]
             student.full_name = profile["full_name"]
             student.name = profile["full_name"]
             student.profile_picture = profile["profile_picture"]
             student.is_verified = True
+
         if not student.is_active:
-            raise HTTPException(status_code=403, detail="Student account is inactive")
+            raise HTTPException(
+                status_code=403,
+                detail="Student account is inactive",
+            )
+
         student.last_login_at = self._now()
+
         self.db.flush()
-        return self._response(student, "google_login")
+
+        # Create academic profile automatically
+        self._ensure_academic_profile(student.id)
+
+        self.db.flush()
+
+        return self._response(
+            student,
+            "google_login",
+        )
 
     def refresh_access_token(self, refresh_token: str) -> dict:
         try:

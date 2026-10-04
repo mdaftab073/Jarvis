@@ -21,6 +21,8 @@ alembic upgrade head
 uvicorn app.main:app --reload
 ```
 
+Scanned PDFs use OCR during processing. Local development requires Tesseract OCR and its English language data installed and available in `PATH`. Docker deployment installs `tesseract-ocr` and `tesseract-ocr-eng` automatically; no container-side manual setup is required.
+
 ## Validation
 
 Run the offline test pyramid from `backend/`:

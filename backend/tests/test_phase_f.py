@@ -69,6 +69,24 @@ class PhaseFTests(unittest.TestCase):
         self.assertEqual(failure_result["status"], "FAILED")
         self.assertEqual(failure_result["error_message"], "RuntimeError")
         self.assertNotIn("secret", failure_result["error_message"])
+        registry.register_job(
+            "process_pdf_material",
+            lambda _payload: (_ for _ in ()).throw(
+                ValueError("No text could be extracted from PDF")
+            ),
+        )
+        with patch("app.jobs.registry.SessionLocal", side_effect=lambda: Session(self.engine)):
+            pdf_failure = registry.create_execution(
+                self.db,
+                "process_pdf_material",
+                {},
+                self.student.id,
+            )
+            pdf_failure_result = registry.execute_job(pdf_failure.id)
+        self.assertEqual(
+            pdf_failure_result["error_message"],
+            "No readable text could be extracted from this PDF, even after OCR.",
+        )
         self.assertIsNotNone(get_job_status(self.db, success.id, self.student.id))
         self.assertIsNone(get_job_status(self.db, success.id, self.other.id))
         running = JobExecution(job_name="phasef.success", status="RUNNING", student_id=self.student.id, payload_json={"value": 99})
