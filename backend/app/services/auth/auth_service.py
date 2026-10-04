@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 
 from fastapi import HTTPException
 from sqlalchemy import func, update
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
@@ -13,6 +14,7 @@ from app.db.models import (
     AuthRefreshToken,
     Student,
     StudentAcademicProfile,
+    StudentPreference,
 )
 
 class AuthService:
@@ -36,25 +38,32 @@ class AuthService:
         }
         
     def _ensure_academic_profile(self, student_id: int) -> None:
-        """
-        Create a blank academic profile if one does not already exist.
-        """
-
-        profile = (
-            self.db.query(StudentAcademicProfile)
-            .filter_by(student_id=student_id)
-            .first()
+        defaults = (
+            (
+                StudentAcademicProfile,
+                {
+                    "student_id": student_id,
+                    "branch": None,
+                    "semester": None,
+                    "section": None,
+                    "batch_year": None,
+                    "academic_status": "ACTIVE",
+                    "total_credits": 0,
+                    "earned_credits": 0,
+                },
+            ),
+            (StudentPreference, {"student_id": student_id}),
         )
-
-        if profile is None:
-            self.db.add(
-                StudentAcademicProfile(
-                    student_id=student_id,
-                    academic_status="ACTIVE",
-                    total_credits=0,
-                    earned_credits=0,
-                )
-            )        
+        for model, values in defaults:
+            if self.db.query(model.id).filter_by(student_id=student_id).first():
+                continue
+            try:
+                with self.db.begin_nested():
+                    self.db.add(model(**values))
+                    self.db.flush()
+            except IntegrityError:
+                if not self.db.query(model.id).filter_by(student_id=student_id).first():
+                    raise
 
     def _issue_tokens(self, student: Student) -> dict:
         access_token = self.jwt.create_access_token(student.id)

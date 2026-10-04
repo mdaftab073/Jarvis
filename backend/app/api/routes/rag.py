@@ -14,6 +14,7 @@ from app.services.rag_service import (
     ask_question,
     debug_search,
 )
+from app.services.vector_service import is_chroma_available
 from app.services.audit_log_service import AuditLogService
 from app.api.rate_limit import limiter
 from app.core.config import settings
@@ -23,9 +24,18 @@ from fastapi import HTTPException
 router = APIRouter()
 
 
+def _require_chroma_available() -> None:
+    if not is_chroma_available():
+        raise HTTPException(
+            status_code=503,
+            detail="RAG is temporarily unavailable because vector search is degraded",
+        )
+
+
 @router.post(
     "/rag/ask",
     response_model=AskResponse,
+    dependencies=[Depends(_require_chroma_available)],
 )
 @limiter.limit(settings.RAG_RATE_LIMIT)
 def ask(
@@ -87,7 +97,7 @@ def ask(
     )
 
 
-@router.get("/rag/debug-search")
+@router.get("/rag/debug-search", dependencies=[Depends(_require_chroma_available)])
 @limiter.limit(settings.RAG_RATE_LIMIT)
 def rag_debug_search(
     request: Request,

@@ -1,5 +1,8 @@
+import logging
 import os
+from pathlib import Path
 from typing import Optional
+from uuid import uuid4
 
 import chromadb
 from sentence_transformers import SentenceTransformer
@@ -13,12 +16,14 @@ from app.core.rag_config import (
 
 _embedding_model: Optional[SentenceTransformer] = None
 _chroma_client = None
+logger = logging.getLogger(__name__)
 
-CHROMA_DB_PATH = "chroma_db"
+CHROMA_DB_PATH = os.getenv("CHROMA_PERSISTENT_DIRECTORY", "chroma_db")
 COLLECTION_NAME = "study_materials"
 CHROMA_HOST = os.getenv("CHROMA_HOST")
 CHROMA_PORT = int(os.getenv("CHROMA_PORT", "8000"))
 CHROMA_SSL = os.getenv("CHROMA_SSL", "false").casefold() == "true"
+_CHROMA_STATUS = "unknown"
 
 
 def get_embedding_model():
@@ -57,6 +62,148 @@ def get_collection():
             "hnsw:space": "cosine",
         },
     )
+
+
+def chroma_status() -> str:
+    return _CHROMA_STATUS
+
+
+def is_chroma_available() -> bool:
+    return _CHROMA_STATUS != "degraded"
+
+
+def validate_chroma_storage() -> str:
+    global _CHROMA_STATUS
+    try:
+        client = get_chroma_client()
+        if not CHROMA_HOST and not Path(CHROMA_DB_PATH).is_dir():
+            raise RuntimeError("Local Chroma persistence directory is missing")
+        collection_names = {
+            getattr(item, "name", item)
+            for item in client.list_collections()
+        }
+        if COLLECTION_NAME not in collection_names:
+            get_collection()
+        collection = client.get_collection(name=COLLECTION_NAME)
+        collection.count()
+        collection.query(query_embeddings=[[0.0] * 384], n_results=1)
+    except Exception:
+        _CHROMA_STATUS = "degraded"
+        raise
+    _CHROMA_STATUS = "healthy"
+    return _CHROMA_STATUS
+
+
+def validate_rag_storage() -> str:
+    was_healthy = _CHROMA_STATUS == "healthy"
+    try:
+        status = validate_chroma_storage()
+        if not was_healthy:
+            from app.services.keyword_search_service import sync_keyword_index_from_chroma
+
+            sync_keyword_index_from_chroma()
+    except Exception:
+        mark_chroma_degraded()
+        raise
+    return status
+
+
+def mark_chroma_degraded() -> None:
+    global _CHROMA_STATUS
+    _CHROMA_STATUS = "degraded"
+
+
+def stage_material_chunks(
+    material_id: int,
+    chunks: list[str],
+    title: str,
+    subject_id: int,
+    subject_name: str,
+) -> dict[str, list[str]]:
+    collection = get_collection()
+    generation = uuid4().hex
+    ids = [f"{material_id}_{generation}_{index}" for index in range(len(chunks))]
+    embeddings = [generate_embedding(chunk) for chunk in chunks]
+    metadatas = [
+        {
+            "material_id": material_id,
+            "subject_id": subject_id,
+            "subject_name": subject_name,
+            "chunk_index": index,
+            "title": title,
+            "generation": generation,
+            "indexing_state": "staged",
+        }
+        for index in range(len(chunks))
+    ]
+
+    try:
+        collection.add(
+            ids=ids,
+            embeddings=embeddings,
+            documents=chunks,
+            metadatas=metadatas,
+        )
+        stored = collection.get(ids=ids, include=["metadatas"])
+        if len(stored["ids"]) != len(ids):
+            raise RuntimeError("Staged embedding verification failed")
+        existing = collection.get(
+            where={"material_id": {"$eq": material_id}},
+            include=["metadatas"],
+        )
+        previous_ids = [
+            chunk_id
+            for chunk_id, metadata in zip(existing["ids"], existing["metadatas"])
+            if chunk_id not in ids
+            and metadata
+            and metadata.get("indexing_state") not in {"staged", "retired"}
+        ]
+    except Exception:
+        try:
+            collection.delete(ids=ids)
+        except Exception:
+            logger.exception(
+                "Could not remove incomplete staged embeddings: material_id=%s",
+                material_id,
+            )
+        raise
+
+    return {"ids": ids, "previous_ids": previous_ids}
+
+
+def activate_staged_material_chunks(chunk_ids: list[str]) -> None:
+    if not chunk_ids:
+        raise ValueError("Cannot activate an empty embedding generation")
+    collection = get_collection()
+    staged = collection.get(ids=chunk_ids, include=["metadatas"])
+    if len(staged["ids"]) != len(chunk_ids):
+        raise RuntimeError("Staged embeddings disappeared before activation")
+    metadatas = []
+    for metadata in staged["metadatas"]:
+        if not metadata or metadata.get("indexing_state") != "staged":
+            raise RuntimeError("Embedding generation is not fully staged")
+        metadatas.append({**metadata, "indexing_state": "active"})
+    collection.update(ids=chunk_ids, metadatas=metadatas)
+
+
+def discard_staged_material_chunks(chunk_ids: list[str]) -> None:
+    if chunk_ids:
+        get_collection().delete(ids=chunk_ids)
+
+
+def retire_previous_material_chunks(chunk_ids: list[str]) -> None:
+    if not chunk_ids:
+        return
+    collection = get_collection()
+    previous = collection.get(ids=chunk_ids, include=["metadatas"])
+    if not previous["ids"]:
+        return
+    metadatas = [
+        {**(metadata or {}), "indexing_state": "retired"}
+        for metadata in previous["metadatas"]
+    ]
+    collection.update(ids=previous["ids"], metadatas=metadatas)
+    collection.delete(ids=previous["ids"])
 
 
 # NEW FUNCTION
@@ -168,12 +315,18 @@ def _query_similar_chunks(
     query_params = {
         "query_embeddings": [query_embedding],
         "n_results": n_results,
+        "where": {
+            "$and": [
+                {"indexing_state": {"$ne": "staged"}},
+                {"indexing_state": {"$ne": "retired"}},
+            ]
+        },
     }
 
     if subject_id is not None:
-        query_params["where"] = {
-            "subject_id": subject_id
-        }
+        query_params["where"]["$and"].append(
+            {"subject_id": {"$eq": subject_id}}
+        )
 
     results = collection.query(
         **query_params

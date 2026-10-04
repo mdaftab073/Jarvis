@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
-import { SubjectPicker } from '../auth/SubjectContext';
 import { useGet } from '../lib/hooks';
 import { asList } from '../api/client';
 
@@ -39,7 +38,7 @@ export function Layout() {
         </div>
       </aside>
       <div className="main">
-        <header className="top"><span className="brand sm">Jarvis</span><SubjectPicker /></header>
+        <header className="top"><span className="brand sm">Jarvis</span></header>
         <main id="content"><Outlet /></main>
       </div>
       <nav className="tabbar" aria-label="Main">

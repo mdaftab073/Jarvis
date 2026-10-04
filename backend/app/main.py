@@ -50,7 +50,11 @@ from app.api.routes import chat, connectors, jobs
 from app.api.routes import auth
 from app.core.auth_middleware import StudentIdentityMiddleware
 from app.services.keyword_search_service import sync_keyword_index_from_chroma
-from app.services.vector_service import get_collection
+from app.services.vector_service import (
+    chroma_status,
+    mark_chroma_degraded,
+    validate_chroma_storage,
+)
 
 
 setup_logging(log_level=settings.LOG_LEVEL, log_dir=settings.LOG_DIR, enable_json=True)
@@ -58,25 +62,22 @@ logger = logging.getLogger(__name__)
 
 
 def validate_startup_dependencies() -> None:
-    if settings.ENVIRONMENT.casefold() != "production":
-        return
+    if settings.ENVIRONMENT.casefold() == "production":
+        try:
+            with engine.connect() as connection:
+                connection.execute(text("SELECT 1"))
+        except Exception as error:
+            logger.exception("Production startup blocked: PostgreSQL is unavailable")
+            raise RuntimeError(
+                "Production startup failed: PostgreSQL connectivity check failed"
+            ) from error
 
     try:
-        with engine.connect() as connection:
-            connection.execute(text("SELECT 1"))
-    except Exception as error:
-        logger.exception("Production startup blocked: PostgreSQL is unavailable")
-        raise RuntimeError(
-            "Production startup failed: PostgreSQL connectivity check failed"
-        ) from error
-
-    try:
-        get_collection().count()
-    except Exception as error:
-        logger.exception("Production startup blocked: ChromaDB is unavailable")
-        raise RuntimeError(
-            "Production startup failed: ChromaDB initialization check failed"
-        ) from error
+        validate_chroma_storage()
+    except Exception:
+        logger.exception(
+            "ChromaDB is degraded; RAG endpoints will remain unavailable until it recovers"
+        )
 
 
 app = FastAPI(
@@ -96,10 +97,14 @@ app.add_middleware(StudentIdentityMiddleware)
 @app.on_event("startup")
 def sync_keyword_index():
     validate_startup_dependencies()
-    try:
-        sync_keyword_index_from_chroma()
-    except Exception:
-        logger.exception("Failed to synchronize BM25 index from Chroma")
+    if chroma_status() == "healthy":
+        try:
+            sync_keyword_index_from_chroma()
+        except Exception:
+            logger.exception("Failed to synchronize BM25 index from Chroma")
+            mark_chroma_degraded()
+    else:
+        logger.warning("Skipping BM25 synchronization while Chroma is degraded")
     start_scheduler()
 
 
@@ -251,5 +256,4 @@ for router, tag in (
     app.include_router(router, prefix="/api", tags=[tag])
 
 envelope_routes(app.routes)
-print("ALLOWED_ORIGINS =", settings.allowed_origins)
 add_cors_middleware(app, settings.allowed_origins)

@@ -1,7 +1,7 @@
 import { FormEvent, useState } from 'react';
 import { api, asList } from '../api/client';
 import { useStudentId } from '../auth/AuthContext';
-import { useSubject, useSubjectNames } from '../auth/SubjectContext';
+import { SubjectPicker, useSubject, useSubjectNames } from '../auth/SubjectContext';
 import { JobStatus } from '../components/Job';
 import { Async, Card, Chip, Empty, PageHead } from '../components/ui';
 import { useAct, useGet, useToast } from '../lib/hooks';
@@ -10,30 +10,41 @@ const MAX = 25 * 1024 * 1024;
 const TYPES = ['NOTES', 'PYQ', 'SYLLABUS', 'REFERENCE'];
 
 function MaterialRow({ m }: { m: any }) {
-  const [view, setView] = useState<'' | 'chunks' | 'text'>('');
+  const [view, setView] = useState<'' | 'text'>('');
   const [jobId, setJobId] = useState<number | null>(m.processing_job_id ?? null);
   const name = useSubjectNames();
   const embed = useAct(() => api(`/api/materials/${m.id}/embed`, { method: 'POST' }), { ok: 'Indexing started.', onSuccess: (r: any) => setJobId(r?.id ?? null) });
   const extract = useAct(() => api(`/api/topics/extract/${m.id}`, { method: 'POST', query: { subject_id: m.subject_id }, timeoutMs: 120_000 }),
     { ok: 'Topics extracted.', invalidate: ['/api/subjects', '/api/topics'] });
-  const detail = useGet(view ? `/api/materials/${m.id}/${view === 'chunks' ? 'chunks' : 'extract-text'}` : null);
+  const detail = useGet(view ? `/api/materials/${m.id}/extract-text` : null);
+  const processingStatus = m.processing_status ?? m.embedding_status;
+  const statusLabel = processingStatus === 'embedded'
+    ? 'Ready for AI Analysis'
+    : processingStatus === 'failed'
+      ? 'Failed'
+      : processingStatus
+        ? 'Processing'
+        : null;
   return (
     <div className="item">
       <div className="between"><strong>{m.title}</strong><Chip>{(m.material_type ?? 'NOTES').toLowerCase()}</Chip></div>
-      <p className="muted">{name(m.subject_id)}{m.processing_status ? ` · ${m.processing_status}` : ''}</p>
+      <p className="muted">{name(m.subject_id)}{statusLabel ? ` · ${statusLabel}` : ''}</p>
       {jobId && <JobStatus jobId={jobId} invalidate={['/api/materials', '/api/subjects']} />}
       <div className="row">
         <button className="btn small" onClick={() => setView(view === 'text' ? '' : 'text')}>Extracted text</button>
-        <button className="btn small" onClick={() => setView(view === 'chunks' ? '' : 'chunks')}>Chunks</button>
         <button className="btn small" disabled={embed.isPending} onClick={() => embed.mutate()}>Make searchable</button>
         <button className="btn small" disabled={extract.isPending} onClick={() => extract.mutate()}>{extract.isPending ? 'Extracting…' : 'Extract topics'}</button>
       </div>
       {view && (
         <div className="scroll">
           <Async q={detail} empty="Nothing extracted yet.">
-            {(d: any) => view === 'text'
-              ? <><h3>{d.title}</h3><p className="pre">{d.text}</p>{String(d.text ?? '').length >= 5000 && <p className="muted">Showing the first 5,000 characters.</p>}</>
-              : <><p>{d.total_chunks} chunks indexed.</p>{d.first_chunk && <p className="pre">{d.first_chunk}</p>}</>}
+            {(d: any) => (
+              <>
+                <h3>{d.title}</h3>
+                <p className="pre">{d.text}</p>
+                {String(d.text ?? '').length >= 5000 && <p className="muted">Showing the first 5,000 characters.</p>}
+              </>
+            )}
           </Async>
         </div>
       )}
@@ -74,7 +85,7 @@ function Upload() {
         <label className="field"><span>Title</span><input value={title} placeholder="Defaults to the file name" onChange={(e) => setTitle(e.target.value)} /></label>
         <label className="field"><span>Type</span><select value={type} onChange={(e) => setType(e.target.value)}>{TYPES.map((t) => <option key={t}>{t}</option>)}</select></label>
         <button className="btn primary" disabled={!file || up.isPending}>{up.isPending ? 'Uploading…' : 'Upload'}</button>
-        {!subjectId && <Empty>Choose a subject in the top bar first.</Empty>}
+        {!subjectId && <Empty>Choose a subject above or from Courses first.</Empty>}
       </form>
       {jobId && <JobStatus jobId={jobId} invalidate={['/api/materials', '/api/subjects']} />}
     </Card>
@@ -96,7 +107,7 @@ function Ask() {
       {d && (
         <div className="answer">
           <p className="pre">{d.answer}</p>
-          {d.sources?.length > 0 && <><h3>Sources</h3><ul className="plain">{d.sources.map((s: any, i: number) => <li key={i}>{s.title} <span className="muted">(section {s.chunk_index + 1})</span></li>)}</ul></>}
+          {d.sources?.length > 0 && <><h3>Sources</h3><ul className="plain">{d.sources.map((s: any, i: number) => <li key={i}>{s.title}</li>)}</ul></>}
         </div>
       )}
     </Card>
@@ -109,7 +120,7 @@ export default function Materials() {
   const list = useGet(subjectId ? `/api/subjects/${subjectId}/materials` : '/api/materials', subjectId ? undefined : { student_id: sid });
   return (
     <>
-      <PageHead title="Study materials" sub="Upload notes and past papers, then search or study from them." />
+      <PageHead title="Study materials" sub="Upload notes and past papers, then search or study from them." actions={<SubjectPicker />} />
       <div className="grid2"><Upload /><Ask /></div>
       <Card title={subjectId ? 'Materials in this subject' : 'All your materials'}>
         <Async q={list} empty="No materials yet. Upload a PDF to begin.">

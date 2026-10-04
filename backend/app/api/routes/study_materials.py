@@ -1,6 +1,6 @@
 import logging
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 from fastapi import UploadFile, File, Form
 from app.services.file_service import save_uploaded_file, validate_uploaded_file_path
@@ -169,7 +169,6 @@ def upload_material(
 @limiter.limit(settings.UPLOAD_RATE_LIMIT)
 def _upload_material_background(
     request: Request,
-    background_tasks: BackgroundTasks,
     title: str = Form(...),
     subject_id: int = Form(...),
     material_type: MaterialType = Form(MaterialType.NOTES),
@@ -195,7 +194,7 @@ def _upload_material_background(
         subject_id=subject_id,
         material_type=material_type,
     )
-    job = enqueue_job(db, background_tasks, "process_pdf_material", {"material_id": record.id}, owner_id)
+    job = enqueue_job(db, "process_pdf_material", {"material_id": record.id}, owner_id)
     try:
         with db.begin_nested():
             AuditLogService.record_event(
@@ -329,7 +328,6 @@ def embed_material(
 def enqueue_material_embedding(
     material_id: int,
     request: Request,
-    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
 ):
     material = get_material(db, material_id)
@@ -339,7 +337,7 @@ def enqueue_material_embedding(
     require_record_owner(request, student_id)
     if settings.REQUIRE_AUTHENTICATED_STUDENT and getattr(request.state, "student_id", None) is None:
         raise HTTPException(status_code=401, detail="Authentication required")
-    execution = enqueue_job(db, background_tasks, "process_pdf_material", {"material_id": material_id}, student_id)
+    execution = enqueue_job(db, "process_pdf_material", {"material_id": material_id}, student_id)
     return execution
         
 @router.get("/debug/chroma")
@@ -387,6 +385,11 @@ def debug_search(
     subject_id: int,
     db: Session = Depends(get_db),
 ):
+    if not vector_service.is_chroma_available():
+        raise HTTPException(
+            status_code=503,
+            detail="RAG is temporarily unavailable because vector search is degraded",
+        )
     from app.services.vector_service import (
         search_similar_chunks,
     )

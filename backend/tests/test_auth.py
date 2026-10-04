@@ -12,7 +12,14 @@ from app.api.student_scope import require_student_scope
 from app.core.auth_middleware import StudentIdentityMiddleware
 from app.core.config import settings
 from app.db.database import Base, get_db
-from app.db.models import AuthRefreshToken, Course, Student, Subject
+from app.db.models import (
+    AuthRefreshToken,
+    Course,
+    Student,
+    StudentAcademicProfile,
+    StudentPreference,
+    Subject,
+)
 from app.models.audit_log import AuditLog
 from app.services.auth.auth_service import AuthService
 from app.services.auth.google_auth import GoogleAuthService, GoogleTokenError
@@ -105,6 +112,18 @@ class AuthenticationTests(unittest.TestCase):
             self.assertEqual(login["student"]["id"], student.id)
             self.assertEqual(login["student"]["full_name"], "New Student")
             self.assertTrue(login["student"]["is_verified"])
+            academic_profile = self.db.query(StudentAcademicProfile).filter_by(
+                student_id=student.id
+            ).one()
+            preferences = self.db.query(StudentPreference).filter_by(
+                student_id=student.id
+            ).one()
+            self.assertIsNone(academic_profile.branch)
+            self.assertIsNone(academic_profile.semester)
+            self.assertIsNone(academic_profile.section)
+            self.assertIsNone(academic_profile.batch_year)
+            self.assertEqual(academic_profile.academic_status, "ACTIVE")
+            self.assertIsNone(preferences.preferred_study_time)
             self.assertEqual(self.db.query(AuthRefreshToken).count(), 1)
             self.assertEqual(
                 self.db.query(AuditLog).filter_by(event_type="AUTHENTICATION").count(),
@@ -112,6 +131,16 @@ class AuthenticationTests(unittest.TestCase):
             )
 
             rotated = service.refresh_access_token(login["tokens"]["refresh_token"])
+            self.assertEqual(
+                self.db.query(StudentAcademicProfile)
+                .filter_by(student_id=student.id)
+                .count(),
+                1,
+            )
+            self.assertEqual(
+                self.db.query(StudentPreference).filter_by(student_id=student.id).count(),
+                1,
+            )
             self.assertNotEqual(rotated["tokens"]["refresh_token"], login["tokens"]["refresh_token"])
             with self.assertRaises(HTTPException) as reused_token:
                 service.refresh_access_token(login["tokens"]["refresh_token"])

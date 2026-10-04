@@ -26,8 +26,9 @@ export default function Profile() {
       </Card>
       <div className="grid2">
         <EditForm title="Academic profile" path={`/api/academic-profiles/${sid}`} fields={[
-          { name: 'enrollment_number', label: 'Enrollment number' }, { name: 'branch', label: 'Branch' }, { name: 'department', label: 'Department' },
-          { name: 'semester', label: 'Semester', type: 'number', min: 1 }, { name: 'section', label: 'Section' }, { name: 'batch_year', label: 'Batch year', type: 'number' },
+          { name: 'branch', label: 'Branch' }, { name: 'semester', label: 'Semester', type: 'number', min: 1 },
+          { name: 'section', label: 'Section' }, { name: 'batch_year', label: 'Batch year', type: 'number' },
+          { name: 'enrollment_number', label: 'Enrollment number' },
           { name: 'current_cpi', label: 'Current CPI (0–10)', type: 'number', min: 0, max: 10 }, { name: 'current_spi', label: 'Current SPI (0–10)', type: 'number', min: 0, max: 10 },
           { name: 'earned_credits', label: 'Earned credits', type: 'number', min: 0 }, { name: 'total_credits', label: 'Total credits', type: 'number', min: 0 },
           { name: 'academic_status', label: 'Status', type: 'select', options: ['ACTIVE', 'PROBATION', 'GRADUATED', 'SUSPENDED', 'DROPOUT'] },

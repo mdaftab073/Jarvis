@@ -1,4 +1,4 @@
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
@@ -26,8 +26,8 @@ def add_notification(student_id: int, payload: NotificationInput, db: Session = 
 
 @router.post("/notifications/{student_id}/generate-alerts", response_model=JobExecutionResponse, status_code=202)
 @limiter.limit(settings.ALERT_GENERATION_RATE_LIMIT)
-def create_alerts(student_id: int, request: Request, background_tasks: BackgroundTasks, db: Session = Depends(get_db), _scope: int = Depends(require_student_scope)):
-    return enqueue_job(db, background_tasks, "generate_student_alerts", {"student_id": student_id}, student_id)
+def create_alerts(student_id: int, request: Request, db: Session = Depends(get_db), _scope: int = Depends(require_student_scope)):
+    return enqueue_job(db, "generate_student_alerts", {"student_id": student_id}, student_id)
 
 
 @router.patch("/notifications/{notification_id}/read")

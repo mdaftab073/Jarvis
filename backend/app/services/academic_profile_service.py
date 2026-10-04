@@ -15,8 +15,18 @@ def create_or_update_profile(db: Session, student_id: int, fields: dict) -> Stud
     if profile is None:
         profile = StudentAcademicProfile(student_id=student_id)
         db.add(profile)
+    fields = dict(fields)
+    legacy_department = fields.pop("department", None)
+    if "branch" not in fields and legacy_department is not None:
+        fields["branch"] = legacy_department
     for key, value in fields.items():
-        if hasattr(profile, key) and key not in {"id", "student_id", "created_at", "updated_at"}:
+        if hasattr(profile, key) and key not in {
+            "id",
+            "student_id",
+            "created_at",
+            "updated_at",
+            "department",
+        }:
             setattr(profile, key, value)
     db.commit()
     db.refresh(profile)

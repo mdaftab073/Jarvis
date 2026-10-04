@@ -1,4 +1,5 @@
 import unittest
+from datetime import datetime, timedelta
 from io import BytesIO
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -23,7 +24,7 @@ from app.core.config import settings
 from app.db.database import Base
 from app.db.database import get_db
 from app.db.models import Course, Student, Subject
-from app.jobs.registry import JobRegistry
+from app.jobs.registry import JobRegistry, recover_stale_jobs
 from app.models.job_execution import JobExecution
 from app.services import file_service
 from app.services.job_service import get_job_status
@@ -95,6 +96,100 @@ class PhaseFTests(unittest.TestCase):
         with patch("app.jobs.registry.SessionLocal", side_effect=lambda: Session(self.engine)):
             registry.execute_job(running.id)
         self.assertEqual(execution_count, [7])
+
+    def test_transient_job_failures_retry_with_exponential_backoff(self):
+        registry = JobRegistry()
+        calls = []
+
+        def flaky(_payload):
+            calls.append(len(calls) + 1)
+            if len(calls) < 4:
+                raise TimeoutError("temporary network timeout")
+            return {"ok": True}
+
+        registry.register_job("phasef.retry", flaky)
+        with patch("app.jobs.registry.SessionLocal", side_effect=lambda: Session(self.engine)), patch(
+            "app.jobs.registry.time.sleep"
+        ) as sleep:
+            execution = registry.create_execution(
+                self.db, "phasef.retry", {}, self.student.id
+            )
+            result = registry.execute_job(execution.id)
+
+        self.assertEqual(result["status"], "SUCCESS")
+        self.assertEqual(result["retry_count"], 3)
+        self.assertEqual([call.args[0] for call in sleep.call_args_list], [60, 120, 240])
+        self.assertEqual(len(calls), 4)
+        self.assertIsNotNone(result["finished_at"])
+        self.assertIsNotNone(result["last_heartbeat"])
+
+    def test_retry_classifier_handles_transient_http_and_ocr_timeout_failures(self):
+        import requests
+
+        from app.jobs.registry import _is_retryable_failure
+
+        server_error = requests.HTTPError(
+            "temporary upstream failure",
+            response=SimpleNamespace(status_code=503),
+        )
+        client_error = requests.HTTPError(
+            "invalid request",
+            response=SimpleNamespace(status_code=400),
+        )
+        ocr_error = RuntimeError("OCR failed")
+        ocr_error.__cause__ = TimeoutError("temporary OCR timeout")
+
+        self.assertTrue(_is_retryable_failure(server_error))
+        self.assertTrue(_is_retryable_failure(ocr_error))
+        self.assertFalse(_is_retryable_failure(client_error))
+        self.assertFalse(_is_retryable_failure(ValueError("Unsupported format")))
+
+    def test_permanent_job_failure_is_not_retried(self):
+        registry = JobRegistry()
+        registry.register_job(
+            "phasef.permanent",
+            lambda _payload: (_ for _ in ()).throw(FileNotFoundError("missing file")),
+        )
+        with patch("app.jobs.registry.SessionLocal", side_effect=lambda: Session(self.engine)), patch(
+            "app.jobs.registry.time.sleep"
+        ) as sleep:
+            execution = registry.create_execution(
+                self.db, "phasef.permanent", {}, self.student.id
+            )
+            result = registry.execute_job(execution.id)
+
+        self.assertEqual(result["status"], "FAILED")
+        self.assertEqual(result["retry_count"], 0)
+        sleep.assert_not_called()
+
+    def test_startup_recovery_requeues_only_stale_running_jobs(self):
+        stale = JobExecution(
+            job_name="stale",
+            status="RUNNING",
+            student_id=self.student.id,
+            started_at=datetime.utcnow() - timedelta(hours=2),
+            last_heartbeat=datetime.utcnow() - timedelta(hours=2),
+        )
+        fresh = JobExecution(
+            job_name="fresh",
+            status="RUNNING",
+            student_id=self.student.id,
+            started_at=datetime.utcnow(),
+            last_heartbeat=datetime.utcnow(),
+        )
+        self.db.add_all([stale, fresh])
+        self.db.commit()
+
+        with patch("app.jobs.registry.SessionLocal", side_effect=lambda: Session(self.engine)):
+            recovered = recover_stale_jobs(timeout_minutes=30)
+
+        self.assertEqual(recovered, 1)
+        self.db.refresh(stale)
+        self.db.refresh(fresh)
+        self.assertEqual(stale.status, "PENDING")
+        self.assertIsNone(stale.finished_at)
+        self.assertEqual(stale.retry_count, 1)
+        self.assertEqual(fresh.status, "RUNNING")
 
     def test_upload_rejects_wrong_mime_bad_signature_and_oversize(self):
         with TemporaryDirectory() as directory:

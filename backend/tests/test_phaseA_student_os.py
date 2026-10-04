@@ -12,6 +12,8 @@ from app.agents.agent_registry import create_default_registry
 from app.agents.director_agent import create_execution_plan
 from app.db.database import Base, get_db
 from app.db.models import CalendarEvent, Course, Student, Subject
+from app.schemas.digital_twin import StudentAcademicProfileResponse
+from app.schemas.student_os import ProfileInput
 from app.main import app
 from app.services.academic_profile_service import create_or_update_profile
 from app.services.attendance_service import attendance_risk, classes_to_recover, upsert_attendance
@@ -149,6 +151,21 @@ class PhaseAStudentOSTests(unittest.TestCase):
         self.assertEqual(dashboard["grades"][0]["grade_type"], "FINAL")
         self.assertEqual(dashboard["deadlines"][0]["type"], "QUIZ")
         self.assertIn("/api/dashboard/{student_id}", app.openapi()["paths"])
+
+    def test_legacy_department_maps_to_branch_without_api_department_field(self):
+        profile = create_or_update_profile(
+            self.db,
+            self.student.id,
+            {"department": "Computer Engineering"},
+        )
+        legacy_payload = ProfileInput.model_validate(
+            {"department": "Electrical Engineering"}
+        )
+        output = StudentAcademicProfileResponse.model_validate(profile).model_dump()
+
+        self.assertEqual(profile.branch, "Computer Engineering")
+        self.assertEqual(legacy_payload.branch, "Electrical Engineering")
+        self.assertNotIn("department", output)
 
     def test_dashboard_does_not_use_stale_snapshot_readiness(self):
         profile = self._profile()

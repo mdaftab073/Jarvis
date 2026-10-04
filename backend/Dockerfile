@@ -27,6 +27,7 @@ RUN useradd --create-home --uid 10001 jarvis \
 
 COPY --chown=jarvis:jarvis app ./app
 COPY --chown=jarvis:jarvis alembic ./alembic
+COPY --chown=jarvis:jarvis scripts ./scripts
 COPY --chown=jarvis:jarvis alembic.ini ./alembic.ini
 
 FROM runtime-base AS test

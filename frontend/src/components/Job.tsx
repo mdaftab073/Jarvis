@@ -26,6 +26,6 @@ export function JobStatus({ jobId, invalidate = [] }: { jobId: string | number; 
   if (q.isLoading) return <Spinner label="Checking progress…" />;
   if (q.error) return <p className="errnote">{q.error.message}</p>;
   if (BAD.includes(s)) return <p className="errnote">Processing failed{q.data?.error_message ? `: ${q.data.error_message}` : '.'}</p>;
-  if (OK.includes(s)) return <p className="okline">Processing finished.</p>;
-  return <Spinner label={`Processing (${s || 'queued'})…`} />;
+  if (OK.includes(s)) return <p className="okline">Ready for AI Analysis.</p>;
+  return <Spinner label="Processing…" />;
 }

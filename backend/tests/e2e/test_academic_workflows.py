@@ -60,9 +60,12 @@ class AcademicWorkflowE2ETests(unittest.TestCase):
             )
         with (
             patch("app.api.routes.study_materials.extract_text_from_pdf", return_value="ACID transactions ensure reliable database operations."),
-            patch("app.api.routes.study_materials.vector_service.delete_material_chunks"),
-            patch("app.api.routes.study_materials.delete_keyword_chunks"),
-            patch("app.api.routes.study_materials.vector_service.add_chunks_to_vector_db", return_value=1) as embeddings,
+            patch(
+                "app.api.routes.study_materials.vector_service.stage_material_chunks",
+                return_value={"ids": ["chunk-id"], "previous_ids": []},
+            ) as embeddings,
+            patch("app.api.routes.study_materials.vector_service.activate_staged_material_chunks"),
+            patch("app.api.routes.study_materials.vector_service.retire_previous_material_chunks"),
             patch("app.api.routes.study_materials.replace_material_chunks"),
         ):
             embedded = embed_material(material.id, self.db)

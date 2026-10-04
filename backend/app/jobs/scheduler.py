@@ -11,11 +11,10 @@ scheduler = BackgroundScheduler(timezone="UTC")
 
 def _enqueue_and_run(job_name: str, payload: dict | None = None) -> None:
     from app.db.database import SessionLocal
-    from app.jobs.registry import execute_registered_job, get_job_registry
+    from app.jobs.registry import get_job_registry
 
     with SessionLocal() as db:
-        execution = get_job_registry().create_execution(db, job_name, payload or {})
-    execute_registered_job(execution.id)
+        get_job_registry().create_execution(db, job_name, payload or {})
 
 
 def start_scheduler() -> None:

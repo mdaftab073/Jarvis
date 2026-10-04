@@ -1,4 +1,4 @@
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
@@ -78,21 +78,21 @@ def update_connector_credentials(connector_id: int, payload: ConnectorCredential
 
 @router.post("/connectors/{connector_id}/sync")
 @limiter.limit(settings.CONNECTOR_SYNC_RATE_LIMIT)
-def manual_sync(connector_id: int, background_tasks: BackgroundTasks, request: Request, db: Session = Depends(get_db)):
+def manual_sync(connector_id: int, request: Request, db: Session = Depends(get_db)):
     connector = _get_registered_connector(db, connector_id)
     if connector is None:
         raise HTTPException(status_code=404, detail="Connector not found")
-    require_record_owner(request, connector.student_id)
+    student_id = int(connector.student_id)
+    require_record_owner(request, student_id)
     try:
-        job = enqueue_sync(db, connector.student_id, connector_id)
+        job = enqueue_sync(db, student_id, connector_id)
     except (ConnectorOwnershipError, ValueError) as error:
         raise HTTPException(status_code=409, detail=str(error)) from error
     execution = enqueue_job(
         db,
-        background_tasks,
         "run_connector_sync",
         {"sync_job_id": job.id},
-        connector.student_id,
+        student_id,
     )
     return {**serialize_job(job), "execution_job_id": execution.id, "execution_status": execution.status}
 

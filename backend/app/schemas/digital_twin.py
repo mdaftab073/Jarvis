@@ -2,7 +2,7 @@
 
 from datetime import datetime
 from typing import Any, Dict, List, Optional
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, model_validator, validator
 
 
 # ── StudentAcademicProfile ────────────────────────────────────────────────────
@@ -10,7 +10,6 @@ from pydantic import BaseModel, Field, validator
 class StudentAcademicProfileCreate(BaseModel):
     enrollment_number: Optional[str] = None
     branch: Optional[str] = None
-    department: Optional[str] = None
     semester: Optional[int] = Field(None, ge=1, le=12)
     section: Optional[str] = None
     batch_year: Optional[int] = Field(None, ge=2000, le=2100)
@@ -20,11 +19,20 @@ class StudentAcademicProfileCreate(BaseModel):
     earned_credits: Optional[int] = Field(None, ge=0)
     academic_status: str = Field("ACTIVE", pattern="^(ACTIVE|PROBATION|GRADUATED|SUSPENDED|DROPOUT)$")
 
+    @model_validator(mode="before")
+    @classmethod
+    def map_legacy_department(cls, values):
+        if isinstance(values, dict) and "department" in values:
+            values = dict(values)
+            if not values.get("branch"):
+                values["branch"] = values["department"]
+            values.pop("department")
+        return values
+
 
 class StudentAcademicProfileUpdate(BaseModel):
     enrollment_number: Optional[str] = None
     branch: Optional[str] = None
-    department: Optional[str] = None
     semester: Optional[int] = Field(None, ge=1, le=12)
     section: Optional[str] = None
     batch_year: Optional[int] = Field(None, ge=2000, le=2100)
@@ -34,13 +42,22 @@ class StudentAcademicProfileUpdate(BaseModel):
     earned_credits: Optional[int] = Field(None, ge=0)
     academic_status: Optional[str] = Field(None, pattern="^(ACTIVE|PROBATION|GRADUATED|SUSPENDED|DROPOUT)$")
 
+    @model_validator(mode="before")
+    @classmethod
+    def map_legacy_department(cls, values):
+        if isinstance(values, dict) and "department" in values:
+            values = dict(values)
+            if not values.get("branch"):
+                values["branch"] = values["department"]
+            values.pop("department")
+        return values
+
 
 class StudentAcademicProfileResponse(BaseModel):
     id: int
     student_id: int
     enrollment_number: Optional[str]
     branch: Optional[str]
-    department: Optional[str]
     semester: Optional[int]
     section: Optional[str]
     batch_year: Optional[int]

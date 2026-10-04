@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useAuth, useStudentId } from '../auth/AuthContext';
-import { useSubject, useSubjectNames } from '../auth/SubjectContext';
+import { SubjectPicker, useSubject, useSubjectNames } from '../auth/SubjectContext';
 import { Async, Bar, Card, Chip, Empty, PageHead, Stat } from '../components/ui';
 import { useGet } from '../lib/hooks';
 import { dt, dd, num, pctOf } from '../lib/format';
@@ -16,8 +16,8 @@ export default function Home() {
   const first = (student?.full_name || '').split(' ')[0];
   return (
     <>
-      <PageHead title={first ? `Hi, ${first}` : 'Welcome back'} sub="Here’s what needs your attention." />
-      {!subjectId && <p className="hint">Pick a subject in the top bar to unlock materials, practice and analytics for it. No subjects yet? Add a course in <Link to="/courses">Courses</Link>.</p>}
+      <PageHead title={first ? `Hi, ${first}` : 'Welcome back'} sub="Here’s what needs your attention." actions={<SubjectPicker />} />
+      {!subjectId && <p className="hint">Choose a subject to unlock materials, practice and analytics. No subjects yet? Add a course in <Link to="/courses">Courses</Link>.</p>}
       <Async q={dash} empty="No activity yet. Add a course, upload a material or start a chat to get going.">
         {(d: any) => (
           <>

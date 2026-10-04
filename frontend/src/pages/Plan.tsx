@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { api, asList } from '../api/client';
 import { useStudentId } from '../auth/AuthContext';
-import { useSubject, useSubjectNames } from '../auth/SubjectContext';
+import { SubjectPicker, useSubject, useSubjectNames } from '../auth/SubjectContext';
 import { Async, Bar, Card, Chip, CreateForm, DataView, Empty, PageHead, ResourcePanel, Tabs } from '../components/ui';
 import { useAct, useGet } from '../lib/hooks';
 import { useStored } from '../lib/store';
@@ -165,7 +165,7 @@ export default function Plan() {
   const [tab, setTab] = useState('plan');
   return (
     <>
-      <PageHead title="Plan" sub="Study plans, schedule, calendar and coaching." />
+      <PageHead title="Plan" sub="Study plans, schedule, calendar and coaching." actions={<SubjectPicker />} />
       <Tabs tabs={[['plan', 'Study plan'], ['schedule', 'Schedule'], ['calendar', 'Calendar'], ['coach', 'Coach']]} value={tab} onChange={setTab} />
       {tab === 'plan' && <StudyPlan />}
       {tab === 'schedule' && <Schedule />}

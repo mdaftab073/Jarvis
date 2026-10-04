@@ -75,6 +75,8 @@ class DeploymentValidationTests(unittest.TestCase):
                 GOOGLE_CLIENT_ID="google-client",
                 METRICS_ADMIN_TOKEN="metrics-token",
                 CONNECTOR_ENCRYPTION_KEY=Fernet.generate_key().decode(),
+                ALLOWED_ORIGINS="",
+                _env_file=None,
             )
 
     def test_production_settings_reject_placeholder_secrets(self):
@@ -111,29 +113,29 @@ class DeploymentValidationTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, "PostgreSQL connectivity check failed"):
                 validate_startup_dependencies()
 
-    def test_production_startup_fails_when_chromadb_is_unavailable(self):
+    def test_production_startup_continues_when_chromadb_is_unavailable(self):
         connection = Mock()
         connection.__enter__ = Mock(return_value=connection)
         connection.__exit__ = Mock(return_value=False)
-        collection = Mock()
-        collection.count.side_effect = OSError("offline")
         with (
             patch.object(settings, "ENVIRONMENT", "production"),
             patch("app.main.engine.connect", return_value=connection),
-            patch("app.main.get_collection", return_value=collection),
+            patch(
+                "app.main.validate_chroma_storage",
+                side_effect=OSError("offline"),
+            ),
         ):
-            with self.assertRaisesRegex(RuntimeError, "ChromaDB initialization check failed"):
-                validate_startup_dependencies()
+            validate_startup_dependencies()
 
-    def test_nonproduction_startup_skips_external_dependency_checks(self):
+    def test_nonproduction_startup_skips_postgres_but_checks_chroma(self):
         with (
             patch.object(settings, "ENVIRONMENT", "test"),
             patch("app.main.engine.connect") as database_connect,
-            patch("app.main.get_collection") as get_collection,
+            patch("app.main.validate_chroma_storage") as validate_chroma,
         ):
             validate_startup_dependencies()
         database_connect.assert_not_called()
-        get_collection.assert_not_called()
+        validate_chroma.assert_called_once()
 
     def test_environment_requires_strict_auth_and_complete_credentials(self):
         with (

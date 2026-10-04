@@ -9,7 +9,12 @@ from sqlalchemy import inspect, text
 from app.core.config import settings
 from app.db import models
 from app.db.database import engine
-from app.services.vector_service import get_chroma_client, get_collection
+from app.jobs.worker_state import get_worker_health
+from app.services.vector_service import (
+    get_chroma_client,
+    get_collection,
+    validate_rag_storage,
+)
 
 logger = logging.getLogger(__name__)
 BACKEND_ROOT = Path(__file__).resolve().parents[2]
@@ -41,10 +46,11 @@ SYSTEM_START_TIME = time.time()
 def get_system_health() -> dict:
     statuses = {
         "database": "unhealthy",
-        "chroma": "unhealthy",
+        "chroma": "degraded",
         "groq": "configured" if settings.GROQ_API_KEY.strip() else "missing",
         "migrations": "unknown",
         "agents": "healthy",
+        "worker": {"status": "unhealthy", "last_heartbeat": None, "pending_jobs": None},
         "version": settings.VERSION,
         "uptime_seconds": round(time.time() - SYSTEM_START_TIME, 2),
     }
@@ -55,14 +61,17 @@ def get_system_health() -> dict:
     except Exception:
         logger.exception("System health database check failed")
     try:
-        get_collection().count()
-        statuses["chroma"] = "healthy"
+        statuses["chroma"] = validate_rag_storage()
     except Exception:
         logger.exception("System health ChromaDB check failed")
     try:
         statuses["migrations"] = _migration_state()
     except Exception:
         logger.exception("System health migration check failed")
+    try:
+        statuses["worker"] = get_worker_health()
+    except Exception:
+        logger.exception("System health worker check failed")
     try:
         from app.agents.agent_registry import create_default_registry
         reg = create_default_registry()
@@ -85,6 +94,7 @@ def get_system_health() -> dict:
         and statuses["groq"] == "configured"
         and statuses["migrations"] == "up_to_date"
         and statuses["agents"] == "healthy"
+        and statuses["worker"]["status"] == "healthy"
         else "degraded"
     )
     return statuses
@@ -97,6 +107,7 @@ def get_system_readiness() -> dict:
         and health["chroma"] == "healthy"
         and health["migrations"] == "up_to_date"
         and health.get("agents") == "healthy"
+        and health["worker"]["status"] == "healthy"
     )
     return {
         "status": "ready" if is_ready else "not_ready",
@@ -107,6 +118,7 @@ def get_system_readiness() -> dict:
         "chroma_connected": health["chroma"] == "healthy",
         "migrations_up_to_date": health["migrations"] == "up_to_date",
         "agents_registered": health["agents"] == "healthy",
+        "worker_healthy": health["worker"]["status"] == "healthy",
     }
 
 

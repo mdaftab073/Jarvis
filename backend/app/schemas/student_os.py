@@ -6,7 +6,6 @@ from pydantic import BaseModel, Field, model_validator
 class ProfileInput(BaseModel):
     enrollment_number: str | None = None
     branch: str | None = None
-    department: str | None = None
     semester: int | None = Field(None, ge=1)
     section: str | None = None
     batch_year: int | None = None
@@ -15,6 +14,16 @@ class ProfileInput(BaseModel):
     earned_credits: int | None = Field(None, ge=0)
     total_credits: int | None = Field(None, ge=0)
     academic_status: Literal["ACTIVE", "PROBATION", "GRADUATED", "SUSPENDED", "DROPOUT"] | None = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def map_legacy_department(cls, values):
+        if isinstance(values, dict) and "department" in values:
+            values = dict(values)
+            if not values.get("branch"):
+                values["branch"] = values["department"]
+            values.pop("department")
+        return values
 
 
 class AttendanceInput(BaseModel):

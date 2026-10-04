@@ -9,28 +9,46 @@ class SystemHealthTests(unittest.TestCase):
     def test_health_reports_all_dependencies_healthy(self):
         with (
             patch.object(system_health_service.engine, "connect") as connect,
-            patch.object(system_health_service, "get_collection") as collection,
+            patch.object(system_health_service, "validate_rag_storage", return_value="healthy"),
             patch.object(system_health_service, "_migration_state", return_value="up_to_date"),
+            patch.object(
+                system_health_service,
+                "get_worker_health",
+                return_value={
+                    "status": "healthy",
+                    "last_heartbeat": "2026-10-04T12:00:00",
+                    "pending_jobs": 0,
+                },
+            ),
         ):
             connect.return_value.__enter__.return_value.execute.return_value = None
-            collection.return_value.count.return_value = 0
             health = system_health_service.get_system_health()
 
         self.assertEqual(health["database"], "healthy")
         self.assertEqual(health["chroma"], "healthy")
         self.assertEqual(health["migrations"], "up_to_date")
+        self.assertEqual(health["worker"]["status"], "healthy")
         self.assertEqual(health["overall"], "healthy")
 
     def test_health_reports_degraded_when_dependency_unavailable(self):
         with (
             patch.object(system_health_service.engine, "connect", side_effect=OSError("down")),
-            patch.object(system_health_service, "get_collection", side_effect=OSError("down")),
+            patch.object(system_health_service, "validate_rag_storage", side_effect=OSError("down")),
             patch.object(system_health_service, "_migration_state", side_effect=OSError("down")),
+            patch.object(
+                system_health_service,
+                "get_worker_health",
+                return_value={
+                    "status": "unhealthy",
+                    "last_heartbeat": None,
+                    "pending_jobs": 0,
+                },
+            ),
         ):
             health = system_health_service.get_system_health()
 
         self.assertEqual(health["database"], "unhealthy")
-        self.assertEqual(health["chroma"], "unhealthy")
+        self.assertEqual(health["chroma"], "degraded")
         self.assertEqual(health["migrations"], "unknown")
         self.assertEqual(health["overall"], "degraded")
 

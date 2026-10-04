@@ -12,4 +12,5 @@ from .learning_session import LearningSession  # noqa: F401
 from .chat_session import ChatSession  # noqa: F401
 from .chat_message import ChatMessage  # noqa: F401
 from .job_execution import JobExecution  # noqa: F401
+from .worker_heartbeat import WorkerHeartbeat  # noqa: F401
 from .audit_log import AuditLog  # noqa: F401
