@@ -251,4 +251,5 @@ for router, tag in (
     app.include_router(router, prefix="/api", tags=[tag])
 
 envelope_routes(app.routes)
+print("ALLOWED_ORIGINS =", settings.allowed_origins)
 add_cors_middleware(app, settings.allowed_origins)
