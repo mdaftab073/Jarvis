@@ -8,3 +8,14 @@ venv/
 __pycache__/
 *.pyc
 backend/chroma_db/keyword_index.sqlite3
+# Runtime logs
+backend/logs/
+
+# Uploaded files
+backend/uploads/
+
+# Local Chroma database
+backend/chroma_db/
+
+# Zip artifacts
+*.zip
