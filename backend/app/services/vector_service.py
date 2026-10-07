@@ -5,7 +5,10 @@ from typing import Optional
 from uuid import uuid4
 
 import chromadb
-from sentence_transformers import SentenceTransformer
+try:
+    from sentence_transformers import SentenceTransformer
+except ImportError:
+    SentenceTransformer = None
 
 from app.core.rag_config import (
     DEFAULT_TOP_K,
@@ -30,6 +33,10 @@ def get_embedding_model():
     global _embedding_model
 
     if _embedding_model is None:
+        if SentenceTransformer is None:
+            raise RuntimeError(
+                "sentence-transformers is not installed. Please install it to compute embeddings."
+            )
         _embedding_model = SentenceTransformer(
             "sentence-transformers/all-MiniLM-L6-v2"
         )

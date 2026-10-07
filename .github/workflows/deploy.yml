@@ -1,0 +1,73 @@
+name: Deploy to EC2
+
+on:
+  workflow_run:
+    workflows: ["Jarvis CI"]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: production-deployment
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy to Production EC2
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success') }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Execute Deployment Commands on EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script_stop: true
+          command_timeout: 15m
+          script: |
+            set -euo pipefail
+            echo "=========================================================="
+            echo " Starting Jarvis Continuous Deployment on EC2"
+            echo " Timestamp: $(date -u)"
+            echo "=========================================================="
+
+            APP_DIR="/var/www/jarvis"
+            if [ ! -d "$APP_DIR" ]; then
+              echo "Error: Directory $APP_DIR does not exist. Please run initial setup."
+              exit 1
+            fi
+
+            cd "$APP_DIR"
+
+            echo "--> Pulling latest changes from main branch..."
+            git fetch origin main
+            git reset --hard origin/main
+
+            echo "--> Rebuilding and starting backend services..."
+            docker compose up -d --build jarvis-api worker
+
+            echo "--> Building production frontend bundle..."
+            cd "$APP_DIR/frontend"
+            npm install
+            npm run build
+
+            echo "--> Reloading Nginx web server..."
+            sudo systemctl reload nginx
+
+            echo "--> Verifying backend health..."
+            sleep 8
+            HEALTH_OUTPUT=$(curl -s http://localhost:8000/system/health || true)
+            echo "Health status: $HEALTH_OUTPUT"
+            if echo "$HEALTH_OUTPUT" | grep -q '"overall": "healthy"'; then
+              echo "==> Health Check PASSED!"
+            else
+              echo "==> Warning: Backend is still warming up or degraded."
+            fi
+
+            echo "=========================================================="
+            echo " Jarvis Continuous Deployment Complete!"
+            echo "=========================================================="

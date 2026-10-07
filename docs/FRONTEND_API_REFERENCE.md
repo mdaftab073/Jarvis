@@ -21,7 +21,7 @@ Generated from the registered FastAPI OpenAPI schema by `backend/scripts/generat
 | DELETE | `/api/reminders/{reminder_id}` | Bearer access token | reminder_id (path, integer, required) | 200: SuccessResponse_Any_ | 400, 401, 403, 404, 409, 413, 422, 429, 500, 503 |
 | DELETE | `/api/students/{student_id}` | Bearer access token | student_id (path, integer, required) | 200: SuccessResponse_Any_ | 400, 401, 403, 404, 409, 413, 422, 429, 500, 503 |
 | GET | `/` | Public | None | 200: SuccessResponse_Any_ | 400, 401, 403, 404, 409, 413, 422, 429, 500, 503 |
-| GET | `/api/academic-profiles/{student_id}` | Bearer access token | student_id (path, integer, required) | 200: SuccessResponse_Any_ | 400, 401, 403, 404, 409, 413, 422, 429, 500, 503 |
+| GET | `/api/academic-profiles/{student_id}` | Bearer access token | student_id (path, integer, required) | 200: SuccessResponse_StudentAcademicProfileResponse_ | 400, 401, 403, 404, 409, 413, 422, 429, 500, 503 |
 | GET | `/api/academic-profiles/{student_id}/preferences` | Bearer access token | student_id (path, integer, required) | 200: SuccessResponse_Any_ | 400, 401, 403, 404, 409, 413, 422, 429, 500, 503 |
 | GET | `/api/academic-profiles/{student_id}/summary` | Bearer access token | student_id (path, integer, required) | 200: SuccessResponse_Any_ | 400, 401, 403, 404, 409, 413, 422, 429, 500, 503 |
 | GET | `/api/agent/debug-plan` | Bearer access token | student_id (query, integer, required), goal (query, string, required) | 200: SuccessResponse_AcademicAgentDebugResponse_ | 400, 401, 403, 404, 409, 413, 422, 429, 500, 503 |
@@ -168,7 +168,7 @@ Generated from the registered FastAPI OpenAPI schema by `backend/scripts/generat
 | POST | `/api/study-plans/{plan_id}/recalculate` | Bearer access token | plan_id (path, integer, required) | 200: SuccessResponse_RecalculateResponse_ | 400, 401, 403, 404, 409, 413, 422, 429, 500, 503 |
 | POST | `/api/subjects` | Bearer access token | application/json (required): SubjectCreate | 200: SuccessResponse_SubjectResponse_ | 400, 401, 403, 404, 409, 413, 422, 429, 500, 503 |
 | POST | `/api/topics/extract/{material_id}` | Bearer access token | material_id (path, integer, required), subject_id (query, integer, required) | 200: SuccessResponse_List_Topic__ | 400, 401, 403, 404, 409, 413, 422, 429, 500, 503 |
-| PUT | `/api/academic-profiles/{student_id}` | Bearer access token | student_id (path, integer, required), application/json (required): ProfileInput | 200: SuccessResponse_Any_ | 400, 401, 403, 404, 409, 413, 422, 429, 500, 503 |
+| PUT | `/api/academic-profiles/{student_id}` | Bearer access token | student_id (path, integer, required), application/json (required): ProfileInput | 200: SuccessResponse_StudentAcademicProfileResponse_ | 400, 401, 403, 404, 409, 413, 422, 429, 500, 503 |
 | PUT | `/api/academic-profiles/{student_id}/preferences` | Bearer access token | student_id (path, integer, required), application/json (required): PreferenceInput | 200: SuccessResponse_Any_ | 400, 401, 403, 404, 409, 413, 422, 429, 500, 503 |
 | PUT | `/api/calendar/events/{event_id}` | Bearer access token | event_id (path, integer, required), application/json (required): CalendarEventInput | 200: SuccessResponse_Any_ | 400, 401, 403, 404, 409, 413, 422, 429, 500, 503 |
 | PUT | `/api/connectors/{connector_id}/credentials` | Bearer access token | connector_id (path, integer, required), application/json (required): ConnectorCredentialsInput | 200: SuccessResponse_Any_ | 400, 401, 403, 404, 409, 413, 422, 429, 500, 503 |

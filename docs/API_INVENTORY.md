@@ -18,7 +18,7 @@ Generated from the registered FastAPI OpenAPI schema by `backend/scripts/generat
 | DELETE | `/api/reminders/{reminder_id}` | Bearer access token | reminder_id (path, integer, required) | 200: SuccessResponse_Any_ |
 | DELETE | `/api/students/{student_id}` | Bearer access token | student_id (path, integer, required) | 200: SuccessResponse_Any_ |
 | GET | `/` | Public | None | 200: SuccessResponse_Any_ |
-| GET | `/api/academic-profiles/{student_id}` | Bearer access token | student_id (path, integer, required) | 200: SuccessResponse_Any_ |
+| GET | `/api/academic-profiles/{student_id}` | Bearer access token | student_id (path, integer, required) | 200: SuccessResponse_StudentAcademicProfileResponse_ |
 | GET | `/api/academic-profiles/{student_id}/preferences` | Bearer access token | student_id (path, integer, required) | 200: SuccessResponse_Any_ |
 | GET | `/api/academic-profiles/{student_id}/summary` | Bearer access token | student_id (path, integer, required) | 200: SuccessResponse_Any_ |
 | GET | `/api/agent/debug-plan` | Bearer access token | student_id (query, integer, required), goal (query, string, required) | 200: SuccessResponse_AcademicAgentDebugResponse_ |
@@ -165,7 +165,7 @@ Generated from the registered FastAPI OpenAPI schema by `backend/scripts/generat
 | POST | `/api/study-plans/{plan_id}/recalculate` | Bearer access token | plan_id (path, integer, required) | 200: SuccessResponse_RecalculateResponse_ |
 | POST | `/api/subjects` | Bearer access token | application/json (required): SubjectCreate | 200: SuccessResponse_SubjectResponse_ |
 | POST | `/api/topics/extract/{material_id}` | Bearer access token | material_id (path, integer, required), subject_id (query, integer, required) | 200: SuccessResponse_List_Topic__ |
-| PUT | `/api/academic-profiles/{student_id}` | Bearer access token | student_id (path, integer, required), application/json (required): ProfileInput | 200: SuccessResponse_Any_ |
+| PUT | `/api/academic-profiles/{student_id}` | Bearer access token | student_id (path, integer, required), application/json (required): ProfileInput | 200: SuccessResponse_StudentAcademicProfileResponse_ |
 | PUT | `/api/academic-profiles/{student_id}/preferences` | Bearer access token | student_id (path, integer, required), application/json (required): PreferenceInput | 200: SuccessResponse_Any_ |
 | PUT | `/api/calendar/events/{event_id}` | Bearer access token | event_id (path, integer, required), application/json (required): CalendarEventInput | 200: SuccessResponse_Any_ |
 | PUT | `/api/connectors/{connector_id}/credentials` | Bearer access token | connector_id (path, integer, required), application/json (required): ConnectorCredentialsInput | 200: SuccessResponse_Any_ |

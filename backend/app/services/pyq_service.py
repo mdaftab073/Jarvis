@@ -418,11 +418,12 @@ def generate_practice_questions(
     except Exception:
         logger.exception("RAG context retrieval failed for practice generation")
 
+    notes_context = "\n".join(note_contexts)
     context = "\n\n".join(
         part
         for part in (
             f"Past questions:\n{past_question_context}" if past_question_context else "",
-            f"Notes and references:\n{'\n'.join(note_contexts)}" if note_contexts else "",
+            f"Notes and references:\n{notes_context}" if note_contexts else "",
             f"Retrieved study context:\n{rag_context}" if rag_context else "",
         )
         if part

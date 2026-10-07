@@ -19,3 +19,8 @@ backend/chroma_db/
 
 # Zip artifacts
 *.zip
+*.db
+.venv*
+logs/
+node_modules/
+dist/

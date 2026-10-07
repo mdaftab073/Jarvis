@@ -101,9 +101,12 @@ class AcademicWorkflowE2ETests(unittest.TestCase):
             )
         with (
             patch("app.api.routes.study_materials.extract_text_from_pdf", return_value="Q1 Explain BCNF normalization."),
-            patch("app.api.routes.study_materials.vector_service.delete_material_chunks"),
-            patch("app.api.routes.study_materials.delete_keyword_chunks"),
-            patch("app.api.routes.study_materials.vector_service.add_chunks_to_vector_db", return_value=1),
+            patch(
+                "app.api.routes.study_materials.vector_service.stage_material_chunks",
+                return_value={"ids": ["chunk-id"], "previous_ids": []},
+            ),
+            patch("app.api.routes.study_materials.vector_service.activate_staged_material_chunks"),
+            patch("app.api.routes.study_materials.vector_service.retire_previous_material_chunks"),
             patch("app.api.routes.study_materials.replace_material_chunks"),
             patch("app.api.routes.study_materials.analyze_pyq_material", return_value=[{"topic": "Normalization"}]),
         ):
