@@ -1,103 +1,504 @@
 # Jarvis
 
-Jarvis is a FastAPI academic assistant combining subject-aware retrieval, PYQ intelligence, study planning, learning analytics, student memory, semester tracking, and a modular multi-agent Director.
+AI-Powered Student Academic Assistant
 
-## Background job architecture
+Jarvis is a full-stack AI platform designed to help engineering students manage academics, study materials, attendance, semester planning, previous year papers, and AI-assisted learning from a single workspace.
 
-Uploads and other registered background tasks are written to PostgreSQL and processed by the independent worker. A worker restart recovers pending jobs and requeues interrupted work after its heartbeat becomes stale.
+The platform combines:
+
+- FastAPI
+- PostgreSQL
+- ChromaDB
+- LangChain
+- Groq LLMs
+- OCR-based PDF Processing
+- Retrieval Augmented Generation (RAG)
+- Durable Background Workers
+- React + TypeScript Frontend
+
+to provide an intelligent academic assistant tailored for students.
+
+---
+
+# Features
+
+## Academic Management
+
+- Subject Management
+- Attendance Tracking
+- Attendance Prediction
+- Academic Profile Management
+- Semester Planning
+- Study Goal Tracking
+
+---
+
+## AI Study Assistant
+
+- Upload Notes
+- Upload Previous Year Papers
+- Ask Questions From Notes
+- Subject-Specific Retrieval
+- AI Generated Study Guidance
+- Context-Aware RAG Search
+
+---
+
+## Previous Year Paper Intelligence
+
+Automatically:
+
+- Extracts text
+- Detects PYQ patterns
+- Builds searchable knowledge
+- Supports AI-powered question answering
+
+---
+
+## OCR Support
+
+Supports:
+
+- Normal PDFs
+- Scanned PDFs
+- Image-based Question Papers
+- Mixed PDFs (text + images)
+
+When native text extraction fails:
 
 ```text
-Frontend
-   ↓
-FastAPI API
-   ↓
-PostgreSQL Job Queue
-   ↓
-Worker
-   ↓
-PDF/OCR/Chunking
-   ↓
+PDF
+ ↓
+OCR
+ ↓
+Text
+ ↓
+Chunking
+ ↓
 Embeddings
+ ↓
+Vector Database
+```
+
+---
+
+## Durable Background Processing
+
+Large uploads are processed asynchronously.
+
+Features:
+
+- Persistent job storage
+- Worker heartbeats
+- Retry mechanism
+- Crash recovery
+- Safe reprocessing
+
+---
+
+## Authentication
+
+Supports:
+
+### JWT Authentication
+
+- Access Tokens
+- Refresh Tokens
+
+### Google OAuth Login
+
+Automatic:
+
+- Account creation
+- Academic profile creation
+- Preference initialization
+
+---
+
+# System Architecture
+
+```text
+                 ┌───────────────┐
+                 │ React Frontend│
+                 └───────┬───────┘
+                         │
+                         ▼
+                 ┌───────────────┐
+                 │ FastAPI API   │
+                 └───────┬───────┘
+                         │
+        ┌────────────────┼────────────────┐
+        ▼                ▼                ▼
+
+ PostgreSQL       ChromaDB         Background Worker
+ (Metadata)      (Embeddings)      (Durable Jobs)
+
+        │                │
+        └──────┬─────────┘
+               ▼
+
+          Groq LLM
+```
+
+---
+
+# Tech Stack
+
+## Backend
+
+- FastAPI
+- SQLAlchemy
+- Alembic
+- PostgreSQL
+- ChromaDB
+- LangChain
+- Groq
+- PyMuPDF
+- PyPDF
+- Pytesseract
+
+---
+
+## Frontend
+
+- React
+- TypeScript
+- React Query
+- React Router
+- Vite
+
+---
+
+## Infrastructure
+
+- Docker
+- Docker Compose
+
+---
+
+# AI Pipeline
+
+## Material Upload
+
+```text
+Upload PDF
+      ↓
+Save File
+      ↓
+Create Job
+      ↓
+Worker Picks Job
+      ↓
+Extract Text
+      ↓
+OCR Fallback
+      ↓
+Chunk Text
+      ↓
+Generate Embeddings
+      ↓
+Store In ChromaDB
+      ↓
+Material Ready
+```
+
+---
+
+## RAG Query Flow
+
+```text
+User Question
+      ↓
+Embedding Search
+      ↓
+Retrieve Chunks
+      ↓
+Context Assembly
+      ↓
+Groq LLM
+      ↓
+Answer
+```
+
+---
+
+# OCR Pipeline
+
+Jarvis supports scanned PDFs.
+
+If a PDF contains images instead of embedded text:
+
+```text
+PyPDF
    ↓
-Chroma
+No Text Found
+   ↓
+PyMuPDF Render
+   ↓
+Tesseract OCR
+   ↓
+Recovered Text
 ```
 
-## Quick Start
+This enables processing of:
 
-The Docker Compose stack runs PostgreSQL, Chroma, the API, and the durable worker. Configure a Groq key and a strong PostgreSQL password once:
+- Question Papers
+- Scanned Notes
+- Printed Documents
+- Mobile Scan PDFs
 
-```powershell
-Copy-Item .env.example .env
-# Edit .env, then:
-docker compose up -d
+---
+
+# Safe Reindexing
+
+Jarvis uses generation-based indexing.
+
+```text
+Current Index
+       ↓
+
+Create New Generation
+       ↓
+
+Validate
+       ↓
+
+Swap Generation
+       ↓
+
+Delete Old Generation
 ```
 
-The API is available at `http://localhost:8000`; interactive OpenAPI docs are at `http://localhost:8000/docs`. Compose applies Alembic migrations before starting Uvicorn. See [DOCKER_SETUP.md](DOCKER_SETUP.md) for setup and operational details.
+Benefits:
 
-For local development, configure `DATABASE_URL`, `GROQ_API_KEY`, and `CHROMA_HOST`, install the backend dependencies, and start PostgreSQL and Chroma:
+- No downtime
+- No corrupted search indexes
+- Rollback-safe updates
 
-```powershell
-docker compose up -d postgres chroma
-Set-Location backend
-python -m pip install -r requirements-dev.txt
+---
+
+# Durable Job System
+
+Unlike FastAPI BackgroundTasks, Jarvis uses database-backed jobs.
+
+### Features
+
+- Persistent queue
+- Job retries
+- Exponential backoff
+- Heartbeats
+- Recovery after crashes
+
+Retry Schedule:
+
+```text
+Retry 1 → 60 sec
+Retry 2 → 120 sec
+Retry 3 → 240 sec
+```
+
+---
+
+# Database
+
+PostgreSQL stores:
+
+- Users
+- Subjects
+- Attendance
+- Materials
+- Study Plans
+- Academic Profiles
+- Jobs
+- Notifications
+
+ChromaDB stores:
+
+- Embeddings
+- Chunks
+- Search Metadata
+
+---
+
+# Environment Variables
+
+Create:
+
+```env
+POSTGRES_DB=
+POSTGRES_USER=
+POSTGRES_PASSWORD=
+
+JWT_SECRET_KEY=
+CONNECTOR_ENCRYPTION_KEY=
+METRICS_ADMIN_TOKEN=
+
+GOOGLE_CLIENT_ID=
+GROQ_API_KEY=
+
+ALLOWED_ORIGINS=
+```
+
+---
+
+# Local Development
+
+## Backend
+
+```bash
+cd backend
+
+python -m venv .venv
+
+source .venv/bin/activate
+
+pip install -r requirements.txt
+
 alembic upgrade head
-```
 
-Then run the API and worker in separate terminals from `backend/`:
-
-```powershell
 uvicorn app.main:app --reload
 ```
 
-```powershell
-python -m app.workers.job_worker
+---
+
+## Frontend
+
+```bash
+cd frontend
+
+npm install
+
+npm run dev
 ```
 
-The worker uses the same environment and database as the API.
+---
 
-Scanned PDFs use OCR during processing. Local development requires Tesseract OCR and its English language data installed and available in `PATH`. Docker deployment installs `tesseract-ocr` and `tesseract-ocr-eng` automatically; no container-side manual setup is required.
+# Docker Deployment
 
-## Rebuilding RAG embeddings
+Build:
 
-To rebuild the vector and keyword indexes from stored study materials, start PostgreSQL and Chroma, then run from `backend/`:
-
-```powershell
-python scripts/rebuild_embeddings.py
+```bash
+docker compose build
 ```
 
-The script processes every stored material using the normal PDF/OCR pipeline, reports failures, and removes orphaned or inactive Chroma chunks only after all materials rebuild successfully. It can be rerun safely; configure the same database and Chroma environment as the API.
+Run:
 
-Subject selection is shared state used by student workflows, so it remains available on Dashboard, Courses, Planner, and Materials after removal from the global navbar.
-
-## Validation
-
-Run the offline test pyramid from `backend/`:
-
-```powershell
-python -m unittest discover -s tests
+```bash
+docker compose up -d
 ```
 
-Run the live dependency/schema check after PostgreSQL and Chroma are available:
+Services:
 
-```powershell
-python scripts/validate_system.py
+```text
+frontend
+backend-api
+worker
+postgres
+chromadb
 ```
 
-Run the realistic academic workflow (real PDF extraction, local embeddings, Chroma, and hybrid retrieval; Groq prose is mocked):
+---
 
-```powershell
-python scripts/run_release_e2e.py
+# Running Worker
+
+The worker is required for:
+
+- PDF Processing
+- OCR Processing
+- Embedding Generation
+- Notifications
+- Scheduled Jobs
+
+Worker starts automatically in Docker.
+
+---
+
+# Testing
+
+Backend:
+
+```bash
+pytest
 ```
 
-The runner writes [END_TO_END_REPORT.md](END_TO_END_REPORT.md). The latest schema audit is in [VALIDATION_REPORT_v1.0.md](VALIDATION_REPORT_v1.0.md).
+Frontend:
 
-## Documentation
+```bash
+npm test
+```
 
-- [Frontend API guide](FRONTEND_API_GUIDE.md)
-- [Deployment checklist](DEPLOYMENT_CHECKLIST.md)
-- [Backend freeze report](BACKEND_FREEZE_REPORT.md)
-- [Architecture](docs/ARCHITECTURE.md)
-- [API summary](docs/API_SUMMARY.md)
-- [Release notes](RELEASE_NOTES_v1.0.md)
-- [Release candidate checklist](RELEASE_CANDIDATE_v1.0.md)
-- [Environment template](.env.example)
+Validation:
+
+```bash
+ruff check .
+```
+
+---
+
+# Security
+
+Implemented:
+
+- JWT Authentication
+- OAuth Login
+- Input Validation
+- File Validation
+- Rate Limiting
+- Secure Configuration Validation
+- CORS Protection
+- Dependency Scanning
+
+---
+
+# Production Readiness
+
+Implemented:
+
+- Durable Job Queue
+- OCR Support
+- Health Monitoring
+- Worker Heartbeats
+- Safe Reindexing
+- Chroma Recovery
+- Retry Mechanisms
+- Dockerized Deployment
+- Alembic Migrations
+
+Recommended before large-scale deployment:
+
+- Managed PostgreSQL
+- Object Storage (S3)
+- TLS for Database Connections
+- Secret Manager
+- Automated Backups
+- CI/CD Pipeline
+
+---
+
+# Project Status
+
+Current Status:
+
+```text
+Backend: Complete
+Frontend: Complete
+OCR: Complete
+RAG: Complete
+Authentication: Complete
+Deployment: Complete
+Production Hardening: Complete
+```
+
+---
+
+# License
+
+MIT License
+
+---
+
+# Author
+
+Md Aftab Siddiqui
+
+Jarvis was built to provide engineering students with an AI-powered academic workspace that combines study assistance, academic tracking, intelligent retrieval, and semester planning into a single platform.
